@@ -1,0 +1,2 @@
+- [Home](/)
+- [Charts](charts.md)

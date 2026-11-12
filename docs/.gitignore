@@ -1,0 +1,11 @@
+# The site's build output is docs/dist (ignored by the root .gitignore).
+# Recipe samples: sources only.
+recipes/samples/*/node_modules
+recipes/samples/*/pnpm-lock.yaml
+recipes/samples/*/package-lock.json
+recipes/samples/*/.astro
+recipes/samples/*/public/plotdown.js
+recipes/samples/*/site
+recipes/samples/*/book
+recipes/samples/*/_site
+recipes/samples/*/.quarto

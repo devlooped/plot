@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<title>plotdown.js as a module</title>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@devlooped/plotdown/dist/plotdown.js"></script>
+</head>
+<body>
+<h1>plotdown.js as a module</h1>
+<pre><code class="language-plot">{
+  "title": "Penguin body mass",
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "barY", "data": [{"species": "Adelie", "mass": 3750}, {"species": "Gentoo", "mass": 5000}, {"species": "Chinstrap", "mass": 3500}], "x": "species", "y": "mass", "fill": "species"},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+</code></pre>
+<pre><code class="language-oplot">{
+  "marks": [
+    {"mark": "lineY", "data": [1, 3, 2, 5, 4, 6], "curve": "catmull-rom"},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+</code></pre>
+<pre><code class="language-plot">{"marks": [{"mark": "pie", "data": [1, 2]}]}
+</code></pre>
+<pre><code class="language-js">console.log("not a chart");
+</code></pre>
+
+</body>
+</html>

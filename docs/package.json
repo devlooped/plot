@@ -1,0 +1,37 @@
+{
+  "name": "plotdown-site",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The plotdown.cc site: what plotdown is, the playground, the gallery and one recipe per surface.",
+  "type": "module",
+  "scripts": {
+    "build": "node build/build.mjs",
+    "serve": "node build/serve.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:browser": "node test/browser.mjs"
+  },
+  "devDependencies": {
+    "@codemirror/autocomplete": "6.20.4",
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-json": "6.0.2",
+    "@codemirror/language": "6.13.1",
+    "@codemirror/lint": "6.9.7",
+    "@codemirror/search": "6.7.2",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.15",
+    "@devlooped/plotdown": "workspace:*",
+    "@fontsource-variable/recursive": "5.3.0",
+    "@lezer/highlight": "1.2.5",
+    "@types/markdown-it": "14.2.0",
+    "@types/node": "26.6.6",
+    "esbuild": "0.28.2",
+    "jsonc-parser": "3.3.1",
+    "linkedom": "0.18.15",
+    "markdown-it": "15.0.3",
+    "playwright": "1.65.0",
+    "shiki": "4.6.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

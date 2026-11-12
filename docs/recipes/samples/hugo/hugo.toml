@@ -1,0 +1,3 @@
+baseURL = "http://localhost/"
+title = "plotdown sample"
+disableKinds = ["taxonomy", "term", "RSS", "sitemap"]
