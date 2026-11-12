@@ -1,0 +1,23 @@
+{
+  "data": {
+    "logos": [
+      {
+        "name": "Red",
+        "value": 3,
+        "logo": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOSIgZmlsbD0icmVkIi8+PC9zdmc+"
+      },
+      {
+        "name": "Green",
+        "value": 5,
+        "logo": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOSIgZmlsbD0iZ3JlZW4iLz48L3N2Zz4="
+      },
+      {
+        "name": "Blue",
+        "value": 4,
+        "logo": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOSIgZmlsbD0iYmx1ZSIvPjwvc3ZnPg=="
+      }
+    ]
+  },
+  "y": {"domain": [0, 6], "grid": true},
+  "marks": [{"mark": "image", "data": "logos", "x": "name", "y": "value", "src": "logo", "width": 24}]
+}

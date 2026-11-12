@@ -1,0 +1,34 @@
+{
+  "padding": 0,
+  "x": {"label": "Episode", "axis": "top"},
+  "y": {"label": "Season"},
+  "color": {"type": "linear", "scheme": "PiYG"},
+  "data": {
+    "ratings": [
+      {"season": 1, "episode": 1, "rating": 7.4, "title": "Simpsons Roasting on an Open Fire"},
+      {"season": 1, "episode": 2, "rating": 7.8, "title": "Bart the Genius"},
+      {"season": 1, "episode": 3, "rating": 7.6, "title": "Homer's Odyssey"},
+      {"season": 1, "episode": 4, "rating": 7.8, "title": "There's No Disgrace Like Home"},
+      {"season": 2, "episode": 1, "rating": 8.2, "title": "Bart Gets an F"},
+      {"season": 2, "episode": 2, "rating": 8.1, "title": "Simpson and Delilah"},
+      {"season": 2, "episode": 3, "rating": 8, "title": "Treehouse of Horror"},
+      {"season": 2, "episode": 4, "rating": 7.8, "title": "Two Cars in Every Garage"},
+      {"season": 3, "episode": 1, "rating": 8.3, "title": "Stark Raving Dad"},
+      {"season": 3, "episode": 2, "rating": 8, "title": "Mr. Lisa Goes to Washington"},
+      {"season": 3, "episode": 3, "rating": 7.5, "title": "When Flanders Failed"},
+      {"season": 3, "episode": 4, "rating": 8.3, "title": "Bart the Murderer"}
+    ]
+  },
+  "marks": [
+    {"mark": "cell", "data": "ratings", "x": "episode", "y": "season", "fill": "rating", "inset": 0.5},
+    {
+      "mark": "text",
+      "data": "ratings",
+      "x": "episode",
+      "y": "season",
+      "text": "rating",
+      "fill": "black",
+      "title": "title"
+    }
+  ]
+}

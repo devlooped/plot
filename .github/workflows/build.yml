@@ -1,0 +1,37 @@
+name: build
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🤘 checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: ⚙ node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: 🔽 install
+        run: pnpm install --frozen-lockfile
+
+      - name: 🙏 build
+        run: pnpm build
+
+      - name: 🔎 typecheck
+        run: pnpm typecheck
+
+      - name: 🧪 test
+        run: pnpm test

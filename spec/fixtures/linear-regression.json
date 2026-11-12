@@ -1,0 +1,136 @@
+{
+  "data": {
+    "penguins": [
+      {
+        "species": "Adelie",
+        "island": "Torgersen",
+        "bill_length_mm": 39.1,
+        "flipper_length_mm": 181,
+        "body_mass_g": 3750,
+        "sex": "MALE"
+      },
+      {
+        "species": "Adelie",
+        "island": "Torgersen",
+        "bill_length_mm": 39.5,
+        "flipper_length_mm": 186,
+        "body_mass_g": 3800,
+        "sex": "FEMALE"
+      },
+      {
+        "species": "Adelie",
+        "island": "Biscoe",
+        "bill_length_mm": 37.8,
+        "flipper_length_mm": 174,
+        "body_mass_g": 3400,
+        "sex": "FEMALE"
+      },
+      {
+        "species": "Adelie",
+        "island": "Dream",
+        "bill_length_mm": 40.6,
+        "flipper_length_mm": 199,
+        "body_mass_g": 4250,
+        "sex": "MALE"
+      },
+      {
+        "species": "Adelie",
+        "island": "Dream",
+        "bill_length_mm": 36.5,
+        "flipper_length_mm": 182,
+        "body_mass_g": 3150,
+        "sex": null
+      },
+      {
+        "species": "Chinstrap",
+        "island": "Dream",
+        "bill_length_mm": 46.5,
+        "flipper_length_mm": 192,
+        "body_mass_g": 3500,
+        "sex": "FEMALE"
+      },
+      {
+        "species": "Chinstrap",
+        "island": "Dream",
+        "bill_length_mm": 50,
+        "flipper_length_mm": 196,
+        "body_mass_g": 3900,
+        "sex": "MALE"
+      },
+      {
+        "species": "Chinstrap",
+        "island": "Dream",
+        "bill_length_mm": 51.3,
+        "flipper_length_mm": 197,
+        "body_mass_g": 3650,
+        "sex": "MALE"
+      },
+      {
+        "species": "Chinstrap",
+        "island": "Dream",
+        "bill_length_mm": 45.4,
+        "flipper_length_mm": 188,
+        "body_mass_g": 3525,
+        "sex": "FEMALE"
+      },
+      {
+        "species": "Gentoo",
+        "island": "Biscoe",
+        "bill_length_mm": 46.1,
+        "flipper_length_mm": 211,
+        "body_mass_g": 4500,
+        "sex": "FEMALE"
+      },
+      {
+        "species": "Gentoo",
+        "island": "Biscoe",
+        "bill_length_mm": 50,
+        "flipper_length_mm": 230,
+        "body_mass_g": 5700,
+        "sex": "MALE"
+      },
+      {
+        "species": "Gentoo",
+        "island": "Biscoe",
+        "bill_length_mm": 48.7,
+        "flipper_length_mm": 210,
+        "body_mass_g": 4450,
+        "sex": "FEMALE"
+      },
+      {
+        "species": "Gentoo",
+        "island": "Biscoe",
+        "bill_length_mm": 50,
+        "flipper_length_mm": 218,
+        "body_mass_g": 5700,
+        "sex": "MALE"
+      },
+      {
+        "species": "Gentoo",
+        "island": "Biscoe",
+        "bill_length_mm": 47.6,
+        "flipper_length_mm": 215,
+        "body_mass_g": 5400,
+        "sex": null
+      }
+    ]
+  },
+  "grid": true,
+  "marks": [
+    {
+      "mark": "dot",
+      "data": "penguins",
+      "x": "flipper_length_mm",
+      "y": "body_mass_g",
+      "fill": "species",
+      "fillOpacity": 0.5
+    },
+    {
+      "mark": "linearRegressionY",
+      "data": "penguins",
+      "x": "flipper_length_mm",
+      "y": "body_mass_g",
+      "stroke": "species"
+    }
+  ]
+}

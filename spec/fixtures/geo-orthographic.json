@@ -1,0 +1,31 @@
+{
+  "projection": {"type": "orthographic", "rotate": [20, -20]},
+  "data": {
+    "shapes": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {"name": "A"},
+          "geometry": {"type": "Polygon", "coordinates": [[[-10, 40], [-10, 55], [10, 55], [10, 40], [-10, 40]]]}
+        },
+        {
+          "type": "Feature",
+          "properties": {"name": "B"},
+          "geometry": {"type": "Polygon", "coordinates": [[[20, -10], [20, 10], [40, 10], [40, -10], [20, -10]]]}
+        },
+        {
+          "type": "Feature",
+          "properties": {"name": "C"},
+          "geometry": {"type": "Polygon", "coordinates": [[[-70, -30], [-70, -10], [-50, -10], [-50, -30], [-70, -30]]]}
+        }
+      ]
+    }
+  },
+  "marks": [
+    {"mark": "sphere", "fill": "aliceblue"},
+    {"mark": "graticule"},
+    {"mark": "geo", "data": "shapes", "fill": "tan", "stroke": "brown"},
+    {"mark": "dot", "data": "shapes", "r": 3, "fill": "black", "transform": [{"centroid": true}]}
+  ]
+}

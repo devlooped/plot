@@ -1,0 +1,47 @@
+{
+  "data": {
+    "stocks": [
+      {"date": "2024-01-01", "symbol": "AAPL", "close": 185},
+      {"date": "2024-02-01", "symbol": "AAPL", "close": 181},
+      {"date": "2024-03-01", "symbol": "AAPL", "close": 171},
+      {"date": "2024-04-01", "symbol": "AAPL", "close": 170},
+      {"date": "2024-05-01", "symbol": "AAPL", "close": 192},
+      {"date": "2024-06-01", "symbol": "AAPL", "close": 210},
+      {"date": "2024-01-01", "symbol": "GOOG", "close": 140},
+      {"date": "2024-02-01", "symbol": "GOOG", "close": 141},
+      {"date": "2024-03-01", "symbol": "GOOG", "close": 152},
+      {"date": "2024-04-01", "symbol": "GOOG", "close": 163},
+      {"date": "2024-05-01", "symbol": "GOOG", "close": 173},
+      {"date": "2024-06-01", "symbol": "GOOG", "close": 183},
+      {"date": "2024-01-01", "symbol": "MSFT", "close": 376},
+      {"date": "2024-02-01", "symbol": "MSFT", "close": 397},
+      {"date": "2024-03-01", "symbol": "MSFT", "close": 420},
+      {"date": "2024-04-01", "symbol": "MSFT", "close": 389},
+      {"date": "2024-05-01", "symbol": "MSFT", "close": 415},
+      {"date": "2024-06-01", "symbol": "MSFT", "close": 446}
+    ]
+  },
+  "y": {"type": "log", "grid": true, "label": "Change in price (×)"},
+  "marks": [
+    {"mark": "ruleY", "data": [1]},
+    {
+      "mark": "lineY",
+      "data": "stocks",
+      "x": "date",
+      "y": "close",
+      "stroke": "symbol",
+      "transform": [{"normalizeY": "first"}]
+    },
+    {
+      "mark": "text",
+      "data": "stocks",
+      "x": "date",
+      "y": "close",
+      "z": "symbol",
+      "text": "symbol",
+      "textAnchor": "start",
+      "dx": 3,
+      "transform": [{"normalizeY": "first"}, {"selectLast": true}]
+    }
+  ]
+}

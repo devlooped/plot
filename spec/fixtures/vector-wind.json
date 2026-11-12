@@ -1,0 +1,43 @@
+{
+  "inset": 10,
+  "data": {
+    "wind": [
+      {"lon": 0, "lat": 0, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 1, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 2, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 3, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 4, "dir": 0, "speed": 1.5},
+      {"lon": 1, "lat": 0, "dir": 104, "speed": 2.1},
+      {"lon": 1, "lat": 1, "dir": 94, "speed": 2},
+      {"lon": 1, "lat": 2, "dir": 65, "speed": 1.9},
+      {"lon": 1, "lat": 3, "dir": 23, "speed": 1.6},
+      {"lon": 1, "lat": 4, "dir": -18, "speed": 1.4},
+      {"lon": 2, "lat": 0, "dir": 187, "speed": 2.5},
+      {"lon": 2, "lat": 1, "dir": 169, "speed": 2.4},
+      {"lon": 2, "lat": 2, "dir": 117, "speed": 2.2},
+      {"lon": 2, "lat": 3, "dir": 47, "speed": 1.8},
+      {"lon": 2, "lat": 4, "dir": -27, "speed": 1.4},
+      {"lon": 3, "lat": 0, "dir": 234, "speed": 2.8},
+      {"lon": 3, "lat": 1, "dir": 212, "speed": 2.7},
+      {"lon": 3, "lat": 2, "dir": 151, "speed": 2.3},
+      {"lon": 3, "lat": 3, "dir": 67, "speed": 1.9},
+      {"lon": 3, "lat": 4, "dir": -22, "speed": 1.4},
+      {"lon": 4, "lat": 0, "dir": 236, "speed": 2.8},
+      {"lon": 4, "lat": 1, "dir": 216, "speed": 2.7},
+      {"lon": 4, "lat": 2, "dir": 160, "speed": 2.4},
+      {"lon": 4, "lat": 3, "dir": 83, "speed": 2},
+      {"lon": 4, "lat": 4, "dir": 4, "speed": 1.5}
+    ]
+  },
+  "marks": [
+    {
+      "mark": "vector",
+      "data": "wind",
+      "x": "lon",
+      "y": "lat",
+      "rotate": "dir",
+      "length": "speed",
+      "stroke": "speed"
+    }
+  ]
+}

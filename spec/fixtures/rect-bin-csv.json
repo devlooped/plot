@@ -1,0 +1,21 @@
+{
+  "title": "Penguin body mass",
+  "data": {
+    "penguins": {
+      "csv": "species,island,body_mass_g,sex\nAdelie,Torgersen,3750,MALE\nAdelie,Torgersen,3800,FEMALE\nAdelie,Biscoe,3400,FEMALE\nAdelie,Dream,4250,MALE\nAdelie,Dream,3150,\nChinstrap,Dream,3500,FEMALE\nChinstrap,Dream,3900,MALE\nChinstrap,Dream,3650,MALE\nChinstrap,Dream,3525,FEMALE\nGentoo,Biscoe,4500,FEMALE\nGentoo,Biscoe,5700,MALE\nGentoo,Biscoe,4450,FEMALE\nGentoo,Biscoe,5700,MALE\nGentoo,Biscoe,5400,\n"
+    }
+  },
+  "color": {"legend": true},
+  "y": {"grid": true},
+  "marks": [
+    {
+      "mark": "rectY",
+      "data": "penguins",
+      "x": "body_mass_g",
+      "fill": "species",
+      "thresholds": 8,
+      "transform": [{"binX": {"y": "count"}}]
+    },
+    {"mark": "ruleY", "data": [0]}
+  ]
+}

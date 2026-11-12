@@ -1,0 +1,9 @@
+{
+  "data": {
+    "fruit": [{"fruit": "apples", "count": 23}, {"fruit": "bananas", "count": 15}, {"fruit": "cherries", "count": 31}]
+  },
+  "marks": [
+    {"mark": "waffleY", "data": "fruit", "x": "fruit", "y": "count", "fill": "fruit", "unit": 1, "gap": 2},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}

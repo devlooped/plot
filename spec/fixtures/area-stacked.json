@@ -1,0 +1,38 @@
+{
+  "title": "Unemployed workers by industry",
+  "data": {
+    "jobs": [
+      {"date": "2024-01-01", "industry": "Construction", "unemployed": 612},
+      {"date": "2024-02-01", "industry": "Construction", "unemployed": 640},
+      {"date": "2024-03-01", "industry": "Construction", "unemployed": 690},
+      {"date": "2024-04-01", "industry": "Construction", "unemployed": 720},
+      {"date": "2024-05-01", "industry": "Construction", "unemployed": 700},
+      {"date": "2024-06-01", "industry": "Construction", "unemployed": 650},
+      {"date": "2024-01-01", "industry": "Manufacturing", "unemployed": 830},
+      {"date": "2024-02-01", "industry": "Manufacturing", "unemployed": 810},
+      {"date": "2024-03-01", "industry": "Manufacturing", "unemployed": 800},
+      {"date": "2024-04-01", "industry": "Manufacturing", "unemployed": 790},
+      {"date": "2024-05-01", "industry": "Manufacturing", "unemployed": 770},
+      {"date": "2024-06-01", "industry": "Manufacturing", "unemployed": 760},
+      {"date": "2024-01-01", "industry": "Retail", "unemployed": 910},
+      {"date": "2024-02-01", "industry": "Retail", "unemployed": 880},
+      {"date": "2024-03-01", "industry": "Retail", "unemployed": 860},
+      {"date": "2024-04-01", "industry": "Retail", "unemployed": 900},
+      {"date": "2024-05-01", "industry": "Retail", "unemployed": 940},
+      {"date": "2024-06-01", "industry": "Retail", "unemployed": 920}
+    ]
+  },
+  "y": {"grid": true, "label": "Unemployed (thousands)"},
+  "color": {"legend": true},
+  "marks": [
+    {
+      "mark": "areaY",
+      "data": "jobs",
+      "x": "date",
+      "y": "unemployed",
+      "fill": "industry",
+      "transform": [{"stackY": {"order": "appearance"}}]
+    },
+    {"mark": "ruleY", "data": [0]}
+  ]
+}

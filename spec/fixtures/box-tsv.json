@@ -1,0 +1,9 @@
+{
+  "data": {
+    "penguins": {
+      "tsv": "species\tisland\tbody_mass_g\nAdelie\tTorgersen\t3750\nAdelie\tTorgersen\t3800\nAdelie\tBiscoe\t3400\nAdelie\tDream\t4250\nAdelie\tDream\t3150\nChinstrap\tDream\t3500\nChinstrap\tDream\t3900\nChinstrap\tDream\t3650\nChinstrap\tDream\t3525\nGentoo\tBiscoe\t4500\nGentoo\tBiscoe\t5700\nGentoo\tBiscoe\t4450\nGentoo\tBiscoe\t5700\nGentoo\tBiscoe\t5400\n"
+    }
+  },
+  "y": {"grid": true},
+  "marks": [{"mark": "boxY", "data": "penguins", "x": "species", "y": "body_mass_g"}]
+}

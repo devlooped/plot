@@ -41,6 +41,7 @@ __*__
 *.nuget.targets
 
 node_modules
+dist
 _site
 .jekyll-metadata
 .jekyll-cache

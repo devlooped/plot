@@ -1,0 +1,23 @@
+{
+  "axis": null,
+  "height": 220,
+  "margin": 10,
+  "marginLeft": 40,
+  "marginRight": 110,
+  "marks": [
+    {
+      "mark": "tree",
+      "data": [
+        "flare/analytics/cluster",
+        "flare/analytics/graph",
+        "flare/analytics/optimization",
+        "flare/animate/Easing",
+        "flare/animate/Tween",
+        "flare/data/DataField",
+        "flare/data/DataSchema",
+        "flare/display/DirtySprite"
+      ],
+      "textStroke": "white"
+    }
+  ]
+}

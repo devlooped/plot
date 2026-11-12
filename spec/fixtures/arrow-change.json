@@ -1,0 +1,34 @@
+{
+  "x": {"type": "log", "label": "Population (millions)"},
+  "y": {"label": "Inequality", "grid": true},
+  "data": {
+    "metros": [
+      {"Metro": "New York", "POP_1980": 16, "POP_2015": 20.2, "R90_10_1980": 6.4, "R90_10_2015": 7.9},
+      {"Metro": "Los Angeles", "POP_1980": 11.5, "POP_2015": 13.3, "R90_10_1980": 5.6, "R90_10_2015": 7.4},
+      {"Metro": "Chicago", "POP_1980": 8, "POP_2015": 9.5, "R90_10_1980": 5, "R90_10_2015": 6.2},
+      {"Metro": "Houston", "POP_1980": 3.2, "POP_2015": 6.7, "R90_10_1980": 4.9, "R90_10_2015": 6},
+      {"Metro": "Phoenix", "POP_1980": 1.6, "POP_2015": 4.6, "R90_10_1980": 4.6, "R90_10_2015": 5.2}
+    ]
+  },
+  "marks": [
+    {
+      "mark": "arrow",
+      "data": "metros",
+      "x1": "POP_1980",
+      "y1": "R90_10_1980",
+      "x2": "POP_2015",
+      "y2": "R90_10_2015",
+      "bend": true,
+      "stroke": "steelblue"
+    },
+    {
+      "mark": "text",
+      "data": "metros",
+      "x": "POP_2015",
+      "y": "R90_10_2015",
+      "text": "Metro",
+      "dy": -8,
+      "fontSize": 9
+    }
+  ]
+}

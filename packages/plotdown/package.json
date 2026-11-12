@@ -1,0 +1,59 @@
+{
+  "name": "@devlooped/plotdown",
+  "version": "0.1.0",
+  "description": "Render fenced plot blocks of strict JSON as Observable Plot charts.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devlooped/plot.git",
+    "directory": "packages/plotdown"
+  },
+  "homepage": "https://github.com/devlooped/plot",
+  "keywords": [
+    "observable-plot",
+    "plot",
+    "markdown",
+    "chart",
+    "json",
+    "svg"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema.json": "./dist/plot.schema.json",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "readme.md"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "build": "tsup && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@observablehq/plot": "0.6.19"
+  },
+  "devDependencies": {
+    "@types/d3-dsv": "3.0.7",
+    "@types/jsdom": "30.0.0",
+    "@types/node": "26.6.6",
+    "ajv": "8.20.0",
+    "d3-dsv": "3.0.2",
+    "jsdom": "31.0.0",
+    "tsup": "9.0.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

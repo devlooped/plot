@@ -1,0 +1,17 @@
+{
+  "data": {
+    "sales": [
+      {"date": "2024-01-01", "units": 12},
+      {"date": "2024-02-01", "units": 7},
+      {"date": "2024-03-01", "units": 15},
+      {"date": "2024-04-01", "units": 9},
+      {"date": "2024-05-01", "units": 20},
+      {"date": "2024-06-01", "units": 11}
+    ]
+  },
+  "y": {"grid": true, "label": "Units sold (cumulative)"},
+  "marks": [
+    {"mark": "lineY", "data": "sales", "x": "date", "y": "units", "transform": [{"mapY": "cumsum"}]},
+    {"mark": "dot", "data": "sales", "x": "date", "y": "units", "transform": [{"map": {"y": "cumsum"}}]}
+  ]
+}

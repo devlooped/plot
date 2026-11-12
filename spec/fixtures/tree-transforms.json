@@ -1,0 +1,30 @@
+{
+  "axis": null,
+  "height": 220,
+  "marginLeft": 40,
+  "marginRight": 110,
+  "data": {
+    "paths": [
+      "flare/analytics/cluster",
+      "flare/analytics/graph",
+      "flare/analytics/optimization",
+      "flare/animate/Easing",
+      "flare/animate/Tween",
+      "flare/data/DataField",
+      "flare/data/DataSchema",
+      "flare/display/DirtySprite"
+    ]
+  },
+  "marks": [
+    {"mark": "link", "data": "paths", "stroke": "#999", "transform": [{"treeLink": true}]},
+    {"mark": "dot", "data": "paths", "fill": "node:internal", "transform": [{"treeNode": true}]},
+    {
+      "mark": "text",
+      "data": "paths",
+      "text": "node:name",
+      "dx": 6,
+      "textAnchor": "start",
+      "transform": [{"treeNode": {"treeAnchor": "left"}}]
+    }
+  ]
+}
