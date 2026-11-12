@@ -204,7 +204,7 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 - [x] 4. Implement `parse`, `validate` and `render` in `packages/plotdown/src/`, with the security rules above and `PlotdownError`.
 - [x] 5. Add snapshot tests: each fixture renders to SVG under jsdom and matches the SVG of the equivalent hand-written `Plot.plot()` call.
 - [x] 6. Build `plotdown.js` (ESM and IIFE): the selectors for `pre > code.language-{plot,oplot,observable-plot}`, `pre.plot`, `pre[lang]`, GitHub and GitLab markup, a `MutationObserver`, light and dark colors, a toggle between chart and source, and the error display.
-- [ ] 7. Publish the site from `docs/` with a playground (editor on the left, chart on the right) that itself uses `plotdown.js`; point `plotdown.cc` at it once the domain is registered.
+- [x] 7. Publish the site from `docs/` with a playground (editor on the left, chart on the right) that itself uses `plotdown.js`; point `plotdown.cc` at it once the domain is registered.
 
 **Phase 1: GitHub and GitLab**
 
@@ -224,7 +224,8 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 **Phase 3: plotdown.cc image service**
 
 - [x] 16. Build `packages/service`: the `/svg` and `/png` routes, GET with `pako:` and POST, the refusal of any remote reference, size limits, immutable cache headers, rate limiting.
-- [ ] 17. Deploy it on `plotdown.cc` beside the site, with a deployment workflow and an uptime check.
+- [x] 17. Deploy it on `plotdown.cc` beside the site, with a deployment workflow and an uptime check.
+  - Deployed 2026-11-12 as the Vercel project `plotdown` (site and service in one project, root `vercel.json`); `plotdown.cc` points straight at it with DNS records the user added in Cloudflare; the project is connected to the GitHub repository, so a push to `main` deploys; `.github/workflows/uptime.yml` checks it twice an hour.
 - [x] 18. Add `plotdown link`, `plotdown render --link` and a "Copy image link" button in the playground.
 
 **Phase 4: editors and agents**
