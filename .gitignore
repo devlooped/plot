@@ -56,3 +56,5 @@ package-lock.json
 /examples/docusaurus/build
 /examples/docusaurus/.docusaurus
 /examples/vitepress/docs/.vitepress/cache
+.vercel
+.env*
