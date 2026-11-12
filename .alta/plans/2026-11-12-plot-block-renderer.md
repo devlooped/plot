@@ -223,13 +223,14 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 
 **Phase 3: plotdown.cc image service**
 
-- [ ] 16. Build `packages/service`: the `/svg` and `/png` routes, GET with `pako:` and POST, the refusal of any remote reference, size limits, immutable cache headers, rate limiting.
+- [x] 16. Build `packages/service`: the `/svg` and `/png` routes, GET with `pako:` and POST, the refusal of any remote reference, size limits, immutable cache headers, rate limiting.
 - [ ] 17. Deploy it on `plotdown.cc` beside the site, with a deployment workflow and an uptime check.
-- [ ] 18. Add `plotdown link`, `plotdown render --link` and a "Copy image link" button in the playground.
+- [x] 18. Add `plotdown link`, `plotdown render --link` and a "Copy image link" button in the playground.
 
 **Phase 4: editors and agents**
 
 - [ ] 19. VS Code extension (`markdown.markdownItPlugins`, `markdown.previewScripts`, notebook renderer); publish to the Marketplace and Open VSX.
+  - Built and tested in `packages/vscode` (2026-11-12): 14 of 14 checks in a real VS Code 1.90 and 1.146. Not published: the Marketplace and Open VSX need the `devlooped` publisher and its tokens; the steps are in `packages/vscode/publishing.md`.
 - [ ] 20. Obsidian plugin (`registerMarkdownCodeBlockProcessor`); submit to the community list.
   - Built and tested in `packages/obsidian` (2026-11-12). Not yet tried in a real vault (Obsidian is not installed on the build machine) and not submitted: Obsidian and BRAT read `manifest.json` from the root of a repository and install from a release tagged `x.y.z`, so the submission needs a decision first (a separate `devlooped/plotdown-obsidian` repository, or a root manifest here); see `packages/obsidian/community-plugins.md`.
 - [x] 21. MCP App server in `packages/mcp` with `@modelcontextprotocol/ext-apps`.

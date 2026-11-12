@@ -1,0 +1,8 @@
+**
+!dist/**
+!media/icon.png
+!media/preview.css
+!package.json
+!readme.md
+!changelog.md
+!license.txt

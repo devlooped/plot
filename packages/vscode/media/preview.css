@@ -1,0 +1,13 @@
+/* The Markdown preview: the note under a block whose remote data is loading or failed. */
+.plotdown-message {
+  font-size: 0.9em;
+  margin: -0.5em 0 1em;
+  padding: 4px 8px;
+  border-left: 3px solid var(--vscode-editorError-foreground, #d1242f);
+  background: color-mix(in srgb, var(--vscode-editorError-foreground, #d1242f) 10%, transparent);
+  white-space: pre-wrap;
+}
+.plotdown-message.plotdown-note {
+  border-left-color: var(--vscode-editorInfo-foreground, #0969da);
+  background: color-mix(in srgb, var(--vscode-editorInfo-foreground, #0969da) 10%, transparent);
+}
