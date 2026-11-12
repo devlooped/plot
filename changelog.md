@@ -1,12 +1,16 @@
 # Changelog
 
-## [0.1.0](https://github.com/devlooped/plotdown/tree/0.1.0) (2026-11-12)
-
-[Full Changelog](https://github.com/devlooped/plotdown/compare/v1...0.1.0)
-
 ## [v1](https://github.com/devlooped/plotdown/tree/v1) (2026-11-12)
 
-[Full Changelog](https://github.com/devlooped/plotdown/compare/6953edc98833313d9b1109e336068fc6551b8445...v1)
+[Full Changelog](https://github.com/devlooped/plotdown/compare/v1.0.0...v1)
+
+## [v1.0.0](https://github.com/devlooped/plotdown/tree/v1.0.0) (2026-11-12)
+
+[Full Changelog](https://github.com/devlooped/plotdown/compare/0.1.0...v1.0.0)
+
+## [0.1.0](https://github.com/devlooped/plotdown/tree/0.1.0) (2026-11-12)
+
+[Full Changelog](https://github.com/devlooped/plotdown/compare/6953edc98833313d9b1109e336068fc6551b8445...0.1.0)
 
 
 
