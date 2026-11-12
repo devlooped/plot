@@ -57,8 +57,8 @@ describe("plotdownFences", () => {
     const pending = md({resolve: () => ({state: "pending"})}).render(fence("plot", BLOCK));
     expect(pending).toContain('<pre class="plotdown-pending"><code class="language-json">');
     expect(pending).toContain("loading the data");
-    const failed = md({resolve: () => ({state: "error", message: '$.data.a.url: could not load "x": HTTP 404'})}).render(fence("plot", BLOCK));
+    const failed = md({resolve: () => ({state: "error", message: 'could not load "x": HTTP 404 at $.data.a.url'})}).render(fence("plot", BLOCK));
     expect(failed).toContain('<pre class="plotdown-failed"><code class="language-json">');
-    expect(failed).toContain("plotdown: $.data.a.url: could not load &quot;x&quot;: HTTP 404");
+    expect(failed).toContain("plotdown: could not load &quot;x&quot;: HTTP 404 at $.data.a.url");
   });
 });

@@ -26,7 +26,7 @@ describe("markdown-it", () => {
     const md = new MarkdownIt().use(plotdown, {onError});
     const page = dom(md.render("```oplot\n" + BAD + "\n```\n\ntext after\n"));
     expect(page.querySelector(".plotdown-error pre code.language-json")?.textContent).toBe(BAD + "\n");
-    expect(page.querySelector(".plotdown-error .plotdown-message")?.textContent).toMatch(/^plotdown: \$\.marks\[0\]\.mark: /);
+    expect(page.querySelector(".plotdown-error .plotdown-message")?.textContent).toMatch(/^plotdown: unknown mark .* at \$\.marks\[0\]\.mark$/);
     expect(page.querySelector("body > p")?.textContent).toBe("text after");
     expect(onError).toHaveBeenCalledOnce();
     expect(onError.mock.calls[0]![0]).toBeInstanceOf(PlotdownError);
@@ -56,7 +56,7 @@ describe("markdown-it", () => {
     expect(html).not.toMatch(/[{}]|<style/);
     expect(html).toContain('<component is="style">:where(.plot-');
     // the text reads the same once the entities are decoded
-    expect(dom(html).querySelector("h2")?.textContent).toBe("{{ 6 * 7 }}");
+    expect(dom(html).querySelector(".plotdown-title")?.textContent).toBe("{{ 6 * 7 }}");
     expect(md.render(block)).toContain("<style>");
     expect(new MarkdownIt().use(plotdown, {vue: true}).render(block)).not.toContain("<style>");
   });

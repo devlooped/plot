@@ -55,7 +55,7 @@ export function renderBlock(info: string | null | undefined, code: string, optio
   if (!isPlotBlock(info, code)) return {kind: "skip"};
   if (options.mode === "client") return {kind: "client"};
   try {
-    return {kind: "chart", figure: render(code, {...renderOptions(options), document: resolveDocument(options.document)})};
+    return {kind: "chart", figure: titlesAsText(render(code, {...renderOptions(options), document: resolveDocument(options.document)}))};
   } catch (error) {
     return failed(error, code, options);
   }
@@ -69,10 +69,40 @@ export async function renderBlockAsync(info: string | null | undefined, code: st
     const document = resolveDocument(options.document);
     const asyncOptions: RenderAsyncOptions = {...renderOptions(options), document};
     if (options.fetch) asyncOptions.fetch = options.fetch;
-    return {kind: "chart", figure: await renderAsync(code, asyncOptions)};
+    return {kind: "chart", figure: titlesAsText(await renderAsync(code, asyncOptions))};
   } catch (error) {
     return failed(error, code, options);
   }
+}
+
+/** How the title and subtitle look once they are paragraphs: as plotdown.js draws them. */
+const TITLE_STYLES: Record<string, [className: string, style: string]> = {
+  h2: ["plotdown-title", "font-size:1.15em;font-weight:600;margin:0 0 0.25em;line-height:1.3"],
+  h3: ["plotdown-subtitle", "font-size:1em;font-weight:400;margin:0 0 0.5em;opacity:0.75;line-height:1.3"]
+};
+
+/**
+ * Plot writes a chart's title and subtitle as `<h2>` and `<h3>` of its figure.
+ * In a page built from Markdown those would be headings of the page: they take
+ * the site's heading style, and tables of contents (Starlight's "On this page",
+ * VitePress's outline) list them. They become `<p class="plotdown-title">` and
+ * `<p class="plotdown-subtitle">`, styled as plotdown.js draws them; the figure's
+ * aria-label is left to Plot. plotdown.js and the static SVG are not concerned:
+ * the first draws in a shadow root, the second draws the titles as SVG text.
+ */
+export function titlesAsText<T extends PlotdownFigure>(figure: T): T {
+  const element = figure as unknown as Element;
+  if (element.localName !== "figure") return figure;
+  for (const child of Array.from(element.children)) {
+    const styles = TITLE_STYLES[child.localName];
+    if (!styles) continue;
+    const p = element.ownerDocument.createElement("p");
+    p.className = styles[0];
+    p.setAttribute("style", styles[1]);
+    while (child.firstChild) p.append(child.firstChild);
+    child.replaceWith(p);
+  }
+  return figure;
 }
 
 function renderOptions(options: PlotdownAdapterOptions): PlotdownOptions {
@@ -91,10 +121,14 @@ function failed(error: unknown, code: string, options: PlotdownAdapterOptions): 
   return {kind: "error", error: plotdownError};
 }
 
-/** The text shown under a block that failed: the path, the reason and, for JSON syntax errors, the place. */
+/**
+ * The text shown under a block that failed: the reason, the path and, for JSON
+ * syntax errors, the place. The same words as plotdown.js in the browser:
+ * `plotdown: unknown mark "pie" at $.marks[0].mark`.
+ */
 export function errorText(error: PlotdownError): string {
   const place = error.line !== undefined ? ` (line ${error.line}${error.column !== undefined ? `, column ${error.column}` : ""})` : "";
-  return `plotdown: ${error.path}: ${error.message}${place}`;
+  return `plotdown: ${error.message} at ${error.path}${place}`;
 }
 
 export function escapeHtml(text: string): string {

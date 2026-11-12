@@ -32,15 +32,15 @@ const SPEC = '{"marks": [{"mark": "dot", "data": [1, 2, 3], "x": [1, 2, 3]}]}';
 
 /**
  * Each sample of real markup, the selector entries that must find its plot blocks, and the blocks it must leave
- * alone; pending counts the blocks of ambiguous markup that hold JSON but not a plot spec (they stay code).
+ * alone (a block of ambiguous markup that holds JSON but not a plot spec is left alone too, not left pending).
  */
-const SAMPLES: {file: string; found: string[]; ignored: number; pending?: number}[] = [
+const SAMPLES: {file: string; found: string[]; ignored: number}[] = [
   {file: "github.html", found: ["pre-lang", "pre-lang", "github"], ignored: 1},
   {file: "github-live.html", found: ["pre-lang", "github"], ignored: 3},
   {file: "gitlab.html", found: ["gitlab", "gitlab"], ignored: 2},
   {file: "gitea.html", found: ["gitea", "gitea"], ignored: 1},
   {file: "forgejo.html", found: ["markdown", "markdown"], ignored: 2},
-  {file: "bitbucket.html", found: ["bitbucket", "bitbucket"], ignored: 3, pending: 1},
+  {file: "bitbucket.html", found: ["bitbucket", "bitbucket"], ignored: 3},
   {file: "azure-devops.html", found: ["azure-devops", "azure-devops"], ignored: 2},
   {file: "chatgpt.html", found: ["chatgpt", "chatgpt"], ignored: 1},
   {file: "claude.html", found: ["claude", "claude-observable"], ignored: 1},
@@ -97,12 +97,12 @@ describe("selectors", () => {
 });
 
 describe("renderer", () => {
-  for (const {file, found, ignored, pending = 0} of SAMPLES) {
+  for (const {file, found, ignored} of SAMPLES) {
     it(`renders ${file} and leaves other code alone`, async () => {
       const document = page(sample(file));
       const before = document.querySelectorAll("pre").length;
       const result = await renderer().scan(document, true);
-      expect(result).toEqual({rendered: found.length, failed: 0, pending});
+      expect(result).toEqual({rendered: found.length, failed: 0, pending: 0});
       expect(charts(document)).toHaveLength(found.length);
       expect(errors(document)).toHaveLength(0);
       for (const chart of charts(document)) {
@@ -280,6 +280,23 @@ describe("watching", () => {
     await wait(120);
     expect(document.querySelector("code-block")!.getAttribute(STATE_ATTRIBUTE)).toBe("pending");
     document.querySelector("code")!.append('print("hello")');
+    await wait(200);
+    expect(document.querySelector("code-block")!.hasAttribute(STATE_ATTRIBUTE)).toBe(false);
+    expect(charts(document)).toHaveLength(0);
+    expect(errors(document)).toHaveLength(0);
+  });
+
+  it("leaves a whole JSON object that is not a plot spec alone in ambiguous markup, streamed or not", async () => {
+    const document = page(`<main><div class="codehilite"><pre><span></span>{"name": "plotdown", "private": true}</pre></div></main>`);
+    const r = renderer({settle: 50});
+    r.observe(document);
+    expect(await r.scan(document)).toEqual({rendered: 0, failed: 0, pending: 0});
+    expect(document.querySelector(".codehilite")!.hasAttribute(STATE_ATTRIBUTE)).toBe(false);
+    // Streamed (Gemini): pending while the object is open, let go once it closes without marks.
+    document.querySelector("main")!.insertAdjacentHTML("beforeend", `<code-block><pre><code data-test-id="code-content">{"a": </code></pre></code-block>`);
+    await wait(120);
+    expect(document.querySelector("code-block")!.getAttribute(STATE_ATTRIBUTE)).toBe("pending");
+    document.querySelector("code-block code")!.append("[1, 2]}");
     await wait(200);
     expect(document.querySelector("code-block")!.hasAttribute(STATE_ATTRIBUTE)).toBe(false);
     expect(charts(document)).toHaveLength(0);

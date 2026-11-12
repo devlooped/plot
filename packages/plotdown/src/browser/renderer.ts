@@ -160,9 +160,10 @@ export class BlockRenderer {
     const block = found.block as HTMLElement;
     // Claimed by another instance, or inside or around a claimed block.
     if (block.hasAttribute(STATE_ATTRIBUTE) || block.parentElement?.closest(`[${STATE_ATTRIBUTE}]`) || block.querySelector(`[${STATE_ATTRIBUTE}]`)) return;
-    // Ambiguous markup that is not even JSON is the other language: leave it alone.
+    // Ambiguous markup that is not even JSON is the other language, and a whole
+    // JSON object that is not a plot spec is other JSON: leave them alone.
     // Still empty (a chat answer's block before its first token), it waits for its text.
-    if (found.selector.ambiguous && found.text.trim() && !found.text.trimStart().startsWith("{")) return;
+    if (found.selector.ambiguous && isOtherCode(found.text)) return;
     const entry: Entry = {block, element: found.element, selector: found.selector, state: "pending", text: "", version: 0, restored: 0};
     this.entries.set(block, entry);
     this.setState(entry, "pending");
@@ -181,8 +182,8 @@ export class BlockRenderer {
 
     // Not complete (or not a plot block at all): it stays code.
     this.clearError(entry);
-    // Ambiguous markup whose first text is not JSON is the other language: let it go.
-    if (entry.selector.ambiguous && entry.state === "pending" && text.trim() && !text.trimStart().startsWith("{")) return this.release(entry);
+    // Ambiguous markup whose text is not JSON, or is complete JSON but not a plot spec, is other code: let it go.
+    if (entry.selector.ambiguous && entry.state === "pending" && isOtherCode(text)) return this.release(entry);
     if (entry.state !== "rendered") this.setState(entry, "pending");
     if (entry.selector.ambiguous || !text.trimStart().startsWith("{")) return;
     if (final) return this.fail(entry, syntaxError(text));
@@ -415,6 +416,17 @@ function isOwnHost(node: Node): boolean {
 }
 
 /** Whether a text is a whole JSON object: a block still streaming never is (once its last brace closes, it is complete). */
+/**
+ * Whether the text of ambiguous markup (a GitHub gnuplot block, a Gemini or
+ * Bitbucket block without a fence name) is surely not a plot block: text that
+ * does not start like JSON, or a whole JSON object without marks. A JSON object
+ * still streaming is not whole yet, so it may still become a plot spec.
+ */
+function isOtherCode(text: string): boolean {
+  if (!text.trim()) return false;
+  return !text.trimStart().startsWith("{") || (isJsonObject(text) && !isPlotSpec(text));
+}
+
 function isJsonObject(text: string): boolean {
   const trimmed = text.trim();
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return false;

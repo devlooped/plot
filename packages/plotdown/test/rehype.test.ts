@@ -39,6 +39,15 @@ describe("rehype", () => {
     expect(file.messages[0]!.line).toBe(1);
   });
 
+  it("writes the title and subtitle as paragraphs, not as headings of the page", async () => {
+    const block = '```plot\n{"title": "Mass", "subtitle": "By species", "caption": "Grams", "marks": [{"mark": "ruleY", "data": [0]}]}\n```\n';
+    const page = dom(String(await processor().process(block)));
+    expect(page.querySelector("h1, h2, h3, h4, h5, h6")).toBeNull();
+    expect(page.querySelector("div.plotdown > figure > p.plotdown-title")?.textContent).toBe("Mass");
+    expect(page.querySelector("div.plotdown > figure > p.plotdown-subtitle")?.textContent).toBe("By species");
+    expect(page.querySelector("div.plotdown > figure > figcaption")?.textContent).toBe("Grams");
+  });
+
   it("fails the build in strict mode", async () => {
     await expect(processor({strict: true}).process("```plot\n" + BAD + "\n```\n")).rejects.toMatchObject({name: "PlotdownError", path: "$.marks[0].mark"});
   });

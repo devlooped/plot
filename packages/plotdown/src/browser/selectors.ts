@@ -163,9 +163,11 @@ export const SELECTORS: readonly BlockSelector[] = [
   },
   {
     // Anything else that names the language in a class or a data attribute:
-    // MkDocs/pymdownx (<div class="language-plot highlight"><pre><code>), Hugo's
-    // data-lang, Prism's lang- prefix, and markup where <code> is not directly
-    // in <pre>.
+    // Hugo's data-lang, Prism's lang- prefix, and markup where <code> is not
+    // directly in <pre>. Not MkDocs without custom fences: Pygments has no lexer
+    // for `plot`, so pymdownx writes <div class="highlight"> (or
+    // "language-text highlight") and the fence name is gone; its SuperFences
+    // custom fences write <pre class="plot">, which "pre-class" finds.
     name: "fallback",
     selector: [
       ...PLOT_LANGS.flatMap((name) => [`[class*="language-${name}"]`, `[class*="lang-${name}"]`]),

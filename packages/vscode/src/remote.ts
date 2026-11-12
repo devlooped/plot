@@ -92,11 +92,11 @@ export class RemoteData {
   };
 }
 
-/** The text of an error as the preview shows it: the JSON path, the reason, and the place. */
+/** The text of an error as the preview shows it: the reason, the JSON path, and the place (as plotdown.js words it). */
 export function describe(error: unknown): string {
   if (error instanceof PlotdownError) {
     const place = error.line !== undefined ? ` (line ${error.line}${error.column !== undefined ? `, column ${error.column}` : ""})` : "";
-    return `${error.path}: ${error.message}${place}`;
+    return `${error.message} at ${error.path}${place}`;
   }
   return error instanceof Error ? error.message : String(error);
 }

@@ -1,8 +1,8 @@
 // @devlooped/plotdown/react: <Plotdown code={…} />, a chart drawn on the client.
 import {createElement, useEffect, useRef, useState, type ReactNode} from "react";
-import {errorText} from "./adapter.js";
+import {errorText, titlesAsText} from "./adapter.js";
 import {PlotdownError} from "./errors.js";
-import {render, renderAsync} from "./render.js";
+import {render, renderAsync, type PlotdownFigure} from "./render.js";
 import type {PlotdownOptions, RenderAsyncOptions} from "./types.js";
 
 export interface PlotdownProps extends PlotdownOptions {
@@ -53,9 +53,9 @@ export function Plotdown(props: PlotdownProps): ReactNode {
       setState({status: "error", error: plotdownError});
     };
     let cancelled = false;
-    const show = (figure: Element) => {
+    const show = (figure: PlotdownFigure) => {
       if (cancelled) return;
-      element.replaceChildren(figure);
+      element.replaceChildren(titlesAsText(figure));
       setState({status: "chart"});
     };
     if (allowRemote) {

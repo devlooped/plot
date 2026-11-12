@@ -17,9 +17,10 @@ A line in an `oplot` fence:
 
 ```oplot
 {
+  "data": {"points": [{"day": 1, "value": 1}, {"day": 2, "value": 3}, {"day": 3, "value": 2}, {"day": 4, "value": 5}, {"day": 5, "value": 4}, {"day": 6, "value": 6}]},
   "marks": [
-    {"mark": "lineY", "data": [1, 3, 2, 5, 4, 6], "curve": "catmull-rom"},
-    {"mark": "dotY", "data": [1, 3, 2, 5, 4, 6], "fill": "currentColor"}
+    {"mark": "lineY", "data": "points", "x": "day", "y": "value", "curve": "catmull-rom"},
+    {"mark": "dot", "data": "points", "x": "day", "y": "value", "fill": "currentColor"}
   ]
 }
 ```
