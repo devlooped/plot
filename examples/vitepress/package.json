@@ -1,0 +1,16 @@
+{
+  "name": "plotdown-example-vitepress",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "file:../../packages/plotdown",
+    "markdown-it": "15.0.3",
+    "linkedom": "0.18.15",
+    "vitepress": "1.6.4"
+  }
+}

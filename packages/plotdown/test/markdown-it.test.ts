@@ -49,6 +49,18 @@ describe("markdown-it", () => {
     expect(page.querySelector("svg")).toBeNull();
   });
 
+  it("writes a Vue template under mdit-vue: style elements kept, no interpolation", () => {
+    const md = new MarkdownIt().use(plotdown);
+    const block = '```plot\n{"title": "{{ 6 * 7 }}", "marks": [{"mark": "dotX", "data": [1, 2]}]}\n```\n';
+    const html = md.render(block, {sfcBlocks: {}});
+    expect(html).not.toMatch(/[{}]|<style/);
+    expect(html).toContain('<component is="style">:where(.plot-');
+    // the text reads the same once the entities are decoded
+    expect(dom(html).querySelector("h2")?.textContent).toBe("{{ 6 * 7 }}");
+    expect(md.render(block)).toContain("<style>");
+    expect(new MarkdownIt().use(plotdown, {vue: true}).render(block)).not.toContain("<style>");
+  });
+
   it("refuses remote data, since markdown-it cannot wait", () => {
     const md = new MarkdownIt().use(plotdown, {allowRemote: true});
     const html = md.render('```plot\n{"data": {"d": {"url": "https://example.com/d.csv"}}, "marks": [{"mark": "dot", "data": "d"}]}\n```\n');

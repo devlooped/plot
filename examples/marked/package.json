@@ -1,0 +1,13 @@
+{
+  "name": "plotdown-example-marked",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "file:../../packages/plotdown",
+    "marked": "18.2.0",
+    "linkedom": "0.18.15"
+  }
+}

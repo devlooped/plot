@@ -29,23 +29,28 @@
     },
     "./markdown-it": {
       "types": "./dist/markdown-it.d.ts",
-      "import": "./dist/markdown-it.js"
+      "import": "./dist/markdown-it.js",
+      "default": "./dist/markdown-it.js"
     },
     "./rehype": {
       "types": "./dist/rehype.d.ts",
-      "import": "./dist/rehype.js"
+      "import": "./dist/rehype.js",
+      "default": "./dist/rehype.js"
     },
     "./marked": {
       "types": "./dist/marked.d.ts",
-      "import": "./dist/marked.js"
+      "import": "./dist/marked.js",
+      "default": "./dist/marked.js"
     },
     "./react": {
       "types": "./dist/react.d.ts",
-      "import": "./dist/react.js"
+      "import": "./dist/react.js",
+      "default": "./dist/react.js"
     },
     "./streamdown": {
       "types": "./dist/streamdown.d.ts",
-      "import": "./dist/streamdown.js"
+      "import": "./dist/streamdown.js",
+      "default": "./dist/streamdown.js"
     },
     "./schema.json": "./dist/plot.schema.json",
     "./package.json": "./package.json"

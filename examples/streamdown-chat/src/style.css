@@ -1,0 +1,12 @@
+body { font-family: system-ui, sans-serif; margin: 0; background: #f6f7f9; color: #1f2328; }
+main { max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+.messages { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+.user { align-self: flex-end; background: #dbeafe; padding: .5rem .875rem; border-radius: 1rem; margin: 0; }
+.assistant { background: white; border: 1px solid #e5e7eb; border-radius: .75rem; padding: .25rem 1rem; }
+button { font: inherit; padding: .5rem 1rem; border-radius: .5rem; border: 1px solid #c7ccd1; background: white; cursor: pointer; }
+button:disabled { opacity: .6; cursor: default; }
+.plotdown { margin: 1rem 0; }
+.plotdown figure { margin: 0; }
+.plotdown-placeholder { display: grid; place-items: center; min-height: 240px; border: 1px dashed #c7ccd1; border-radius: .5rem; color: #6b7280; }
+.plotdown-message { color: #b42318; font-size: .875rem; }
+.plotdown-error pre { background: #f6f8fa; padding: .75rem; overflow: auto; }
