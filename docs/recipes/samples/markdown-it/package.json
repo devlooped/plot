@@ -1,0 +1,13 @@
+{
+  "name": "plotdown-markdown-it-sample",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node render.mjs"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "file:../../../../packages/plotdown",
+    "linkedom": "0.18.15",
+    "markdown-it": "15.0.3"
+  }
+}

@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @devlooped/plotdown-service... build && __SITE_BUILD_COMMAND__",
-  "outputDirectory": "__SITE_OUTPUT_DIRECTORY__",
+  "buildCommand": "pnpm --filter @devlooped/plotdown-service... build && pnpm --filter plotdown-site... build",
+  "outputDirectory": "docs/dist",
   "functions": {
     "api/plotdown.ts": {
       "maxDuration": 15,
@@ -14,5 +14,44 @@
     {"source": "/(svg|png)", "destination": "/api/plotdown"},
     {"source": "/(svg|png)/(.+)", "destination": "/api/plotdown"},
     {"source": "/api/health", "destination": "/api/plotdown"}
+  ],
+  "headers": [
+    {
+      "source": "/((?!svg$|svg/|png$|png/|api/).*)",
+      "headers": [
+        {"key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"},
+        {"key": "X-Content-Type-Options", "value": "nosniff"},
+        {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"}
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]
+    },
+    {
+      "source": "/plotdown(.*)",
+      "headers": [
+        {"key": "Cache-Control", "value": "public, max-age=600, must-revalidate"},
+        {"key": "Access-Control-Allow-Origin", "value": "*"}
+      ]
+    },
+    {
+      "source": "/schema/(.*)",
+      "headers": [
+        {"key": "Content-Type", "value": "application/schema+json; charset=utf-8"},
+        {"key": "Access-Control-Allow-Origin", "value": "*"}
+      ]
+    },
+    {
+      "source": "/llms(.*)",
+      "headers": [
+        {"key": "Content-Type", "value": "text/plain; charset=utf-8"},
+        {"key": "Access-Control-Allow-Origin", "value": "*"}
+      ]
+    },
+    {
+      "source": "/examples/(.*)",
+      "headers": [{"key": "Access-Control-Allow-Origin", "value": "*"}]
+    }
   ]
 }

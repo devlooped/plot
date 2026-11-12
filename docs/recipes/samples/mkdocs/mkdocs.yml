@@ -1,0 +1,28 @@
+site_name: plotdown sample
+theme:
+  name: material
+  features:
+    - navigation.instant
+  palette:
+    - scheme: default
+      toggle: {icon: material/brightness-7, name: Dark mode}
+    - scheme: slate
+      toggle: {icon: material/brightness-4, name: Light mode}
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: plot
+          class: plot
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: oplot
+          class: oplot
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: observable-plot
+          class: observable-plot
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra_javascript:
+  - path: https://cdn.jsdelivr.net/npm/@devlooped/plotdown/dist/plotdown.js
+    type: module

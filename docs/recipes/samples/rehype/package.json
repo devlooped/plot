@@ -1,0 +1,16 @@
+{
+  "name": "plotdown-rehype-sample",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node render.mjs"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "file:../../../../packages/plotdown",
+    "linkedom": "0.18.15",
+    "rehype-stringify": "10.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "unified": "11.0.5"
+  }
+}

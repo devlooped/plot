@@ -1,0 +1,15 @@
+{
+  "name": "plotdown-astro-sample",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "7.3.8",
+    "@devlooped/plotdown": "file:../../../../packages/plotdown",
+    "astro": "7.4.11",
+    "linkedom": "0.18.15"
+  }
+}

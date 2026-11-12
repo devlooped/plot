@@ -1,0 +1,3 @@
+title: plotdown sample
+theme: jekyll-theme-primer
+exclude: [readme.md, Gemfile, Gemfile.lock]

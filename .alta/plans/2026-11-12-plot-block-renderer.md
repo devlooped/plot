@@ -219,7 +219,7 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 
 - [x] 13. `plotdown/markdown-it`, `plotdown/rehype` (inline SVG at build time, or client rendering) and `plotdown/marked`, each with a test against its host parser.
 - [x] 14. `plotdown/react` and `plotdown/streamdown`, with a sample chat app.
-- [ ] 15. Recipes in `docs/`: Hugo render hook, MkDocs `custom_fences`, Jekyll/GitHub Pages, Docsify, mdBook, Pandoc and Quarto Lua filter, Gitea footer template, VitePress, Docusaurus, Astro.
+- [x] 15. Recipes in `docs/`: Hugo render hook, MkDocs `custom_fences`, Jekyll/GitHub Pages, Docsify, mdBook, Pandoc and Quarto Lua filter, Gitea footer template, VitePress, Docusaurus, Astro.
 
 **Phase 3: plotdown.cc image service**
 
