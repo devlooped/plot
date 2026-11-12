@@ -31,6 +31,18 @@ describe("release files", () => {
     expect(versions[manifest.version]).toBe(manifest.minAppVersion);
   });
 
+  it("has the same manifest.json and versions.json at the root of the repository, where Obsidian reads them", () => {
+    const repo = path.resolve(root, "../..");
+    expect(JSON.parse(fs.readFileSync(path.join(repo, "manifest.json"), "utf8"))).toEqual(manifest);
+    expect(JSON.parse(fs.readFileSync(path.join(repo, "versions.json"), "utf8"))).toEqual(versions);
+  });
+
+  it("has a LICENSE at the root that is the repository's license.txt", () => {
+    const repo = path.resolve(root, "../..");
+    const text = (file: string) => fs.readFileSync(path.join(repo, file), "utf8").split(/\r?\n/).join("\n");
+    expect(text("LICENSE")).toBe(text("license.txt"));
+  });
+
   it("bundles into one main.js that needs nothing but obsidian (mobile has no Node)", async () => {
     const result = await esbuild.build({...buildOptions(), absWorkingDir: root, write: false, logLevel: "silent"});
     const main = result.outputFiles!.find((f) => f.path.endsWith("main.js"))!.text;

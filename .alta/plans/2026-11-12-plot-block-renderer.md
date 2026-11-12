@@ -1,6 +1,6 @@
 ---
 title: Plotdown: render ```plot blocks as Observable Plot charts on every Markdown surface
-status: blocked
+status: in-progress
 created: 2026-11-12
 summary: Define a JSON subset of Plot.plot() options and one small core renderer (plotdown), then reach GitHub, GitLab, docs sites, editors and AI chat UIs through ten thin routes (static images, browser extension, script tag, parser plugins, React/Streamdown, the plotdown.cc image service, editor plugins, MCP App, agent skill, upstream PRs).
 ---
@@ -215,7 +215,7 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
   - Done 2026-11-12, each read from the live site. Unknown-language markup could not be seen on Gitea and Claude without an account: those two samples are marked UNVERIFIED. Gemini, Bitbucket and Azure DevOps drop the fence name, so there a block renders only when its text is a plot spec.
 - [x] 11. Build the extension in `packages/extension` (Manifest V3; Chrome, Edge, Firefox): a manifest for all sites, the detector, the bundled `plotdown.js` it injects on demand, and an on/off switch per site. Build the userscript as `plotdown.js` under a `@match *://*/*` header.
 - [ ] 12. Publish `plotdown` to npm, with `skills/plot/SKILL.md` and `llms.txt` generated from the spec, and submit the extension to the three stores.
-  - 2026-11-12: the skill and `llms.txt` are generated from the spec and ship in the package. `@devlooped/plotdown` 0.1.0 and `@devlooped/plotdown-mcp` 0.1.0 are packed and checked, but `npm publish` stopped at the account's one-time password, which only the user has. The extension is built with its store packages and listing; nothing is submitted to the three stores (they need the user's accounts).
+  - 2026-11-12: the skill and `llms.txt` are generated from the spec and ship in the package. `@devlooped/plotdown` 0.1.0 and `@devlooped/plotdown-mcp` 0.1.0 are on npm (published by the user, whose account asks for a one-time password), and jsDelivr serves `dist/plotdown.js`. Still open: the extension is built with its store packages and listing, but nothing is submitted to the three stores (they need the user's accounts).
 
 **Phase 2: libraries**
 
@@ -235,7 +235,7 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 - [ ] 19. VS Code extension (`markdown.markdownItPlugins`, `markdown.previewScripts`, notebook renderer); publish to the Marketplace and Open VSX.
   - Built and tested in `packages/vscode` (2026-11-12): 14 of 14 checks in a real VS Code 1.90 and 1.146. Not published: the Marketplace and Open VSX need the `devlooped` publisher and its tokens; the steps are in `packages/vscode/publishing.md`.
 - [ ] 20. Obsidian plugin (`registerMarkdownCodeBlockProcessor`); submit to the community list.
-  - Built and tested in `packages/obsidian` (2026-11-12). Not yet tried in a real vault (Obsidian is not installed on the build machine) and not submitted: Obsidian and BRAT read `manifest.json` from the root of a repository and install from a release tagged `x.y.z`, so the submission needs a decision first (a separate `devlooped/plotdown-obsidian` repository, or a root manifest here); see `packages/obsidian/community-plugins.md`.
+  - Built and tested in `packages/obsidian` (2026-11-12); not yet tried in a real vault (Obsidian is not installed on the build machine). Decided by the user: the plugin is released from this repository. The root holds `manifest.json`, `versions.json` and `LICENSE`; a plain `x.y.z` tag is a release of the plugin, made by `.github/workflows/obsidian.yml`. Still open: the submission itself (the user's Obsidian account), and the root readme is `readme.md` where Obsidian's docs ask for `README.md`; see `packages/obsidian/community-plugins.md`.
 - [x] 21. MCP App server in `packages/mcp` with `@modelcontextprotocol/ext-apps`.
   - Built as `@devlooped/plotdown-mcp` (2026-11-12), tested with SDK clients over stdio and HTTP and with a headless-Chrome host harness. Not yet tried in Claude, ChatGPT, VS Code or the MCP inspector.
 

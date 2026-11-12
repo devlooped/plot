@@ -1,5 +1,7 @@
 // Sets the version of the plugin in package.json and manifest.json, and records
-// in versions.json the minimum Obsidian version it needs (manifest.minAppVersion):
+// in versions.json the minimum Obsidian version it needs (manifest.minAppVersion).
+// Obsidian reads manifest.json and versions.json from the root of the repository,
+// so both are also copied there:
 //   pnpm --filter plotdown-obsidian bump -- 0.2.0
 // The GitHub release of that version must be tagged exactly 0.2.0 (no "v").
 import {readFileSync, writeFileSync} from "node:fs";
@@ -24,4 +26,7 @@ versions[version] = manifest.minAppVersion;
 write("package.json", pkg);
 write("manifest.json", manifest);
 write("versions.json", versions);
+// The copies Obsidian reads, at the root of the repository.
+write("../../manifest.json", manifest);
+write("../../versions.json", versions);
 console.log(`plotdown: version ${version}, minAppVersion ${manifest.minAppVersion}`);

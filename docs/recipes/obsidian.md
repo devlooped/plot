@@ -7,7 +7,19 @@ The Plotdown plugin draws `plot` blocks in your notes as charts, in reading view
 
 ## Install
 
-The plugin is **not in Obsidian's community plugins yet**, and it has no GitHub release yet. Today, build it from the repository and copy it into your vault, with Node 24 and pnpm 10, in a clone of the [repository](https://github.com/devlooped/plotdown):
+The plugin is **not in Obsidian's community plugins yet**. Until it is listed, install it from its GitHub release, with BRAT or by hand.
+
+**With BRAT:**
+
+1. Install and enable [BRAT](https://github.com/TfTHacker/obsidian42-brat) from the community plugins.
+2. Run **BRAT: Add a beta plugin for testing** and enter `devlooped/plotdown`.
+3. Enable **Plotdown** in **Settings → Community plugins**.
+
+**By hand:** download `main.js`, `manifest.json` and `styles.css` from the release named "Plotdown for Obsidian" in the [releases](https://github.com/devlooped/plotdown/releases) into `<your vault>/.obsidian/plugins/plotdown/` (`.obsidian` is hidden on macOS and Linux), reload Obsidian, and enable **Plotdown**.
+
+**From the community plugins**, once listed: **Settings → Community plugins → Browse**, search for "Plotdown", **Install**, then **Enable**.
+
+**From the source**, with Node 24 and pnpm 10, in a clone of the [repository](https://github.com/devlooped/plotdown):
 
 ```sh
 pnpm install
@@ -15,19 +27,7 @@ pnpm build
 pnpm --filter plotdown-obsidian vault -- "<path to your vault>" --sample
 ```
 
-This copies `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/plotdown/` (the vault must have been opened once in Obsidian), and with `--sample` a note of examples to the root of the vault. Reload Obsidian, then enable **Plotdown** in **Settings → Community plugins**.
-
-Once the plugin is released, the usual ways will work:
-
-**From the community plugins**, once listed: **Settings → Community plugins → Browse**, search for "Plotdown", **Install**, then **Enable**.
-
-**With BRAT**, from a GitHub release:
-
-1. Install and enable [BRAT](https://github.com/TfTHacker/obsidian42-brat) from the community plugins.
-2. Run **BRAT: Add a beta plugin for testing** and enter the plugin's repository.
-3. Enable **Plotdown** in **Settings → Community plugins**.
-
-**By hand**, from a GitHub release: download `main.js`, `manifest.json` and `styles.css` into `<your vault>/.obsidian/plugins/plotdown/` (`.obsidian` is hidden on macOS and Linux), reload Obsidian, and enable **Plotdown**.
+This copies the three files to `<vault>/.obsidian/plugins/plotdown/` (the vault must have been opened once in Obsidian), and with `--sample` a note of examples to the root of the vault.
 
 ## Write a chart
 

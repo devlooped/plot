@@ -23,7 +23,7 @@ A block holds the options of `Plot.plot()` as strict JSON, with marks and transf
 
 ## Install
 
-The plugin is not in the community plugins yet and has no release yet: until then, build it and copy it into a vault as [Develop](#develop) says (`pnpm --filter plotdown-obsidian vault -- "<path to the vault>"`). The ways below work once it is released.
+The plugin is not in the community plugins yet: until it is listed, install it with BRAT or by hand from its GitHub release, or build it as [Develop](#develop) says.
 
 ### From the community plugins
 
@@ -39,7 +39,7 @@ BRAT installs the `main.js`, `manifest.json` and `styles.css` of the repository'
 
 ### By hand
 
-1. Download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/devlooped/plotdown/releases).
+1. Download `main.js`, `manifest.json` and `styles.css` from the release named "Plotdown for Obsidian" in the [releases](https://github.com/devlooped/plotdown/releases).
 2. Put them in `<your vault>/.obsidian/plugins/plotdown/` (create the folder; `.obsidian` is hidden on macOS and Linux).
 3. Reload Obsidian, then enable **Plotdown** in **Settings → Community plugins**.
 
@@ -81,8 +81,10 @@ This copies the three files to `<vault>/.obsidian/plugins/plotdown/` (keeping yo
 
 ### Release
 
-1. `pnpm --filter plotdown-obsidian bump -- x.y.z` sets the version in `package.json` and `manifest.json` and records it in `versions.json` with `minAppVersion`.
-2. Build, then create a GitHub release whose tag is exactly `x.y.z` (no `v`) and attach `dist/main.js`, `dist/manifest.json` and `dist/styles.css`.
+The plugin is released from this repository: Obsidian and BRAT read `manifest.json` and `versions.json` at the root of the repository, and install the GitHub release whose tag is exactly the manifest's version (`x.y.z`, no `v`). Plain `x.y.z` tags are therefore reserved for the plugin.
+
+1. `pnpm --filter plotdown-obsidian bump -- x.y.z` sets the version in `package.json` and `manifest.json`, records it in `versions.json` with `minAppVersion`, and copies both files to the root of the repository (a test fails when the copies differ).
+2. Commit, then push the tag `x.y.z`: the workflow `.github/workflows/obsidian.yml` builds the plugin and creates the release with `main.js`, `manifest.json` and `styles.css`.
 
 See [`community-plugins.md`](community-plugins.md) for the listing in Obsidian's community plugins.
 

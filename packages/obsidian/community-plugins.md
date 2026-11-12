@@ -25,20 +25,24 @@ The documentation now sends submissions through the directory at <https://commun
 | `id` unique and without "obsidian" | `plotdown`; not among the 10,300 entries of `community-plugins.json` on 2026-11-12 (check again before submitting) |
 | `manifest.json` with `version` in `x.y.z` | [`manifest.json`](manifest.json), `0.1.0`; `isDesktopOnly: false` |
 | `versions.json` (plugin version → minimum Obsidian version) | [`versions.json`](versions.json); `minAppVersion` is `1.0.0` |
-| A GitHub release tagged exactly with the version (no `v`), with `main.js`, `manifest.json` and `styles.css` attached | Not made. `pnpm --filter plotdown-obsidian build` writes the three files to `dist/` |
-| `README.md`, `LICENSE` and `manifest.json` at the **root** of the repository | **Not met by `devlooped/plotdown`**: see below |
+| A GitHub release tagged exactly with the version (no `v`), with `main.js`, `manifest.json` and `styles.css` attached | Made by `.github/workflows/obsidian.yml` when the tag `x.y.z` is pushed |
+| `manifest.json` at the **root** of the repository | Met: the root `manifest.json` and `versions.json` are copies of this folder's, written by `bump` and checked by a test |
+| `LICENSE` at the root | Met: `LICENSE` is a copy of `license.txt`, checked by a test |
+| `README.md` at the root | **Open**: the root file is `readme.md`. GitHub's API finds it whatever its case, but `https://raw.githubusercontent.com/devlooped/plotdown/HEAD/README.md` answers 404. If the directory's review or Obsidian's plugin page asks for `README.md`, the file has to be renamed (and `.github/workflows/plots.yml`, which names it, with it) |
 | No Node or Electron APIs if not desktop-only | Met: `main.js` requires only `obsidian` (tested) |
 | No `innerHTML` with user input; no inline styles; no default hotkeys; only errors in the console | Met: the plugin builds the DOM with `textContent` and elements; styles are in `styles.css` with Obsidian's CSS variables |
 | Network use disclosed | Remote data is off by default; the readme's Settings section says what turning it on does |
 
-## The decision before submitting: which repository
+## Where the plugin is released from
 
-Obsidian reads the plugin's `manifest.json` and readme from the root of the repository and installs from the release whose tag equals the manifest's version. `devlooped/plotdown` is a monorepo: its root holds the readme of the whole project, `license.txt` (not `LICENSE`), no `manifest.json`, and its releases will also carry the npm package. Two ways out:
+Decided on 2026-11-12: **this repository's root**. `devlooped/plotdown` is a monorepo, and Obsidian reads the plugin's `manifest.json` and readme from the root of the repository and installs from the release whose tag equals the manifest's version. So:
 
-1. **A repository of its own** (recommended), such as `devlooped/plotdown-obsidian`: a release workflow in `devlooped/plotdown` builds `packages/obsidian` and pushes `readme.md` (as `README.md`), `manifest.json`, `versions.json` and `LICENSE` to it, then creates the `x.y.z` release there with the three files. The entry's `repo` and the readme's BRAT and release links then name that repository. Plugin versions and npm versions stay independent.
-2. **This repository's root**: add `manifest.json` (a copy of this one, kept in step by `bump`), a `LICENSE` file, and plain `x.y.z` tags reserved for the plugin, with the npm package tagged differently (such as `plotdown-v0.1.0`). The root readme then serves as the plugin's page in Obsidian, which suits the plugin less.
+- the root holds `manifest.json` and `versions.json` (copies of this folder's) and `LICENSE`;
+- plain `x.y.z` tags are reserved for the plugin, and `.github/workflows/obsidian.yml` turns such a tag into the release with the three files; the action uses `v1`, and npm versions are not tagged;
+- the root readme, which presents the whole project, is the plugin's page in Obsidian;
+- BRAT installs from the same releases: `devlooped/plotdown`.
 
-BRAT has the same needs: it installs the assets of a GitHub release of the repository it is given, so it also needs releases that carry `main.js` and `manifest.json`.
+A repository of its own (`devlooped/plotdown-obsidian`) was the alternative; it would give the plugin its own readme and independent releases.
 
 ## After it is listed
 
