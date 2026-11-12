@@ -118,7 +118,7 @@ importers:
   packages/mcp:
     dependencies:
       '@devlooped/plotdown':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../plotdown
       '@modelcontextprotocol/core':
         specifier: 2.4.0
@@ -129,6 +129,9 @@ importers:
       '@modelcontextprotocol/server':
         specifier: 2.4.0
         version: 2.4.0
+      '@resvg/resvg-js':
+        specifier: 2.6.2
+        version: 2.6.2
       linkedom:
         specifier: 0.18.15
         version: 0.18.15

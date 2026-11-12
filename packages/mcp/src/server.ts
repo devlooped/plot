@@ -47,6 +47,12 @@ export interface CreateServerOptions {
    * rejects, such as an unknown curve or scale type. Default true.
    */
   checkRender?: boolean;
+  /**
+   * For hosts without MCP Apps, also give a plotdown.cc image link of the chart,
+   * beside the PNG drawn locally. The link holds the block, so the chart's data
+   * leaves the machine when the link is opened. Default false.
+   */
+  imageLinks?: boolean;
 }
 
 /** Creates the plotdown MCP server: the render_plot tool, its view, and the spec and schema resources. */
@@ -78,7 +84,7 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
       const ui = getUiCapability(server.server.getClientCapabilities());
       const content: ContentBlock[] = ui?.mimeTypes?.includes(RESOURCE_MIME_TYPE)
         ? [{type: "text", text: `${summary} The chart is shown to the user.`}]
-        : await staticFallback({text: checked.text, json: checked.json});
+        : await staticFallback({text: checked.text, json: checked.json}, {imageLinks: options.imageLinks ?? false});
       return {content, structuredContent: {ok: true, summary}};
     }
   );

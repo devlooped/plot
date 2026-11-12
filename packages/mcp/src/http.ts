@@ -2,9 +2,9 @@
 import {createServer as createHttpServer, type IncomingMessage, type Server, type ServerResponse} from "node:http";
 import {Readable} from "node:stream";
 import {createMcpHandler, hostHeaderValidationResponse, localhostAllowedHostnames} from "@modelcontextprotocol/server";
-import {createServer} from "./server.js";
+import {createServer, type CreateServerOptions} from "./server.js";
 
-export interface HttpServerOptions {
+export interface HttpServerOptions extends CreateServerOptions {
   /** Port to listen on. Default 3001; 0 picks a free one. */
   port?: number;
   /** Interface to bind. Default 127.0.0.1. */
@@ -18,7 +18,7 @@ export async function startHttpServer(options: HttpServerOptions = {}): Promise<
   const host = options.host ?? "127.0.0.1";
   const path = options.path ?? "/mcp";
   const local = ["127.0.0.1", "localhost", "::1"].includes(host);
-  const handler = createMcpHandler(() => createServer(), {onerror: (e) => console.error("plotdown-mcp:", e.message)});
+  const handler = createMcpHandler(() => createServer({checkRender: options.checkRender, imageLinks: options.imageLinks}), {onerror: (e) => console.error("plotdown-mcp:", e.message)});
 
   const server = createHttpServer(async (req, res) => {
     try {

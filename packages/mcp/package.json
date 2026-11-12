@@ -35,7 +35,9 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "readme.md"
+    "fonts",
+    "readme.md",
+    "license.txt"
   ],
   "engines": {
     "node": ">=22.12"
@@ -47,10 +49,11 @@
     "start": "node dist/cli.js"
   },
   "dependencies": {
-    "@devlooped/plotdown": "workspace:*",
+    "@devlooped/plotdown": "workspace:^",
     "@modelcontextprotocol/core": "2.4.0",
     "@modelcontextprotocol/ext-apps": "2.0.4",
     "@modelcontextprotocol/server": "2.4.0",
+    "@resvg/resvg-js": "2.6.2",
     "linkedom": "0.18.15",
     "zod": "4.6.7"
   },
