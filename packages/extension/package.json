@@ -1,6 +1,6 @@
 {
   "name": "plotdown-extension",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Browser extension (Chrome, Edge, Firefox) and userscript that render plot code blocks of strict JSON as Observable Plot charts on the pages you read.",
   "license": "MIT",

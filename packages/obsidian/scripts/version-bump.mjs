@@ -1,8 +1,9 @@
 // Sets the version of the plugin in package.json and manifest.json, and records
 // in versions.json the minimum Obsidian version it needs (manifest.minAppVersion).
 // Obsidian reads manifest.json and versions.json from the root of the repository,
-// so both are also copied there:
-//   pnpm --filter plotdown-obsidian bump -- 0.2.0
+// so both are also copied there. The browser extension shares the version, and
+// is released with the plugin (.github/workflows/release.yml):
+//   pnpm bump 0.2.0    (at the root; or pnpm --filter plotdown-obsidian bump -- 0.2.0)
 // The GitHub release of that version must be tagged exactly 0.2.0 (no "v").
 import {readFileSync, writeFileSync} from "node:fs";
 import path from "node:path";
@@ -29,4 +30,8 @@ write("versions.json", versions);
 // The copies Obsidian reads, at the root of the repository.
 write("../../manifest.json", manifest);
 write("../../versions.json", versions);
+// The browser extension, released with the plugin.
+const extension = read("../extension/package.json");
+extension.version = version;
+write("../extension/package.json", extension);
 console.log(`plotdown: version ${version}, minAppVersion ${manifest.minAppVersion}`);

@@ -37,6 +37,11 @@ describe("release files", () => {
     expect(JSON.parse(fs.readFileSync(path.join(repo, "versions.json"), "utf8"))).toEqual(versions);
   });
 
+  it("has the version of the browser extension, released with it", () => {
+    const extension = JSON.parse(fs.readFileSync(path.resolve(root, "../extension/package.json"), "utf8"));
+    expect(extension.version).toBe(manifest.version);
+  });
+
   it("has a LICENSE at the root of the repository", () => {
     const repo = path.resolve(root, "../..");
     expect(fs.readFileSync(path.join(repo, "LICENSE"), "utf8")).toMatch(/MIT License/);

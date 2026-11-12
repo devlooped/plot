@@ -1,6 +1,6 @@
 {
   "name": "plotdown-obsidian",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Obsidian plugin that renders plot code blocks of strict JSON as Observable Plot charts.",
   "license": "MIT",

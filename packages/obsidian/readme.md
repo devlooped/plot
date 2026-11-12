@@ -81,10 +81,10 @@ This copies the three files to `<vault>/.obsidian/plugins/plotdown/` (keeping yo
 
 ### Release
 
-The plugin is released from this repository: Obsidian and BRAT read `manifest.json` and `versions.json` at the root of the repository, and install the GitHub release whose tag is exactly the manifest's version (`x.y.z`, no `v`). Plain `x.y.z` tags are therefore reserved for the plugin.
+The plugin is released from this repository: Obsidian and BRAT read `manifest.json` and `versions.json` at the root of the repository, and install the GitHub release whose tag is exactly the manifest's version (`x.y.z`, no `v`). Plain `x.y.z` tags are therefore reserved for the plugin, and the browser extension, which shares its version, is released with it.
 
-1. `pnpm --filter plotdown-obsidian bump -- x.y.z` sets the version in `package.json` and `manifest.json`, records it in `versions.json` with `minAppVersion`, and copies both files to the root of the repository (a test fails when the copies differ).
-2. Commit, then push the tag `x.y.z`: the workflow `.github/workflows/obsidian.yml` builds the plugin and creates the release with `main.js`, `manifest.json` and `styles.css`.
+1. `pnpm bump x.y.z` at the root sets the version in `package.json` and `manifest.json`, records it in `versions.json` with `minAppVersion`, copies both files to the root of the repository (a test fails when the copies differ), and sets the same version for the browser extension.
+2. Commit, then push the tag `x.y.z`: the workflow `.github/workflows/release.yml` builds the plugin and the extension, and creates the release with `main.js`, `manifest.json` and `styles.css`, and the zips of the extension stores.
 
 See [`community-plugins.md`](community-plugins.md) for the listing in Obsidian's community plugins.
 

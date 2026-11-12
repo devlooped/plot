@@ -1,0 +1,110 @@
+name: release
+# Releases the Obsidian plugin (packages/obsidian) and the browser extension
+# (packages/extension), which share their version.
+#
+# Obsidian and BRAT install a plugin from the GitHub release whose tag is
+# exactly the version of the manifest.json at the root of the repository (x.y.z,
+# no "v"), and take main.js, manifest.json and styles.css from its assets. So in
+# this repository a plain x.y.z tag is a release of the plugin and the extension,
+# and nothing else uses that form (the action is v1.x.y and v1; npm versions are
+# not tagged).
+#
+# The release also carries the packages for the browser extension stores, which
+# a person uploads (packages/extension/store/readme.md):
+#   plotdown-chrome-x.y.z.zip    Chrome Web Store and Edge Add-ons
+#   plotdown-firefox-x.y.z.zip   Firefox Add-ons (AMO)
+#   plotdown-source-x.y.z.zip    the source AMO asks for, a git archive of the tag
+#
+# To release: `pnpm bump x.y.z`, commit, then push the tag x.y.z (or run this
+# workflow by hand on the commit, giving the version).
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to release: the one of manifest.json (x.y.z)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version || github.ref_name }}
+    steps:
+      - name: 🤘 checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: ⚙ node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: 🔎 version
+        run: |
+          set -euo pipefail
+          manifest=$(node -p 'require("./manifest.json").version')
+          plugin=$(node -p 'require("./packages/obsidian/manifest.json").version')
+          extension=$(node -p 'require("./packages/extension/package.json").version')
+          if [ "$VERSION" != "$manifest" ] || [ "$VERSION" != "$plugin" ] || [ "$VERSION" != "$extension" ]; then
+            echo "::error::the release is $VERSION, but manifest.json says $manifest, packages/obsidian/manifest.json says $plugin and packages/extension/package.json says $extension: run pnpm bump and commit first"
+            exit 1
+          fi
+
+      - name: 🔽 install
+        run: pnpm install --frozen-lockfile
+
+      - name: 🙏 build
+        run: pnpm --filter plotdown-obsidian... --filter plotdown-extension... build
+
+      - name: 🧪 test
+        run: pnpm --filter plotdown-obsidian --filter plotdown-extension test
+
+      - name: 📦 pack
+        run: pnpm --filter plotdown-extension run pack
+
+      - name: 🚀 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          stores=packages/extension/dist/stores
+          obsidian=packages/obsidian/dist
+          files=(
+            "$obsidian/main.js" "$obsidian/manifest.json" "$obsidian/styles.css"
+            "$stores/plotdown-chrome-$VERSION.zip" "$stores/plotdown-firefox-$VERSION.zip" "$stores/plotdown-source-$VERSION.zip"
+          )
+          for file in "${files[@]}"; do [ -f "$file" ] || { echo "::error::$file was not built"; exit 1; }; done
+          notes=$(cat <<EOF
+          Plotdown $VERSION: renders \`plot\`, \`oplot\` and \`observable-plot\` code blocks as Observable Plot charts.
+
+          **Obsidian**: install it with BRAT (\`devlooped/plotdown\`), or copy \`main.js\`, \`manifest.json\` and \`styles.css\` into \`<vault>/.obsidian/plugins/plotdown/\`. See https://plotdown.cc/recipes/obsidian/.
+
+          **Browser extension**: \`plotdown-chrome-$VERSION.zip\` is the package of the Chrome Web Store and Edge Add-ons, \`plotdown-firefox-$VERSION.zip\` the one of Firefox Add-ons, and \`plotdown-source-$VERSION.zip\` the source Firefox Add-ons reviews it against.
+          EOF
+          )
+          if ! gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --title "Plotdown $VERSION" --notes "$notes" --verify-tag
+          fi
+          # The files are attached after the release exists, and checked: on the first
+          # release of this repository (0.1.0), the files given to `gh release create`
+          # were not on the release afterwards, and the step had not failed. The cause
+          # is not known; the release showed the organization's bot as its author.
+          names=$(printf '"%s",' "${files[@]##*/}")
+          for attempt in 1 2 3 4 5; do
+            gh release upload "$VERSION" "${files[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+            sleep 15
+            count=$(gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" --json assets --jq "[.assets[] | select(.name | IN(${names%,}))] | length")
+            if [ "$count" = "${#files[@]}" ]; then echo "The release $VERSION has its ${#files[@]} files."; exit 0; fi
+            echo "The release has $count of its ${#files[@]} files after attempt $attempt; uploading again."
+          done
+          echo "::error::the release $VERSION does not keep its ${#files[@]} files"
+          exit 1

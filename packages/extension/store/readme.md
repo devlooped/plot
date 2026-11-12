@@ -8,13 +8,13 @@ Version 0.1.0 was submitted to all three stores on 2026-11-12, with access to al
 | Edge Add-ons | product `65da8bdd-10e4-4278-9f29-2851237689cb`, Store ID `0RDCKD4DHBV5` | [Partner Center](https://partner.microsoft.com/dashboard/microsoftedge/overview) |
 | Firefox Add-ons | `plotdown@devlooped.com`, [addons.mozilla.org/firefox/addon/plotdown](https://addons.mozilla.org/firefox/addon/plotdown/) | [AMO developer hub](https://addons.mozilla.org/developers/addon/plotdown/versions) |
 
-For a new version: raise `version` in `package.json`, build and pack, then upload the zips to the same items. The rest of this page describes what each store takes and how the first submission was prepared.
+For a new version: `pnpm bump x.y.z` at the root (the extension shares its version with the Obsidian plugin), commit, and push the tag `x.y.z`. The workflow `.github/workflows/release.yml` attaches the zips below to the GitHub release of that tag; upload them to the same items. The rest of this page describes what each store takes and how the first submission was prepared.
 
 ## Packages
 
 ```sh
 pnpm install && pnpm build                      # at the root
-pnpm --filter plotdown-extension pack           # dist/stores/*.zip
+pnpm --filter plotdown-extension run pack       # dist/stores/*.zip
 ```
 
 | File | Store |
@@ -24,7 +24,7 @@ pnpm --filter plotdown-extension pack           # dist/stores/*.zip
 | `dist/stores/plotdown-source-<version>.zip` | AMO's source code upload: `git archive` of the commit the package was built from |
 | `dist/stores/plotdown-*-known-<version>.zip` | the known-hosts variant, if built with `node build.mjs --sites=known` first |
 
-The version is that of `packages/extension/package.json`; raise it for each upload (stores refuse a version they already have).
+The version is that of `packages/extension/package.json`, set by `pnpm bump`; raise it for each upload (stores refuse a version they already have).
 
 ## Ready
 

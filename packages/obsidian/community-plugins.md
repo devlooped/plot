@@ -25,7 +25,7 @@ The documentation now sends submissions through the directory at <https://commun
 | `id` unique and without "obsidian" | `plotdown`; not among the 10,300 entries of `community-plugins.json` on 2026-11-12 (check again before submitting) |
 | `manifest.json` with `version` in `x.y.z` | [`manifest.json`](manifest.json), `0.1.0`; `isDesktopOnly: false` |
 | `versions.json` (plugin version → minimum Obsidian version) | [`versions.json`](versions.json); `minAppVersion` is `1.0.0` |
-| A GitHub release tagged exactly with the version (no `v`), with `main.js`, `manifest.json` and `styles.css` attached | Made by `.github/workflows/obsidian.yml` when the tag `x.y.z` is pushed |
+| A GitHub release tagged exactly with the version (no `v`), with `main.js`, `manifest.json` and `styles.css` attached | Made by `.github/workflows/release.yml` when the tag `x.y.z` is pushed |
 | `manifest.json` at the **root** of the repository | Met: the root `manifest.json` and `versions.json` are copies of this folder's, written by `bump` and checked by a test |
 | `LICENSE` at the root | Met: `LICENSE` is the repository's only license file, checked by a test |
 | `README.md` at the root | **Open**: the root file is `readme.md`. GitHub's API finds it whatever its case, but `https://raw.githubusercontent.com/devlooped/plotdown/HEAD/README.md` answers 404. If the directory's review or Obsidian's plugin page asks for `README.md`, the file has to be renamed (and `.github/workflows/plots.yml`, which names it, with it) |
@@ -38,7 +38,7 @@ The documentation now sends submissions through the directory at <https://commun
 Decided on 2026-11-12: **this repository's root**. `devlooped/plotdown` is a monorepo, and Obsidian reads the plugin's `manifest.json` and readme from the root of the repository and installs from the release whose tag equals the manifest's version. So:
 
 - the root holds `manifest.json` and `versions.json` (copies of this folder's) and `LICENSE`;
-- plain `x.y.z` tags are reserved for the plugin, and `.github/workflows/obsidian.yml` turns such a tag into the release with the three files; the action uses `v1`, and npm versions are not tagged;
+- plain `x.y.z` tags are reserved for the plugin (and the browser extension, which shares its version), and `.github/workflows/release.yml` turns such a tag into the release with the three files and the zips of the extension stores; the action uses `v1.x.y` and `v1`, and npm versions are not tagged;
 - the root readme, which presents the whole project, is the plugin's page in Obsidian;
 - BRAT installs from the same releases: `devlooped/plotdown`.
 
