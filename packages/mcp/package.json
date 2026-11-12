@@ -36,8 +36,7 @@
   "files": [
     "dist",
     "fonts",
-    "readme.md",
-    "license.txt"
+    "readme.md"
   ],
   "engines": {
     "node": ">=22.12"
@@ -46,6 +45,7 @@
     "build": "node scripts/build-view.mjs && tsup && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "prepack": "node -e \"require('node:fs').copyFileSync('../../LICENSE', 'LICENSE')\"",
     "start": "node dist/cli.js"
   },
   "dependencies": {

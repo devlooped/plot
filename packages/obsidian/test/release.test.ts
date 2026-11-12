@@ -37,10 +37,9 @@ describe("release files", () => {
     expect(JSON.parse(fs.readFileSync(path.join(repo, "versions.json"), "utf8"))).toEqual(versions);
   });
 
-  it("has a LICENSE at the root that is the license of the packages", () => {
+  it("has a LICENSE at the root of the repository", () => {
     const repo = path.resolve(root, "../..");
-    const text = (file: string) => fs.readFileSync(path.join(repo, file), "utf8").split(/\r?\n/).join("\n");
-    expect(text("LICENSE")).toBe(text("packages/plotdown/license.txt"));
+    expect(fs.readFileSync(path.join(repo, "LICENSE"), "utf8")).toMatch(/MIT License/);
   });
 
   it("bundles into one main.js that needs nothing but obsidian (mobile has no Node)", async () => {

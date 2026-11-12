@@ -47,7 +47,7 @@ for (const browser of ["chrome", "firefox"]) {
   copyFileSync(at("src", "popup.html"), path.join(out, "popup.html"));
   copyFileSync(at("src", "popup.css"), path.join(out, "popup.css"));
   cpSync(at("icons"), path.join(out, "icons"), {recursive: true, filter: (file) => !file.endsWith(".svg")});
-  copyFileSync(at("..", "..", "LICENSE"), path.join(out, "license.txt"));
+  copyFileSync(at("..", "..", "LICENSE"), path.join(out, "LICENSE"));
 }
 if (sites === "all") writeFileSync(at("dist", "plotdown.user.js"), createUserscript({version, detector, plotdown}));
 

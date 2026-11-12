@@ -27,7 +27,7 @@ The documentation now sends submissions through the directory at <https://commun
 | `versions.json` (plugin version → minimum Obsidian version) | [`versions.json`](versions.json); `minAppVersion` is `1.0.0` |
 | A GitHub release tagged exactly with the version (no `v`), with `main.js`, `manifest.json` and `styles.css` attached | Made by `.github/workflows/obsidian.yml` when the tag `x.y.z` is pushed |
 | `manifest.json` at the **root** of the repository | Met: the root `manifest.json` and `versions.json` are copies of this folder's, written by `bump` and checked by a test |
-| `LICENSE` at the root | Met: `LICENSE` is the repository's license, the same as the packages' `license.txt`, checked by a test |
+| `LICENSE` at the root | Met: `LICENSE` is the repository's only license file, checked by a test |
 | `README.md` at the root | **Open**: the root file is `readme.md`. GitHub's API finds it whatever its case, but `https://raw.githubusercontent.com/devlooped/plotdown/HEAD/README.md` answers 404. If the directory's review or Obsidian's plugin page asks for `README.md`, the file has to be renamed (and `.github/workflows/plots.yml`, which names it, with it) |
 | No Node or Electron APIs if not desktop-only | Met: `main.js` requires only `obsidian` (tested) |
 | No `innerHTML` with user input; no inline styles; no default hotkeys; only errors in the console | Met: the plugin builds the DOM with `textContent` and elements; styles are in `styles.css` with Obsidian's CSS variables |

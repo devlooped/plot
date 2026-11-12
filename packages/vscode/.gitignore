@@ -1,2 +1,4 @@
 .vscode-test/
 *.vsix
+# copied from the root by scripts/package.mjs, for vsce
+/LICENSE

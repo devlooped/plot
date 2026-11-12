@@ -20,7 +20,7 @@ describe("the extension manifest", () => {
     expect(manifest.publisher).toBe("devlooped");
     expect(manifest.name).toBe("plotdown");
     expect(existsSync(root + manifest.icon)).toBe(true);
-    for (const file of ["readme.md", "changelog.md", "license.txt", "media/preview.css"]) expect(existsSync(root + file), file).toBe(true);
+    for (const file of ["readme.md", "changelog.md", "media/preview.css", "../../LICENSE"]) expect(existsSync(root + file), file).toBe(true);
   });
 
   it("points to scripts that the build writes", () => {

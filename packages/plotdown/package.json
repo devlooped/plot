@@ -85,8 +85,7 @@
   },
   "files": [
     "dist",
-    "readme.md",
-    "license.txt"
+    "readme.md"
   ],
   "scripts": {
     "generate": "node scripts/generate.mjs",
