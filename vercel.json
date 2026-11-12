@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @devlooped/plotdown-service... build && __SITE_BUILD_COMMAND__",
+  "outputDirectory": "__SITE_OUTPUT_DIRECTORY__",
+  "functions": {
+    "api/plotdown.ts": {
+      "maxDuration": 15,
+      "includeFiles": "packages/service/{dist,fonts}/**"
+    }
+  },
+  "rewrites": [
+    {"source": "/(svg|png)", "destination": "/api/plotdown"},
+    {"source": "/(svg|png)/(.+)", "destination": "/api/plotdown"},
+    {"source": "/api/health", "destination": "/api/plotdown"}
+  ]
+}

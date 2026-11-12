@@ -1,0 +1,50 @@
+{
+  "name": "@devlooped/plotdown-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The plotdown.cc image service: a plot block in a URL comes back as an SVG or a PNG.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devlooped/plotdown.git",
+    "directory": "packages/service"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./vercel": {
+      "types": "./dist/vercel.d.ts",
+      "import": "./dist/vercel.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "fonts",
+    "readme.md"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "serve": "node dist/serve.js"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "workspace:*",
+    "@resvg/resvg-js": "2.6.2",
+    "@vercel/firewall": "1.2.6",
+    "linkedom": "0.18.15"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "tsup": "9.0.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}
