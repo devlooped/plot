@@ -203,7 +203,7 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 - [x] 3. Port 30 examples from the Plot documentation to `spec/fixtures/*.json`, covering every mark family and transform.
 - [x] 4. Implement `parse`, `validate` and `render` in `packages/plotdown/src/`, with the security rules above and `PlotdownError`.
 - [x] 5. Add snapshot tests: each fixture renders to SVG under jsdom and matches the SVG of the equivalent hand-written `Plot.plot()` call.
-- [ ] 6. Build `plotdown.js` (ESM and IIFE): the selectors for `pre > code.language-{plot,oplot,observable-plot}`, `pre.plot`, `pre[lang]`, GitHub and GitLab markup, a `MutationObserver`, light and dark colors, a toggle between chart and source, and the error display.
+- [x] 6. Build `plotdown.js` (ESM and IIFE): the selectors for `pre > code.language-{plot,oplot,observable-plot}`, `pre.plot`, `pre[lang]`, GitHub and GitLab markup, a `MutationObserver`, light and dark colors, a toggle between chart and source, and the error display.
 - [ ] 7. Publish the site from `docs/` with a playground (editor on the left, chart on the right) that itself uses `plotdown.js`; point `plotdown.cc` at it once the domain is registered.
 
 **Phase 1: GitHub and GitLab**

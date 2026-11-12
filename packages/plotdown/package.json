@@ -21,7 +21,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/plotdown.js",
+    "./dist/plotdown.iife.js"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -52,11 +55,22 @@
       "import": "./dist/streamdown.js",
       "default": "./dist/streamdown.js"
     },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser.js"
+    },
+    "./plotdown.js": {
+      "types": "./dist/browser/auto.d.ts",
+      "import": "./dist/plotdown.js"
+    },
+    "./plotdown.iife.js": "./dist/plotdown.iife.js",
     "./schema.json": "./dist/plot.schema.json",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "unpkg": "./dist/plotdown.iife.js",
+  "jsdelivr": "./dist/plotdown.iife.js",
   "files": [
     "dist",
     "readme.md"
@@ -64,8 +78,9 @@
   "scripts": {
     "generate": "node scripts/generate.mjs",
     "skill": "node scripts/skill.mjs",
-    "build": "tsup && tsc -p tsconfig.build.json",
+    "build": "tsup && tsup --config tsup.browser.config.ts && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:browser": "node test/browser/e2e.mjs",
     "test": "vitest run"
   },
   "dependencies": {
@@ -108,6 +123,7 @@
     "remark-parse": "11.0.0",
     "remark-rehype": "11.1.2",
     "streamdown": "2.7.1",
+    "playwright": "1.65.0",
     "tsup": "9.0.0",
     "typescript": "7.0.2",
     "unified": "11.0.5",

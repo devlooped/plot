@@ -12,7 +12,8 @@ export default defineConfig({
     rehype: "src/rehype.ts",
     marked: "src/marked.ts",
     react: "src/react.ts",
-    streamdown: "src/streamdown.ts"
+    streamdown: "src/streamdown.ts",
+    browser: "src/browser/index.ts"
   },
   format: ["esm"],
   platform: "neutral",
