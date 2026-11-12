@@ -231,7 +231,8 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 - [ ] 19. VS Code extension (`markdown.markdownItPlugins`, `markdown.previewScripts`, notebook renderer); publish to the Marketplace and Open VSX.
 - [ ] 20. Obsidian plugin (`registerMarkdownCodeBlockProcessor`); submit to the community list.
   - Built and tested in `packages/obsidian` (2026-11-12). Not yet tried in a real vault (Obsidian is not installed on the build machine) and not submitted: Obsidian and BRAT read `manifest.json` from the root of a repository and install from a release tagged `x.y.z`, so the submission needs a decision first (a separate `devlooped/plotdown-obsidian` repository, or a root manifest here); see `packages/obsidian/community-plugins.md`.
-- [ ] 21. MCP App server in `packages/mcp` with `@modelcontextprotocol/ext-apps`.
+- [x] 21. MCP App server in `packages/mcp` with `@modelcontextprotocol/ext-apps`.
+  - Built as `@devlooped/plotdown-mcp` (2026-11-12), tested with SDK clients over stdio and HTTP and with a headless-Chrome host harness. Not yet tried in Claude, ChatGPT, VS Code or the MCP inspector.
 
 **Phase 5: upstream**
 

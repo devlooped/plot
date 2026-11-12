@@ -1,0 +1,65 @@
+{
+  "name": "@devlooped/plotdown-mcp",
+  "version": "0.1.0",
+  "description": "MCP App server that renders plotdown blocks (Observable Plot charts as strict JSON) in Claude, ChatGPT, VS Code and other MCP Apps hosts.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devlooped/plotdown.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://github.com/devlooped/plotdown",
+  "keywords": [
+    "mcp",
+    "mcp-app",
+    "model-context-protocol",
+    "observable-plot",
+    "plot",
+    "chart"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "plotdown-mcp": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "readme.md"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "node scripts/build-view.mjs && tsup && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "workspace:*",
+    "@modelcontextprotocol/core": "2.4.0",
+    "@modelcontextprotocol/ext-apps": "2.0.4",
+    "@modelcontextprotocol/server": "2.4.0",
+    "linkedom": "0.18.15",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@types/node": "26.6.6",
+    "esbuild": "0.28.2",
+    "tsup": "9.0.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}
