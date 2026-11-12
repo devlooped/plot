@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- plotdown: three bars on a baseline, in Observable Plot's default (Tableau 10) colors. -->
+  <rect x="4" y="4" width="120" height="120" rx="26" fill="#1f2a37"/>
+  <rect x="22" y="62" width="22" height="42" rx="3" fill="#4e79a7"/>
+  <rect x="53" y="30" width="22" height="74" rx="3" fill="#f28e2c"/>
+  <rect x="84" y="48" width="22" height="56" rx="3" fill="#59a14f"/>
+  <rect x="16" y="102" width="96" height="7" rx="3.5" fill="#e6edf3"/>
+</svg>
