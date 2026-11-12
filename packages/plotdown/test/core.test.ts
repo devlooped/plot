@@ -97,7 +97,7 @@ describe("package", () => {
 
   it("keeps the core free of Node-only modules", () => {
     const srcDir = path.join(packageDir, "src");
-    const files = fs.readdirSync(srcDir, {recursive: true, encoding: "utf8"}).filter((f) => f.endsWith(".ts"));
+    const files = fs.readdirSync(srcDir, {recursive: true, encoding: "utf8"}).filter((f) => f.endsWith(".ts") && !/^(cli|static)[\\/]/.test(f)); // cli and static: see their tests
     const imports = new Set<string>();
     for (const file of files) {
       const text = fs.readFileSync(path.join(srcDir, file), "utf8");

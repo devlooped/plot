@@ -1,0 +1,112 @@
+name: plotdown
+description: Render the ```plot blocks of Markdown files as SVG images, each shown right after its block.
+author: devlooped
+branding:
+  icon: bar-chart-2
+  color: blue
+
+inputs:
+  files:
+    description: Markdown files or globs, separated by spaces or new lines. plotdown expands the globs itself and skips node_modules and .git.
+    default: "**/*.md"
+  out:
+    description: The directory of the SVG files, from the root of the repository.
+    default: docs/plots
+  theme:
+    description: "Colors of the images: auto (light or dark, as the reader's color scheme), light or dark."
+    default: auto
+  check:
+    description: Change nothing, and fail when a file is not up to date (for pull requests).
+    default: "false"
+  commit:
+    description: Commit and push the changes to the checked-out branch. Needs `permissions: contents: write`.
+    default: "false"
+  commit-message:
+    description: The message of that commit.
+    default: Render plot blocks
+  version:
+    description: >-
+      The version of @devlooped/plotdown on npm to run, such as 0.2.0 or latest. Empty (the default) builds
+      plotdown from the source of this action, at the ref of `uses:`, so that the action and the CLI always match.
+    default: ""
+
+outputs:
+  changed:
+    description: Whether the run changed files (with check, whether it would).
+    value: ${{ steps.render.outputs.changed }}
+
+runs:
+  using: composite
+  steps:
+    - name: 🔎 node
+      id: node
+      shell: bash
+      run: |
+        major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
+        if [ "$major" -ge 22 ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
+    - name: ⚙ node
+      if: steps.node.outputs.ok != 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+
+    - name: 📦 plotdown
+      id: install
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        if [ -n "$VERSION" ]; then
+          dir="$RUNNER_TEMP/plotdown"
+          mkdir -p "$dir"
+          npm install --prefix "$dir" --no-audit --no-fund --no-package-lock "@devlooped/plotdown@$VERSION"
+          echo "cli=$dir/node_modules/@devlooped/plotdown/dist/cli.js" >> "$GITHUB_OUTPUT"
+        else
+          cd "$ACTION_PATH"
+          npx --yes pnpm@10.32.1 install --frozen-lockfile --filter @devlooped/plotdown
+          npx --yes pnpm@10.32.1 --filter @devlooped/plotdown exec tsup
+          echo "cli=$ACTION_PATH/packages/plotdown/dist/cli.js" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: 🖼 render
+      id: render
+      shell: bash
+      env:
+        CLI: ${{ steps.install.outputs.cli }}
+        FILES: ${{ inputs.files }}
+        OUT: ${{ inputs.out }}
+        THEME: ${{ inputs.theme }}
+        CHECK: ${{ inputs.check }}
+      run: |
+        set -f # the globs are plotdown's to expand, not the shell's
+        read -r -d '' -a files <<< "$FILES" || true
+        args=(render --out "$OUT" --theme "$THEME")
+        if [ "$CHECK" = "true" ]; then args+=(--check); fi
+        log="$RUNNER_TEMP/plotdown.log"
+        set +e
+        node "$CLI" "${args[@]}" "${files[@]}" | tee "$log"
+        code=${PIPESTATUS[0]}
+        set -e
+        # "write x", "update x", "remove x" (or "would …" with --check): the paths that change.
+        sed -n -E 's/^(would )?(write|update|remove) //p' "$log" > "$RUNNER_TEMP/plotdown.paths"
+        if [ -s "$RUNNER_TEMP/plotdown.paths" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; else echo "changed=false" >> "$GITHUB_OUTPUT"; fi
+        exit "$code"
+
+    - name: 🚀 commit
+      if: inputs.commit == 'true' && inputs.check != 'true' && steps.render.outputs.changed == 'true'
+      shell: bash
+      env:
+        MESSAGE: ${{ inputs.commit-message }}
+      run: |
+        if ! git symbolic-ref -q HEAD > /dev/null; then
+          echo "::error::commit needs a branch, and HEAD is detached. Check the branch out (for a pull request: actions/checkout with ref: \${{ github.head_ref }}), or use check: true."
+          exit 1
+        fi
+        mapfile -t paths < "$RUNNER_TEMP/plotdown.paths"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add -A -- "${paths[@]}"
+        git commit -m "$MESSAGE"
+        git push

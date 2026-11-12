@@ -6,6 +6,8 @@ import {defineConfig} from "tsup";
 // "exports" map of package.json.
 export default defineConfig({
   entry: {
+    static: "src/static/index.ts",
+    cli: "src/cli/bin.ts",
     index: "src/index.ts"
   },
   format: ["esm"],

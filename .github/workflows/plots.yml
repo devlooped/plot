@@ -1,0 +1,39 @@
+name: plots
+# Renders the plot blocks of this readme with the action of this repository
+# (uses: ./, so that a change to the renderer is tried on its own commit).
+# On main, the images are committed; a pull request only checks that they are
+# up to date: run `pnpm build && pnpm exec plotdown render readme.md` to update them.
+on:
+  push:
+    branches: [main]
+    paths:
+      - readme.md
+      - action.yml
+      - packages/plotdown/**
+      - pnpm-lock.yaml
+      - .github/workflows/plots.yml
+  pull_request:
+    paths:
+      - readme.md
+      - action.yml
+      - packages/plotdown/**
+      - pnpm-lock.yaml
+      - .github/workflows/plots.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  plots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🤘 checkout
+        uses: actions/checkout@v4
+
+      - name: 🖼 plots
+        uses: ./
+        with:
+          files: readme.md
+          check: ${{ github.event_name == 'pull_request' }}
+          commit: ${{ github.event_name != 'pull_request' }}
