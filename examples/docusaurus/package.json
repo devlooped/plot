@@ -1,0 +1,17 @@
+{
+  "name": "plotdown-example-docusaurus",
+  "private": true,
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "file:../../packages/plotdown",
+    "@docusaurus/core": "3.10.2",
+    "@docusaurus/preset-classic": "3.10.2",
+    "linkedom": "0.18.15",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

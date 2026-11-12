@@ -50,3 +50,9 @@ Gemfile.lock
 package-lock.json
 
 /.github/.labels
+
+# examples: installed and built on demand
+/examples/*/pnpm-lock.yaml
+/examples/docusaurus/build
+/examples/docusaurus/.docusaurus
+/examples/vitepress/docs/.vitepress/cache

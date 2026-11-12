@@ -7,7 +7,12 @@ import {defineConfig} from "tsup";
 // "exports" map of package.json.
 export default defineConfig({
   entry: {
-    index: "src/index.ts"
+    index: "src/index.ts",
+    "markdown-it": "src/markdown-it.ts",
+    rehype: "src/rehype.ts",
+    marked: "src/marked.ts",
+    react: "src/react.ts",
+    streamdown: "src/streamdown.ts"
   },
   format: ["esm"],
   platform: "neutral",

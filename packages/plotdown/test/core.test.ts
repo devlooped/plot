@@ -96,14 +96,23 @@ describe("package", () => {
   });
 
   it("keeps the core free of Node-only modules", () => {
+    // Follows the imports of the core entry; the subpath adapters (markdown-it, react, …) may import their hosts.
     const srcDir = path.join(packageDir, "src");
-    const files = fs.readdirSync(srcDir, {recursive: true, encoding: "utf8"}).filter((f) => f.endsWith(".ts"));
     const imports = new Set<string>();
-    for (const file of files) {
-      const text = fs.readFileSync(path.join(srcDir, file), "utf8");
-      for (const m of text.matchAll(/(?:from|import)\s*\(?\s*["']([^"']+)["']/g)) imports.add(m[1]!);
-    }
-    expect([...imports].filter((s) => !s.startsWith(".") && s !== "@observablehq/plot")).toEqual([]);
+    const seen = new Set<string>();
+    const visit = (file: string) => {
+      if (seen.has(file)) return;
+      seen.add(file);
+      const text = fs.readFileSync(file, "utf8");
+      for (const m of text.matchAll(/(?:from|import)\s*\(?\s*["']([^"']+)["']/g)) {
+        const specifier = m[1]!;
+        if (specifier.startsWith(".")) visit(path.resolve(path.dirname(file), specifier.replace(/\.js$/, ".ts")));
+        else imports.add(specifier);
+      }
+    };
+    visit(path.join(srcDir, "index.ts"));
+    expect(seen.size).toBeGreaterThan(5);
+    expect([...imports].filter((s) => s !== "@observablehq/plot")).toEqual([]);
   });
 
   it("has no path to eval or Function", () => {

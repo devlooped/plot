@@ -53,6 +53,31 @@ interface FetchOptions extends PlotdownOptions { fetch?: typeof fetch; signal?: 
 
 Every error is a `PlotdownError` whose `path` names the offending value, such as `$.marks[0].transform[0].binX.y`.
 
+## Markdown parsers, React and Streamdown
+
+Each host is a subpath export; its library is an optional peer dependency.
+
+```js
+import plotdown from "@devlooped/plotdown/markdown-it";   // VitePress, Eleventy, Marp, Slidev
+md.use(plotdown);
+
+import rehypePlotdown from "@devlooped/plotdown/rehype";  // Docusaurus, Astro, Next MDX, Nextra
+rehypePlugins: [rehypePlotdown]
+
+import plotdown from "@devlooped/plotdown/marked";
+marked.use(plotdown());
+
+import {Plotdown} from "@devlooped/plotdown/react";
+<Plotdown code={source} isIncomplete={streaming} />
+
+import {plotRenderer} from "@devlooped/plotdown/streamdown";
+<Streamdown plugins={{renderers: [plotRenderer]}}>{markdown}</Streamdown>
+```
+
+The parser adapters render the chart when the Markdown is converted (`mode: "inline"`, the default), with the page's document, the `document` option, or one they create from `linkedom` or `jsdom` when either is installed. `mode: "client"` leaves `<pre class="plotdown"><code class="language-plot">` for `plotdown.js`. A block that fails stays code (`language-json`) with the reason under it in `.plotdown-message`; `strict: true` throws instead, and `onError` hears of each. The rehype plugin and the marked extension (which becomes async) load data URLs when `allowRemote` allows them; markdown-it cannot wait, so such blocks fail there. Under VitePress, the markdown-it plugin writes Plot's `<style>` as `<component is="style">` and braces as character references, so Vue keeps the style and evaluates nothing (`vue: true|false` overrides the detection). A `plot` fence whose text does not start with `{` (gnuplot) stays ordinary code everywhere.
+
+`<Plotdown>` draws on the client, in an effect: a placeholder while `isIncomplete`, the chart once the block is complete, the source and the reason when it fails; it removes the chart when unmounted. `createPlotRenderer(options)` makes a Streamdown renderer with options such as `allowRemote`.
+
 ## Safety
 
 A block may come from anyone, or from a model. plotdown evaluates nothing: it looks up marks, transforms and options in allowlists generated from Plot's own type declarations, rejects unknown keys and strings that look like JavaScript functions, limits links to `http`, `https`, `mailto` and relative URLs, loads nothing from the network unless `allowRemote` says so, rejects CSS `url()` that could load a remote file, caps the size of a block, and checks what Plot drew.
