@@ -1,5 +1,5 @@
 name: plotdown
-description: Render the ```plot blocks of Markdown files as SVG images, each shown right after its block.
+description: "Render the ```plot blocks of Markdown files as SVG images, each shown right after its block."
 author: devlooped
 branding:
   icon: bar-chart-2
@@ -19,7 +19,7 @@ inputs:
     description: Change nothing, and fail when a file is not up to date (for pull requests).
     default: "false"
   commit:
-    description: Commit and push the changes to the checked-out branch. Needs `permissions: contents: write`.
+    description: "Commit and push the changes to the checked-out branch. Needs `permissions: contents: write`."
     default: "false"
   commit-message:
     description: The message of that commit.
