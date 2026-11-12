@@ -211,7 +211,8 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 - [x] 8. Add the CLI `plotdown render <files>`: server-side SVG with jsdom, image insertion after each block, content-hashed file names, `--check` for CI.
   - Deviation (2026-11-12): the image comes first on its line, `![Penguin body mass](docs/plots/readme-1f3a9c.svg) <!-- plot:1f3a9c -->`. GitHub treats a line that starts with `<!--` as an HTML block and shows the image syntax as text (checked with `gh api markdown`). The CLI still recognizes the older order. The CLI draws with linkedom, not jsdom.
 - [x] 9. Add `action.yml` and a GitLab CI snippet; use the action on this repo's own `readme.md`.
-- [ ] 10. Add to `plotdown.js` the block markup of Bitbucket, Gitea/Forgejo, Azure DevOps, ChatGPT, Claude and Gemini, each read from the live site, with a saved HTML sample as a test.
+- [x] 10. Add to `plotdown.js` the block markup of Bitbucket, Gitea/Forgejo, Azure DevOps, ChatGPT, Claude and Gemini, each read from the live site, with a saved HTML sample as a test.
+  - Done 2026-11-12, each read from the live site. Unknown-language markup could not be seen on Gitea and Claude without an account: those two samples are marked UNVERIFIED. Gemini, Bitbucket and Azure DevOps drop the fence name, so there a block renders only when its text is a plot spec.
 - [x] 11. Build the extension in `packages/extension` (Manifest V3; Chrome, Edge, Firefox): a manifest for all sites, the detector, the bundled `plotdown.js` it injects on demand, and an on/off switch per site. Build the userscript as `plotdown.js` under a `@match *://*/*` header.
 - [ ] 12. Publish `plotdown` to npm, with `skills/plot/SKILL.md` and `llms.txt` generated from the spec, and submit the extension to the three stores.
 
