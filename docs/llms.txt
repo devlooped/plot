@@ -44,7 +44,7 @@ Example:
 
 ## Tools
 
-- [JSON Schema](https://raw.githubusercontent.com/devlooped/plotdown/main/spec/plot.schema.json): JSON Schema 2020-12 of a block (`$id` https://plotdown.cc/schema/0.1/plot.schema.json), for editors and structured outputs
+- [JSON Schema](https://plotdown.cc/schema/plot.schema.json): JSON Schema 2020-12 of a block, the current version (`$id` https://plotdown.cc/schema/0.1/plot.schema.json, the same file at a URL that names the version), for editors and structured outputs. A block kept in a file of its own is named `*.plotdown.json`
 - [npm package @devlooped/plotdown](https://github.com/devlooped/plotdown/blob/main/packages/plotdown/readme.md): `render`, `renderAsync`, `validate`, `parse` and `PlotdownError`
 
 ## Optional

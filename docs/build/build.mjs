@@ -5,7 +5,8 @@
 //
 // Pages: / (home), /playground/, /gallery/, /spec/ (spec/spec.md), /recipes/
 // and /recipes/<slug>/ (docs/recipes/*.md). Files at fixed paths: /llms.txt,
-// /llms-full.txt, /schema/<version>/plot.schema.json, /plotdown.js (the
+// /llms-full.txt, /schema/<version>/plot.schema.json and its stable alias
+// /schema/plot.schema.json (the current version), /plotdown.js (the
 // current build, which the pages load), /examples/<fixture>.json.
 import {createHash} from "node:crypto";
 import {existsSync, statSync} from "node:fs";
@@ -40,6 +41,8 @@ const version = /\*\*Spec version ([\d.]+)\*\*/.exec(spec)?.[1];
 if (!version) throw new Error("spec/spec.md: no 'Spec version' line");
 const schemaText = await readText(path.join(root, "spec/plot.schema.json"));
 const schemaPath = `/schema/${version}/plot.schema.json`;
+/** The current schema at a URL that does not change with the version, for catalogs such as SchemaStore. */
+const latestSchemaPath = "/schema/plot.schema.json";
 const schemaId = JSON.parse(schemaText).$id;
 if (schemaId !== `${SITE}${schemaPath}`) throw new Error(`spec/plot.schema.json: $id is ${schemaId}, expected ${SITE}${schemaPath} (spec version ${version})`);
 
@@ -195,6 +198,7 @@ for (const name of ["llms.txt", "llms-full.txt"]) {
   await emit(name, await readText(file));
 }
 await emit(schemaPath, schemaText);
+await emit(latestSchemaPath, schemaText);
 for (const fixture of fixtures) await emit(`examples/${fixture.name}.json`, fixture.text + "\n");
 await emit("favicon.svg", FAVICON);
 

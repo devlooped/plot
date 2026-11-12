@@ -56,6 +56,7 @@ try {
     ["/llms.txt", "text/plain"],
     ["/llms-full.txt", "text/plain"],
     ["/schema/0.1/plot.schema.json", "application/schema+json"],
+    ["/schema/plot.schema.json", "application/schema+json"],
     ["/plotdown.js", "text/javascript"],
     ["/examples/waffle.json", "application/json"]
   ])) {
@@ -63,7 +64,8 @@ try {
     check(response.status === 200 && (response.headers.get("content-type") ?? "").startsWith(type), `${file} answers ${response.status} ${response.headers.get("content-type")}`);
     if (file.startsWith("/schema/")) {
       const schema = await response.json();
-      check(schema.$id === `https://plotdown.cc${file}`, `${file} has the $id of its path`);
+      // The stable path serves the current version, whose $id names the version.
+      check(file === "/schema/plot.schema.json" ? /^https:\/\/plotdown\.cc\/schema\/[\d.]+\/plot\.schema\.json$/.test(schema.$id) : schema.$id === `https://plotdown.cc${file}`, `${file} has the $id of its version`);
     }
   }
   const missing = await fetch(server.url + "/no/such/page/");

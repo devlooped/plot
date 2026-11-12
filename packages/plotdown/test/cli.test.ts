@@ -220,6 +220,13 @@ describe("plotdown link", () => {
     expect(out[1]).toBe(imageLink(dot.replace(/, /g, ",\n")));
   });
 
+  it("reads a block kept in a file of its own, named *.plotdown.json, with a $schema key", () => {
+    const block = `{"$schema": "https://plotdown.cc/schema/plot.schema.json", ${dot.slice(1)}`;
+    fs.writeFileSync(path.join(dir, "chart.plotdown.json"), `${block}\n`);
+    expect(run("chart.plotdown.json")).toBe(0);
+    expect(parseImageLink(out[0]!).block).toBe(block);
+  });
+
   it("reads a block from stdin, and writes a PNG link or a Markdown image", () => {
     io.stdin = () => dot;
     expect(run("--png", "--scale", "2", "--theme", "dark", "--base-url", "http://localhost:8787")).toBe(0);

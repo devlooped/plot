@@ -554,7 +554,7 @@ The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. "Renderer" mea
 
 ### 1. Versions
 
-- This document is spec version **0.1**. The schema's `$id` carries it: `https://plotdown.cc/schema/0.1/plot.schema.json`.
+- This document is spec version **0.1**. The schema's `$id` carries it: `https://plotdown.cc/schema/0.1/plot.schema.json`. The schema of the current version is also at a URL that does not change, `https://plotdown.cc/schema/plot.schema.json`, for catalogs (SchemaStore) and editors that follow the latest spec.
 - The option names and values are those of **Observable Plot 0.6.19**. A renderer pins one Plot version; the allowlists of this spec (marks, transforms, option keys) are generated from that version's type declarations, so they change only with a new spec version.
 - A block MAY name the schema it was written against with a top-level `"$schema"` key. Renderers ignore its value.
 
@@ -569,6 +569,8 @@ A block is a fenced code block whose info string starts with one of these words,
 | `observable-plot` | Same meaning; not highlighted by GitHub. |
 
 Anything after the first word of the info string is ignored.
+
+A block MAY also live in a file of its own, outside Markdown: its name ends in **`.plotdown.json`** (such as `penguins.plotdown.json`), and its content is the JSON of the block, with no fence. The name lets editors and catalogs such as SchemaStore apply the schema to the file without being told; a `"$schema"` key (section 1) does the same for a file named otherwise.
 
 Because a `plot` fence may also hold a gnuplot script, a renderer that finds blocks in rendered HTML (where the fence name may be lost or ambiguous) SHOULD render a block only when its text, trimmed, starts with `{`, ends with `}`, parses as JSON and is an object with a `marks` array. The same test tells a complete block from one that is still streaming. A block that passes this test but fails validation is shown with its error (section 10), not left as code silently.
 

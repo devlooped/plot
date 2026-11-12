@@ -45,6 +45,12 @@ describe("files at fixed paths", () => {
     expect(JSON.parse(read(file)).$id).toBe(`https://plotdown.cc/schema/${version}/plot.schema.json`);
   });
 
+  it("serves the current schema at a stable path too, for SchemaStore, with the versioned $id", () => {
+    const stable = path.join(dist, "schema", "plot.schema.json");
+    expect(read(stable)).toBe(read(path.join(root, "spec/plot.schema.json")));
+    expect(JSON.parse(read(stable)).$id).toMatch(/^https:\/\/plotdown\.cc\/schema\/\d+\.\d+\/plot\.schema\.json$/);
+  });
+
   it("serves llms.txt and llms-full.txt from docs/", () => {
     for (const name of ["llms.txt", "llms-full.txt"]) expect(read(path.join(dist, name))).toBe(read(path.join(docs, name)));
   });

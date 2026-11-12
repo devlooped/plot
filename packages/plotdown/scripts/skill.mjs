@@ -340,7 +340,7 @@ function renderLlms(frontmatter, body) {
     "",
     "## Tools",
     "",
-    `- [JSON Schema](${raw}/spec/plot.schema.json): JSON Schema 2020-12 of a block (\`$id\` ${site}/schema/${SPEC_VERSION}/plot.schema.json), for editors and structured outputs`,
+    `- [JSON Schema](${site}/schema/plot.schema.json): JSON Schema 2020-12 of a block, the current version (\`$id\` ${site}/schema/${SPEC_VERSION}/plot.schema.json, the same file at a URL that names the version), for editors and structured outputs. A block kept in a file of its own is named \`*.plotdown.json\``,
     `- [npm package @devlooped/plotdown](${repo}/blob/main/packages/plotdown/readme.md): \`render\`, \`renderAsync\`, \`validate\`, \`parse\` and \`PlotdownError\``,
     "",
     "## Optional",

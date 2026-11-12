@@ -23,6 +23,7 @@ pnpm --filter plotdown-site test:browser    # Edge or Chrome: charts in light an
 | `/recipes/<slug>/` | `recipes/<slug>.md`, listed by route in `build/catalog.mjs` |
 | `/llms.txt`, `/llms-full.txt` | `llms.txt`, `llms-full.txt` of this folder, copied |
 | `/schema/<version>/plot.schema.json` | `spec/plot.schema.json`; the build checks that its `$id` is this URL and the version is that of `spec/spec.md` |
+| `/schema/plot.schema.json` | the same file: the current version at a URL that does not change, for SchemaStore's catalog |
 | `/plotdown.js`, `/plotdown.iife.js` | `packages/plotdown/dist`, the current build, which the pages load |
 | `/examples/<name>.json` | the fixtures, which the playground loads by name |
 
