@@ -66,7 +66,7 @@ jobs:
           grep -qi '^content-type: image/png' headers.txt || { echo "::error::the PNG link answered another content type"; exit 1; }
           [ "$(head -c 8 chart.png | od -An -tx1 | tr -d ' \n')" = "89504e470d0a1a0a" ] || { echo "::error::the PNG link answered no PNG"; exit 1; }
           width=$(od -An -tu4 --endian=big -j16 -N4 chart.png | tr -d ' ')
-          svg_width=$(grep -o '^<svg[^>]* width="[0-9]*"' get.svg | grep -o '[0-9]*$')
+          svg_width=$(grep -o '^<svg[^>]* width="[0-9]*"' get.svg | grep -o '[0-9]*"$' | tr -d '"')
           echo "PNG width $width, SVG width $svg_width"
           [ "$width" = "$((svg_width * 2))" ] || { echo "::error::the PNG at scale 2 is $width pixels wide, not twice the SVG's $svg_width"; exit 1; }
 
