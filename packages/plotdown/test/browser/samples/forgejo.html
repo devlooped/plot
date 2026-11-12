@@ -1,0 +1,23 @@
+<!-- Forgejo (Codeberg, 2026-11-12). Copied as is from forgejo/docs on codeberg.org: the `json` block from
+     docs/contributor/localization/english.md and a ```shellsession block (a name Chroma has no lexer for: plain
+     text, the name kept in the class) from docs/admin/actions/configuration.md; copy button icons left out.
+     The plot blocks are written exactly as that shellsession block. Forgejo keeps the name as written
+     (language-Caddyfile on the same site), so `observable-plot` stays language-observable-plot. The copy button
+     sits inside the <pre>, after the <code>. -->
+<div class="file-view markup markdown">
+<pre class="code-block"><code class="chroma language-json display"><span class="s2">"repo.pulls.poster_trust_deny"</span><span class="err">:</span> <span class="s2">"Deny"</span><span class="err">,</span>
+</code><button class="code-copy ui button" data-clipboard-text="&quot;repo.pulls.poster_trust_deny&quot;: &quot;Deny&quot;,"></button></pre>
+<pre class="code-block"><code class="chroma language-shellsession display">$ forgejo-runner exec --enable-ipv6
+[ipv6.yml/ipv6] 🏁  Job succeeded
+</code><button class="code-copy ui button" data-clipboard-text="$ forgejo-runner exec --enable-ipv6
+[ipv6.yml/ipv6] 🏁  Job succeeded"></button></pre>
+<p dir="auto">A chart:</p>
+<pre class="code-block"><code class="chroma language-plot display">{
+  "marks": [{"mark": "barY", "data": [{"a": "x", "b": 1}, {"a": "y", "b": 3}], "x": "a", "y": "b"}]
+}
+</code><button class="code-copy ui button" data-clipboard-text="{
+  &quot;marks&quot;: [{&quot;mark&quot;: &quot;barY&quot;, &quot;data&quot;: [{&quot;a&quot;: &quot;x&quot;, &quot;b&quot;: 1}, {&quot;a&quot;: &quot;y&quot;, &quot;b&quot;: 3}], &quot;x&quot;: &quot;a&quot;, &quot;y&quot;: &quot;b&quot;}]
+}"></button></pre>
+<pre class="code-block"><code class="chroma language-observable-plot display">{"marks": [{"mark": "dot", "data": [1, 2, 3], "x": [1, 2, 3]}]}
+</code><button class="code-copy ui button" data-clipboard-text="{&quot;marks&quot;: [{&quot;mark&quot;: &quot;dot&quot;, &quot;data&quot;: [1, 2, 3], &quot;x&quot;: [1, 2, 3]}]}"></button></pre>
+</div>

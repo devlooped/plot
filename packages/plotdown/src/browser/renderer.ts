@@ -161,7 +161,8 @@ export class BlockRenderer {
     // Claimed by another instance, or inside or around a claimed block.
     if (block.hasAttribute(STATE_ATTRIBUTE) || block.parentElement?.closest(`[${STATE_ATTRIBUTE}]`) || block.querySelector(`[${STATE_ATTRIBUTE}]`)) return;
     // Ambiguous markup that is not even JSON is the other language: leave it alone.
-    if (found.selector.ambiguous && !found.text.trimStart().startsWith("{")) return;
+    // Still empty (a chat answer's block before its first token), it waits for its text.
+    if (found.selector.ambiguous && found.text.trim() && !found.text.trimStart().startsWith("{")) return;
     const entry: Entry = {block, element: found.element, selector: found.selector, state: "pending", text: "", version: 0, restored: 0};
     this.entries.set(block, entry);
     this.setState(entry, "pending");
@@ -180,6 +181,8 @@ export class BlockRenderer {
 
     // Not complete (or not a plot block at all): it stays code.
     this.clearError(entry);
+    // Ambiguous markup whose first text is not JSON is the other language: let it go.
+    if (entry.selector.ambiguous && entry.state === "pending" && text.trim() && !text.trimStart().startsWith("{")) return this.release(entry);
     if (entry.state !== "rendered") this.setState(entry, "pending");
     if (entry.selector.ambiguous || !text.trimStart().startsWith("{")) return;
     if (final) return this.fail(entry, syntaxError(text));

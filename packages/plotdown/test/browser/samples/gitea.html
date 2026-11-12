@@ -1,0 +1,19 @@
+<!-- Gitea (gitea.com, 2026-11-12). The `shell` block is copied as is from the README of gitea/docs on gitea.com
+     (gitea.com shows only a repository's home page without an account, and its Markdown preview needs one). The
+     plot blocks are written from Gitea's source, not from a page (UNVERIFIED on a live page):
+     modules/markup/markdown/goldmark.go writes the same container for every fence, and
+     modules/highlight/highlight.go (languageForCssAttrName) lowercases the name and turns every character but
+     [a-z0-9_] into "_": `observable-plot` becomes language-observable_plot. The data-code-language attribute it
+     also writes is removed by the sanitizer on gitea.com, as on the shell block. -->
+<div class="markup markdown">
+<div class="code-block-container code-overflow-scroll"><pre class="code-block"><code class="chroma language-shell">make install       <span class="c1"># pnpm install</span>
+make serve-fast    <span class="c1"># english, the version served at the root, starts in seconds</span>
+</code></pre></div>
+<p dir="auto">A chart:</p>
+<div class="code-block-container code-overflow-scroll"><pre class="code-block"><code class="chroma language-plot">{
+  &#34;marks&#34;: [{&#34;mark&#34;: &#34;barY&#34;, &#34;data&#34;: [{&#34;a&#34;: &#34;x&#34;, &#34;b&#34;: 1}, {&#34;a&#34;: &#34;y&#34;, &#34;b&#34;: 3}], &#34;x&#34;: &#34;a&#34;, &#34;y&#34;: &#34;b&#34;}]
+}
+</code></pre></div>
+<div class="code-block-container code-overflow-scroll"><pre class="code-block"><code class="chroma language-observable_plot">{&#34;marks&#34;: [{&#34;mark&#34;: &#34;dot&#34;, &#34;data&#34;: [1, 2, 3], &#34;x&#34;: [1, 2, 3]}]}
+</code></pre></div>
+</div>

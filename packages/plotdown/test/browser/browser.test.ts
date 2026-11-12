@@ -5,6 +5,7 @@ import {JSDOM} from "jsdom";
 import {afterEach, describe, expect, it} from "vitest";
 import {readScriptOptions} from "../../src/browser/auto.js";
 import {BlockRenderer, CHART_TAG, detectScheme, ERROR_TAG, findBlocks, SELECTORS, STATE_ATTRIBUTE, type BlockSelector} from "../../src/browser/index.js";
+import {isPlotSpec} from "../../src/fences.js";
 
 const samplesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "samples");
 const sample = (name: string) => fs.readFileSync(path.join(samplesDir, name), "utf8");
@@ -29,11 +30,21 @@ const charts = (document: Document) => Array.from(document.querySelectorAll<HTML
 const errors = (document: Document) => Array.from(document.querySelectorAll<HTMLElement>(ERROR_TAG));
 const SPEC = '{"marks": [{"mark": "dot", "data": [1, 2, 3], "x": [1, 2, 3]}]}';
 
-/** Each sample of real markup, the selector entries that must find its plot blocks, and the blocks it must leave alone. */
-const SAMPLES: {file: string; found: string[]; ignored: number}[] = [
+/**
+ * Each sample of real markup, the selector entries that must find its plot blocks, and the blocks it must leave
+ * alone; pending counts the blocks of ambiguous markup that hold JSON but not a plot spec (they stay code).
+ */
+const SAMPLES: {file: string; found: string[]; ignored: number; pending?: number}[] = [
   {file: "github.html", found: ["pre-lang", "pre-lang", "github"], ignored: 1},
   {file: "github-live.html", found: ["pre-lang", "github"], ignored: 3},
-  {file: "gitlab.html", found: ["gitlab", "gitlab"], ignored: 1},
+  {file: "gitlab.html", found: ["gitlab", "gitlab"], ignored: 2},
+  {file: "gitea.html", found: ["gitea", "gitea"], ignored: 1},
+  {file: "forgejo.html", found: ["markdown", "markdown"], ignored: 2},
+  {file: "bitbucket.html", found: ["bitbucket", "bitbucket"], ignored: 3, pending: 1},
+  {file: "azure-devops.html", found: ["azure-devops", "azure-devops"], ignored: 2},
+  {file: "chatgpt.html", found: ["chatgpt", "chatgpt"], ignored: 1},
+  {file: "claude.html", found: ["claude", "claude-observable"], ignored: 1},
+  {file: "gemini.html", found: ["gemini", "gemini"], ignored: 1},
   {file: "markdown-it.html", found: ["markdown", "markdown"], ignored: 1},
   {file: "pandoc.html", found: ["pre-class", "pre-class"], ignored: 0},
   {file: "fallback.html", found: ["fallback", "fallback"], ignored: 1}
@@ -44,8 +55,8 @@ describe("selectors", () => {
     it(`find the blocks of ${file}`, () => {
       const document = page(sample(file));
       const blocks = findBlocks(document);
-      // The ambiguous GitHub gnuplot block is a candidate; the renderer leaves it as code.
-      const names = blocks.filter((b) => !(b.selector.ambiguous && !b.text.trim().startsWith("{"))).map((b) => b.selector.name);
+      // A block of ambiguous markup (GitHub's gnuplot, Bitbucket, Gemini…) is a candidate; only a plot spec renders.
+      const names = blocks.filter((b) => !(b.selector.ambiguous && !isPlotSpec(b.text))).map((b) => b.selector.name);
       expect(names.sort()).toEqual([...found].sort());
       for (const block of blocks) expect(block.text).not.toContain("<span");
     });
@@ -59,6 +70,24 @@ describe("selectors", () => {
     expect(github.map((b) => b.block.className.split(" ")[0])).toEqual(["snippet-clipboard-content", "highlight", "highlight"]);
   });
 
+  it("take each site's whole block, its header and copy button with the code", () => {
+    const blocks = (file: string) => findBlocks(page(sample(file))).filter((b) => !b.selector.ambiguous || isPlotSpec(b.text));
+    const chatgpt = blocks("chatgpt.html");
+    expect(chatgpt.map((b) => b.block.firstElementChild!.nextElementSibling!.textContent)).toEqual(["plot", "observable-plot"]);
+    expect(chatgpt.every((b) => b.block.lastElementChild!.localName === "pre")).toBe(true);
+    expect(blocks("claude.html").map((b) => b.block.getAttribute("aria-label"))).toEqual(["plot code", "observable code"]);
+    const gemini = blocks("gemini.html");
+    expect(gemini.map((b) => b.block.localName)).toEqual(["code-block", "code-block"]);
+    expect(JSON.parse(gemini[0]!.text).title).toBe("Demo");
+    expect(blocks("gitea.html").map((b) => b.block.className)).toEqual(["code-block-container code-overflow-scroll", "code-block-container code-overflow-scroll"]);
+    expect(blocks("azure-devops.html").map((b) => b.block.className)).toEqual(["copy-btn-container", "copy-btn-container"]);
+    expect(blocks("bitbucket.html").map((b) => b.block.className)).toEqual(["codehilite", "codehilite"]);
+    // Forgejo's copy button is inside the <pre>: the source is the <code> alone.
+    const forgejo = blocks("forgejo.html");
+    expect(forgejo.map((b) => b.block.localName)).toEqual(["pre", "pre"]);
+    for (const b of forgejo) expect(isPlotSpec(b.text)).toBe(true);
+  });
+
   it("skip a broken entry and editors", () => {
     const broken: BlockSelector = {name: "broken", selector: "pre:::nonsense", fence: () => "plot"};
     const throwing: BlockSelector = {name: "throwing", selector: "pre", fence: () => { throw new Error("boom"); }};
@@ -68,12 +97,12 @@ describe("selectors", () => {
 });
 
 describe("renderer", () => {
-  for (const {file, found, ignored} of SAMPLES) {
+  for (const {file, found, ignored, pending = 0} of SAMPLES) {
     it(`renders ${file} and leaves other code alone`, async () => {
       const document = page(sample(file));
       const before = document.querySelectorAll("pre").length;
       const result = await renderer().scan(document, true);
-      expect(result).toEqual({rendered: found.length, failed: 0, pending: 0});
+      expect(result).toEqual({rendered: found.length, failed: 0, pending});
       expect(charts(document)).toHaveLength(found.length);
       expect(errors(document)).toHaveLength(0);
       for (const chart of charts(document)) {
@@ -215,6 +244,46 @@ describe("watching", () => {
     expect(seen.errors).toBe(0);
     expect(errors(document)).toHaveLength(0);
     expect(charts(document)[0]!.shadowRoot!.querySelector("h2")!.textContent).toBe("Streamed");
+  });
+
+  for (const start of ["", "{"]) {
+    it(`renders a streamed block of ambiguous markup (Gemini) that starts with ${JSON.stringify(start)}`, async () => {
+      const document = page(`<main></main>`);
+      const r = renderer({settle: 200});
+      r.observe(document);
+      await r.scan(document);
+      document.querySelector("main")!.insertAdjacentHTML(
+        "beforeend",
+        `<code-block><div class="code-block"><div class="code-block-decoration"><span>Code snippet</span></div><pre><code role="text" data-test-id="code-content" class="code-container formatted">${start}</code></pre></div></code-block>`
+      );
+      const code = document.querySelector("code")!;
+      // The renderer sees the block as it was added before the first token comes.
+      await wait(120);
+      const text = '{"title": "Streamed", "marks": [{"mark": "barY", "data": [{"a": "x", "b": 1}, {"a": "y", "b": 3}], "x": "a", "y": "b"}]}'.slice(start.length);
+      for (let i = 0; i < text.length; i += 9) {
+        code.append(text.slice(i, i + 9));
+        await wait(i < 40 ? 70 : 5);
+      }
+      await wait(150);
+      expect(errors(document)).toHaveLength(0);
+      expect(charts(document)).toHaveLength(1);
+      expect(charts(document)[0]!.nextElementSibling!.localName).toBe("code-block");
+    });
+  }
+
+  it("lets go of an empty block of ambiguous markup once its text is another language", async () => {
+    const document = page(`<main></main>`);
+    const r = renderer({settle: 50});
+    r.observe(document);
+    await r.scan(document);
+    document.querySelector("main")!.insertAdjacentHTML("beforeend", `<code-block><pre><code data-test-id="code-content"></code></pre></code-block>`);
+    await wait(120);
+    expect(document.querySelector("code-block")!.getAttribute(STATE_ATTRIBUTE)).toBe("pending");
+    document.querySelector("code")!.append('print("hello")');
+    await wait(200);
+    expect(document.querySelector("code-block")!.hasAttribute(STATE_ATTRIBUTE)).toBe(false);
+    expect(charts(document)).toHaveLength(0);
+    expect(errors(document)).toHaveLength(0);
   });
 
   it("shows a syntax error only once the text settles, and drops it when the text changes", async () => {
