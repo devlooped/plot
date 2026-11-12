@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@devlooped/plotdown": "workspace:*",
+    "@devlooped/plotdown-service": "workspace:*",
     "typescript": "7.0.2"
   }
 }

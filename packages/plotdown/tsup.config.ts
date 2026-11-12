@@ -15,6 +15,7 @@ export default defineConfig({
     streamdown: "src/streamdown.ts",
     browser: "src/browser/index.ts",
     static: "src/static/index.ts",
+    link: "src/link/index.ts",
     cli: "src/cli/bin.ts"
   },
   format: ["esm"],

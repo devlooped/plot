@@ -1,0 +1,79 @@
+name: uptime
+# Checks the image service on https://plotdown.cc twice an hour: the health
+# path, a known SVG and PNG link, a POST (which no cache answers, so it always
+# reaches the function), and the refusal of a block that would load remote data.
+# A failed run is the alert: GitHub mails the workflow's failures to whoever
+# watches the repository's Actions.
+#
+# The links hold this block (they stay valid for good: the service reads any
+# zlib stream in base64url):
+#   {"title": "plotdown uptime", "marks": [{"mark": "barY", "data": [3, 1, 4, 1, 5], "fill": "steelblue"}, {"mark": "ruleY", "data": [0]}]}
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "The service to check"
+        default: "https://plotdown.cc"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: true
+
+env:
+  BASE: ${{ inputs.base || 'https://plotdown.cc' }}
+  BLOCK: '{"title": "plotdown uptime", "marks": [{"mark": "barY", "data": [3, 1, 4, 1, 5], "fill": "steelblue"}, {"mark": "ruleY", "data": [0]}]}'
+  DATA: pako:eNpVjDsKgDAQRK-ybJ1CURtvIpIi4grB9UOywSLk7iZpxGYYeG8molhhwhHw5kvW6zkh3GIPQgV4GLf7zOZYa7EW46aCViOmkE5Bq6CvOegMNstcRC9EvHAgTAq-vQtMv4NGJ51e7uUoTQ
+  REMOTE: pako:eNotjEsKwCAMRK8iWRfde5XSRVChUEXRtAiSuzeKm-QN8xngkRCsElj3rVE-3ESlWWNCx1Ri0C4n47VrHzAfChLWp0nuHAtnw2cCcfacrInokxD44h-mPh9I
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 🩺 health
+        run: |
+          set -euo pipefail
+          body=$(curl -sS --fail-with-body --retry 2 --max-time 20 "$BASE/api/health")
+          echo "$body"
+          echo "$body" | jq -e '.status == "ok"' > /dev/null
+
+      - name: 🖼 svg
+        run: |
+          set -euo pipefail
+          curl -sS --fail-with-body --retry 2 --max-time 30 -D headers.txt -o get.svg "$BASE/svg/$DATA"
+          cat headers.txt
+          grep -qi '^content-type: image/svg+xml' headers.txt || { echo "::error::the SVG link answered another content type"; exit 1; }
+          grep -qi '^cache-control: .*immutable' headers.txt || { echo "::error::the SVG link is not cacheable for good"; exit 1; }
+          grep -qi "^content-security-policy: .*sandbox" headers.txt || { echo "::error::the SVG has no sandbox policy"; exit 1; }
+          head -c 40 get.svg | grep -q '^<svg xmlns="http://www.w3.org/2000/svg"' || { echo "::error::the SVG link answered no SVG"; exit 1; }
+          grep -q '>plotdown uptime</text>' get.svg || { echo "::error::the SVG does not draw the chart's title"; exit 1; }
+
+      - name: 📮 post
+        run: |
+          set -euo pipefail
+          curl -sS --fail-with-body --retry 2 --max-time 30 -o post.svg -H 'Content-Type: text/plain' --data-binary "$BLOCK" "$BASE/svg"
+          cmp get.svg post.svg || { echo "::error::POST and GET of the same block give different SVGs"; exit 1; }
+
+      - name: 🧱 png
+        run: |
+          set -euo pipefail
+          curl -sS --fail-with-body --retry 2 --max-time 30 -D headers.txt -o chart.png "$BASE/png/$DATA?scale=2"
+          grep -qi '^content-type: image/png' headers.txt || { echo "::error::the PNG link answered another content type"; exit 1; }
+          [ "$(head -c 8 chart.png | od -An -tx1 | tr -d ' \n')" = "89504e470d0a1a0a" ] || { echo "::error::the PNG link answered no PNG"; exit 1; }
+          width=$(od -An -tu4 --endian=big -j16 -N4 chart.png | tr -d ' ')
+          svg_width=$(grep -o '^<svg[^>]* width="[0-9]*"' get.svg | grep -o '[0-9]*$')
+          echo "PNG width $width, SVG width $svg_width"
+          [ "$width" = "$((svg_width * 2))" ] || { echo "::error::the PNG at scale 2 is $width pixels wide, not twice the SVG's $svg_width"; exit 1; }
+
+      - name: 🚫 remote data refused
+        run: |
+          set -euo pipefail
+          status=$(curl -sS --retry 2 --max-time 30 -o refusal.json -w '%{http_code}' -H 'Accept: application/json' "$BASE/svg/$REMOTE")
+          cat refusal.json; echo
+          [ "$status" = "400" ] || { echo "::error::a block with a data URL got $status, not 400"; exit 1; }
+          jq -e '.error.path == "$.data.d.url"' refusal.json > /dev/null || { echo "::error::the refusal does not name the JSON path"; exit 1; }

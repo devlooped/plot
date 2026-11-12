@@ -68,6 +68,10 @@
       "types": "./dist/static/index.d.ts",
       "import": "./dist/static.js"
     },
+    "./link": {
+      "types": "./dist/link/index.d.ts",
+      "import": "./dist/link.js"
+    },
     "./schema.json": "./dist/plot.schema.json",
     "./package.json": "./package.json"
   },
