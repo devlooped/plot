@@ -38,6 +38,7 @@
   ],
   "scripts": {
     "generate": "node scripts/generate.mjs",
+    "skill": "node scripts/skill.mjs",
     "build": "tsup && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"

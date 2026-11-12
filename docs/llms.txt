@@ -1,0 +1,53 @@
+# plotdown
+
+> plotdown renders a fenced `plot` block of Markdown — the options of Observable Plot's `Plot.plot()` as strict JSON, with marks and transforms written as data — as a chart, on GitHub, GitLab, docs sites, editors and chat apps.
+
+These are the rules of the plotdown agent skill: follow them whenever you write a chart in Markdown, and read the full guide below before you use a mark or a transform that the example does not show.
+
+## Rules for writing a block
+
+1. **Fence**: open with ` ```plot ` (canonical); ` ```oplot ` and ` ```observable-plot ` mean the same and are not colored as gnuplot by GitHub. Put nothing but the JSON inside.
+2. **Strict JSON**: double quotes, no comments, no trailing commas, no `NaN`, `Infinity`, `undefined`, functions, `new Date()` or `d3.*`. Do not wrap it in `Plot.plot(…)`.
+3. **Top level**: `"marks"` (required, an array), `"data"` (named datasets), and the options of `Plot.plot()` with their own names: `width`, `height`, `margin…`, `title`, `subtitle`, `caption`, `grid`, the scales `x`, `y`, `fx`, `fy`, `color`, `r`, `opacity`, `symbol`, `length`, `projection`, `facet`, `style`. An unknown key anywhere is an error.
+4. **A mark** is `{"mark": "<name>", "data": …, …options, "transform": […]}`. `Plot.dot(rows, {x: "a", y: "b"})` becomes `{"mark": "dot", "data": rows, "x": "a", "y": "b"}`. Mark names are exact and case-sensitive: `barY`, not `bar` or `Plot.barY`.
+5. **Channels** (`x`, `y`, `fill`, `stroke`, `r`, `text`, `title`, `fx`, …): a string is a **field name** of each row; for `fill` and `stroke` a CSS color string (`"steelblue"`, `"#e45"`) is a constant; a number, boolean or `null` is a constant; an array gives one value per row; `{"value": "field", "label": "Axis title"}` adds options. Field names are matched exactly (`"a.b"` is the key `a.b`, not a path).
+6. **Transforms**: `"transform": [{"<name>": <first argument>}, …]`, an **array** of objects with **exactly one key**. The second argument of the JavaScript call (the options) is the mark itself. Entries apply **in order, the first is the innermost call**: `Plot.groupX({y: "count"}, Plot.filter("sex", opts))` is `"transform": [{"filter": "sex"}, {"groupX": {"y": "count"}}]`.
+7. **Transform options on the mark** (`thresholds`, `interval`, `domain`, `cumulative` for bin; `binWidth` for hexbin; `z` for select; `seed` for shuffle) are valid only when the mark lists that transform.
+8. **Data** of a mark is one of: inline rows `[{"x": 1, "y": 2}, …]`; an array of values `[0]`; CSV text `{"csv": "x,y\n1,2\n"}` or TSV `{"tsv": "…"}` (numbers, `true`/`false`, empty → `null` are typed); the **name** of a dataset of the top-level `"data"` object; a GeoJSON object. `frame`, `sphere`, `graticule` and `hexgrid` take no `data` key at all. Remote data (`{"url": …}`) is off by default: put the data inline.
+9. **Dates** are ISO 8601 strings: `"2024-03-01"`, `"2024-03"`, `"2024-03-01T14:30Z"`. A column (or array) whose every non-null value is such a string becomes dates. A bare year `"2024"` is **not** a date: write years as numbers (with `"x": {"tickFormat": "d"}` so 2024 is not shown as 2,024) or as `"2024-01-01"`.
+10. **Names stay strings**: reducers (`"count"`, `"sum"`, `"mean"`), curves (`"catmull-rom"`), schemes (`"blues"`, `"tableau10"`), intervals (`"month"`, `"5 days"`), projections (`"equal-earth"`), formats (`"tickFormat": ".0%"`, `"%b %Y"`).
+
+Example:
+
+```plot
+{
+  "data": {"langs": [
+    {"language": "Python", "users": 51}, {"language": "JavaScript", "users": 62},
+    {"language": "TypeScript", "users": 38}, {"language": "Rust", "users": 13}, {"language": "Go", "users": 14}
+  ]},
+  "y": {"grid": true, "label": "Users (%)"},
+  "marks": [
+    {"mark": "barY", "data": "langs", "x": "language", "y": "users", "fill": "steelblue", "sort": {"x": "-y"}},
+    {"mark": "text", "data": "langs", "x": "language", "y": "users", "text": "users", "dy": -6},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+## Docs
+
+- [Full guide for models](https://plotdown.cc/llms-full.txt): the skill, the catalog of marks and transforms, the spec and 30 examples in one file
+- [Agent skill](https://raw.githubusercontent.com/devlooped/plotdown/main/skills/plot/SKILL.md): how to write a valid block, with examples by chart type
+- [Specification](https://raw.githubusercontent.com/devlooped/plotdown/main/spec/spec.md): the format, spec 0.1, Observable Plot 0.6.19
+- [Catalog](https://raw.githubusercontent.com/devlooped/plotdown/main/skills/plot/references/catalog.md): every mark, option, transform, reducer and named value
+- [Examples](https://raw.githubusercontent.com/devlooped/plotdown/main/skills/plot/references/examples.md): complete blocks for every mark and transform family
+
+## Tools
+
+- [JSON Schema](https://raw.githubusercontent.com/devlooped/plotdown/main/spec/plot.schema.json): JSON Schema 2020-12 of a block (`$id` https://plotdown.cc/schema/0.1/plot.schema.json), for editors and structured outputs
+- [npm package @devlooped/plotdown](https://github.com/devlooped/plotdown/blob/main/packages/plotdown/readme.md): `render`, `renderAsync`, `validate`, `parse` and `PlotdownError`
+
+## Optional
+
+- [Repository](https://github.com/devlooped/plotdown): source, issues and releases
+- [Observable Plot](https://observablehq.com/plot/): the documentation of the options plotdown takes (plotdown is not affiliated with Observable)
