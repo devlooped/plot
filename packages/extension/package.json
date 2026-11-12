@@ -1,0 +1,36 @@
+{
+  "name": "plotdown-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser extension (Chrome, Edge, Firefox) and userscript that render plot code blocks of strict JSON as Observable Plot charts on the pages you read.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devlooped/plotdown.git",
+    "directory": "packages/extension"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:browser": "node test/browser/chromium.mjs && node test/browser/userscript.mjs",
+    "test:firefox": "node test/browser/firefox.mjs",
+    "test:known": "node build.mjs --sites=known && node test/browser/known.mjs",
+    "pack": "node scripts/pack.mjs",
+    "icons": "node scripts/icons.mjs"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.3.7",
+    "@types/node": "26.6.6",
+    "esbuild": "0.28.2",
+    "jsdom": "31.0.0",
+    "@types/jsdom": "30.0.0",
+    "playwright": "1.65.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

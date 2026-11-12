@@ -1,0 +1,12 @@
+:root { color-scheme: light dark; font: 13px/1.4 system-ui, sans-serif; }
+body { margin: 0; padding: 12px 14px; width: 260px; }
+header { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+header strong { font-size: 15px; }
+#version { opacity: 0.6; font-size: 11px; margin-left: auto; }
+.switch { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
+.switch input { margin: 0; width: 16px; height: 16px; }
+.switch input:disabled + span { opacity: 0.5; }
+#host { font-weight: 600; word-break: break-all; }
+button { margin: 6px 0 0; padding: 4px 10px; font: inherit; cursor: pointer; }
+#status { margin: 8px 0 0; min-height: 1.4em; }
+.note { margin: 8px 0 0; font-size: 11px; opacity: 0.7; }

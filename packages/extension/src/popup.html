@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>plotdown</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="popup.js" defer></script>
+</head>
+<body>
+  <header>
+    <img src="icons/icon-32.png" width="20" height="20" alt="">
+    <strong>plotdown</strong>
+    <span id="version"></span>
+  </header>
+  <label class="switch">
+    <input type="checkbox" id="site">
+    <span>On <b id="host">this site</b></span>
+  </label>
+  <label class="switch">
+    <input type="checkbox" id="global">
+    <span>On all sites</span>
+  </label>
+  <button type="button" id="allow" hidden>Allow on this site</button>
+  <p id="status" role="status"></p>
+  <p class="note">Charts are drawn in your browser. Nothing is collected or sent, and remote data in blocks is not loaded.</p>
+</body>
+</html>
