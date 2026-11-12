@@ -40,15 +40,15 @@ Chrome "short description" and AMO "summary" (132 characters at most; also the `
 > - **Private.** Charts are drawn in your browser. The extension collects nothing and sends nothing.
 > - **Your switches.** Turn it off for a site, or everywhere, from its toolbar button.
 >
-> The format is open and documented at https://github.com/devlooped/plotdown, with a CLI and a GitHub Action that turn the same blocks into images, and plugins for Markdown tools, React, VS Code, Obsidian and AI agents.
+> The format is open and documented at https://plotdown.cc, with a CLI and a GitHub Action that turn the same blocks into images, and plugins for Markdown tools, React, VS Code, Obsidian and AI agents.
 >
 > plotdown is open source (MIT) and not affiliated with Observable, Inc. Observable Plot is © Observable, Inc., under the ISC license.
 
 ## Links
 
-- Homepage: https://github.com/devlooped/plotdown (later https://plotdown.cc)
+- Homepage: https://plotdown.cc (source: https://github.com/devlooped/plotdown)
 - Support: https://github.com/devlooped/plotdown/issues
-- Privacy policy: [privacy.md](privacy.md), published at a URL (for example https://github.com/devlooped/plotdown/blob/main/packages/extension/store/privacy.md)
+- Privacy policy: https://plotdown.cc/privacy/ (the site builds that page from [privacy.md](privacy.md))
 
 ## Images
 

@@ -58,18 +58,8 @@ To keep merge requests simple, use only `plots:check` and render on your machine
 | `--check` | | Change nothing; exit with 1 when a run would change something. |
 | `--theme <theme>` | `auto` | `auto` follows the reader's light or dark color scheme; `light` and `dark` fix the colors. |
 
-Globs are expanded by plotdown, from the root of the repository, without entering `node_modules` or `.git`: quote them so that the shell leaves them alone. An invalid block fails the job with its file, line and JSON path (`readme.md:12: error: $.marks[0].mark: unknown mark "barZ"`), and its file is left as it is.
+Globs are expanded by plotdown, from the root of the repository (the job's directory), without entering `node_modules` or `.git`: quote them so that the shell leaves them alone. An invalid block fails the job with its file, line and JSON path (`readme.md:12: error: $.marks[0].mark: unknown mark "barZ"`), and its file is left as it is.
 
-## Before the first npm release
-
-Until `@devlooped/plotdown` is published on npm, build it from its repository in place of `npx --yes @devlooped/plotdown`:
-
-```yaml
-  before_script:
-    - git clone --depth 1 https://github.com/devlooped/plotdown.git /tmp/plotdown
-    - (cd /tmp/plotdown && npx --yes pnpm@10.32.1 install --frozen-lockfile --filter @devlooped/plotdown && npx --yes pnpm@10.32.1 --filter @devlooped/plotdown exec tsup)
-  script:
-    - node /tmp/plotdown/packages/plotdown/dist/cli.js render --check "**/*.md"
-```
+Pin a version to keep a new release from changing the images under you: `npx --yes @devlooped/plotdown@0.1.0 render …`. For comments and merge request descriptions, where no job runs, use [image links](./image-links.md). All the options of the CLI are in [the command line](./cli.md).
 
 *plotdown is not affiliated with Observable, Inc.*

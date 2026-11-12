@@ -5,8 +5,8 @@
 // A directory is served on localhost (index.html for folders). Each path is
 // loaded (default "/"), and the page's charts, error displays and console errors
 // are counted. Requests for plotdown.js on jsDelivr are answered from
-// packages/plotdown/dist, so a sample can use the published script tag before
-// the package is published (PLOTDOWN_CDN=1 lets them through).
+// packages/plotdown/dist, so a sample that uses the published script tag is
+// checked against the current build (PLOTDOWN_CDN=1 lets them through to jsDelivr).
 // Exit code 1 when a page has no chart. PLOTDOWN_SHOTS=<dir> saves screenshots.
 import fs from "node:fs";
 import http from "node:http";

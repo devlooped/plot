@@ -34,7 +34,7 @@ Plot.plot({
 })
 ```
 
-The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. "Renderer" means an implementation of this spec; the reference renderer is the npm package `plotdown`.
+The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. "Renderer" means an implementation of this spec; the reference renderer is the npm package `@devlooped/plotdown`.
 
 ## 1. Versions
 

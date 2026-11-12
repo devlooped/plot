@@ -301,6 +301,22 @@ for (const [slug, text] of recipeSources) {
   });
 }
 
+// The privacy policy of the browser extension and the userscript: the stores take it as a URL.
+{
+  const source = "packages/extension/store/privacy.md";
+  /** @type {import("./markdown.mjs").MarkdownEnv} */
+  const env = {source};
+  const html = md.render(await readText(path.join(root, source)), env);
+  await page({
+    url: "/privacy/",
+    kind: "doc",
+    nav: "",
+    title: "Privacy policy",
+    description: "The plotdown browser extension and userscript collect no data and make no network request.",
+    body: `<div class="doc-layout"><article class="prose">${html}</article></div>`
+  });
+}
+
 await page({url: "/404.html", kind: "doc", nav: "", title: "Not found", description: "This page does not exist.", body: notFoundBody()});
 
 await emit("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);

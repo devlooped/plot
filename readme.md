@@ -4,7 +4,7 @@
 [![Build](https://github.com/devlooped/plotdown/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/devlooped/plotdown/actions/workflows/build.yml)
 
 <!-- #content -->
-Charts in Markdown, written as data. A fenced `plot` block holds the options of [Observable Plot](https://observablehq.com/plot/)'s `Plot.plot()` as strict JSON, and plotdown draws the chart: on GitHub and GitLab as an SVG image next to the block, in your own code with one function call.
+Charts in Markdown, written as data. A fenced `plot` block holds the options of [Observable Plot](https://observablehq.com/plot/)'s `Plot.plot()` as strict JSON, and plotdown draws the chart: on GitHub and GitLab as an SVG image next to the block, on your site with one script tag, in your docs tool, editor or chat app with a plugin. Try it in the [playground](https://plotdown.cc/playground/); every setup has a recipe at [plotdown.cc](https://plotdown.cc/recipes/).
 
 ```plot
 {
@@ -62,7 +62,7 @@ Plot.plot({
 | Dates | ISO 8601 strings, such as `"2026-09-01"` |
 | Functions, custom marks, DOM nodes | Not allowed: a block is data, so it is safe to render text written by anyone, or by a model |
 
-The fence is `plot`, `oplot` or `observable-plot`: GitHub colors `plot` as gnuplot, the two others stay plain. Every option, mark and transform is in the [spec](spec/spec.md), and [`plot.schema.json`](spec/plot.schema.json) validates a block in editors and in the structured outputs of language models.
+The fence is `plot`, `oplot` or `observable-plot`: GitHub colors `plot` as gnuplot, the two others stay plain. A block may also live in a file of its own, named `*.plotdown.json`. Every option, mark and transform is in the [spec](spec/spec.md), and the JSON Schema, `https://plotdown.cc/schema/plot.schema.json` (the current version; `https://plotdown.cc/schema/0.1/plot.schema.json` for spec 0.1), validates a block in editors and in the structured outputs of language models.
 
 ```plot
 {
@@ -83,12 +83,16 @@ The fence is `plot`, `oplot` or `observable-plot`: GitHub colors `plot` as gnupl
 
 | Surface | How | Status |
 | --- | --- | --- |
-| GitHub, GitLab, Bitbucket, Azure DevOps, npm: anything that shows Markdown images | An SVG per block, committed next to the docs by the [CLI](#cli), the [GitHub Action](#github-action) or [GitLab CI](docs/recipes/gitlab-ci.md) | Available |
+| GitHub, GitLab, Bitbucket, Azure DevOps, npm: anything that shows Markdown images | An SVG per block, committed next to the docs by the [CLI](#cli), the [GitHub Action](#github-action) or [GitLab CI](https://plotdown.cc/recipes/gitlab-ci/) | Available |
+| Issue comments, Slack, Discord, email | [Image links](https://plotdown.cc/recipes/image-links/) from `plotdown.cc`: the playground's **Copy image link**, `plotdown link` | Available |
+| Web pages, GitHub Pages, Hugo, MkDocs, Gitea, live with tooltips | `plotdown.js`, [one script tag](https://plotdown.cc/recipes/script-tag/) | Available |
+| VitePress, Docusaurus, Astro, React and Streamdown chat UIs | [markdown-it, rehype, marked and React adapters](https://plotdown.cc/recipes/) | Available |
 | Your own pages, apps and servers | The [`@devlooped/plotdown`](packages/plotdown) library | Available |
-| Web pages and docs sites, live with tooltips | `plotdown.js`, one script tag | Planned |
-| github.com comments, AI chats, any site | A browser extension around `plotdown.js` | Planned |
-| VitePress, Docusaurus, Astro, React chat UIs | markdown-it, rehype, marked and React adapters | Planned |
-| Issue comments, Slack, email | Image links from `plotdown.cc` | Planned |
+| Claude, ChatGPT, VS Code chat and other MCP Apps hosts | The [MCP server](https://plotdown.cc/recipes/mcp/), `@devlooped/plotdown-mcp` | Available |
+| Models that write blocks | The [agent skill](https://plotdown.cc/recipes/agent-skill/), `llms.txt` and the JSON Schema | Available |
+| github.com comments, AI chats, any site you read | The [browser extension and userscript](https://plotdown.cc/recipes/browser-extension/) | Built, not in the stores yet: load it unpacked |
+| VS Code, Cursor, VSCodium | The [VS Code extension](https://plotdown.cc/recipes/vscode/) | Built, not on the Marketplace yet: install the `.vsix` |
+| Obsidian | The [Obsidian plugin](https://plotdown.cc/recipes/obsidian/) | Built, not in the community plugins yet |
 
 The images follow the reader's light or dark theme, and hold everything themselves: title, legend, axes, no web font, no remote file.
 
@@ -138,9 +142,10 @@ jobs:
 | `theme` | `auto` | `auto` (the reader's color scheme), `light` or `dark` |
 | `check` | `false` | Change nothing, and fail when an image is missing or out of date: for pull requests |
 | `commit` | `false` | Commit and push the changes |
+| `commit-message` | `Render plot blocks` | The message of that commit |
 | `version` | | A version of `@devlooped/plotdown` on npm; empty builds plotdown from the action's own source |
 
-Until the first release, use `devlooped/plotdown@main`.
+For GitLab, the same in a CI job: [GitLab CI](https://plotdown.cc/recipes/gitlab-ci/).
 
 ## CLI
 
@@ -163,6 +168,8 @@ When a block changes, its image line and file change with it, and the SVG files 
 readme.md:12: error: $.marks[0].mark: unknown mark "barZ"; did you mean "barX"?
 ```
 
+`plotdown render --link` puts [image links](https://plotdown.cc/recipes/image-links/) to `plotdown.cc` instead of SVG files, and `plotdown link chart.plotdown.json` prints the link of one block, for a comment or a chat. Committed SVG files stay the better choice for a README: they need no service, and a link carries the block's data to whoever opens it. All the options: [the command line](https://plotdown.cc/recipes/cli/).
+
 ## Library
 
 ```js
@@ -179,7 +186,7 @@ const {document} = parseHTML("<!DOCTYPE html><html><body></body></html>");
 const svg = renderSvg(source, {document}); // one standalone SVG string, the same bytes for the same block
 ```
 
-See the [package readme](packages/plotdown/readme.md) for the whole API.
+In a page, `<script type="module" src="https://cdn.jsdelivr.net/npm/@devlooped/plotdown/dist/plotdown.js"></script>` renders every block. See the [package readme](packages/plotdown/readme.md) for the whole API: parser plugins, React, `plotdown.js`, static SVG and image links.
 
 plotdown is not affiliated with Observable, Inc. Observable Plot is © Observable, Inc., under the ISC license.
 <!-- #content -->

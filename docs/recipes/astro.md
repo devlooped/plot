@@ -61,7 +61,7 @@ The [spec](https://plotdown.cc/spec/) lists the marks and options; the [playgrou
 ## Notes
 
 - **Dark mode**: the chart draws with `currentColor`, so it follows the text color of the page, Starlight's dark theme included.
-- **Titles**: a `"title"` becomes an `<h2>` in the figure. On a docs page it takes the site's heading style, and Starlight lists it under "On this page". Use `"caption"` for a smaller line under the chart.
+- **Titles**: a `"title"` and a `"subtitle"` become `<p class="plotdown-title">` and `<p class="plotdown-subtitle">` in the figure, not headings: Starlight does not list them under "On this page". They carry inline styles (bold, a little larger); override them with those classes and `!important`; `"caption"` is a smaller line under the chart.
 - **Options**: `rehypePlugins: [[rehypePlotdown, {strict: true}]]` fails the build on a broken block; `allowRemote: true` (or a list of origins) loads data URLs at build time.
 - **Client mode**: `[rehypePlotdown, {mode: "client"}]` leaves the blocks for `plotdown.js` in the browser (add its script tag to your layout), for charts that follow a theme toggle with the page's own background.
 

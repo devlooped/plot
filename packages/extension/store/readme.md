@@ -23,11 +23,11 @@ The version is that of `packages/extension/package.json`; raise it for each uplo
 - Manifests (Manifest V3), icons (16, 32, 48, 96, 128), promotional images and a 1280×800 screenshot: [`images/`](images), [`../icons/`](../icons).
 - Listing text, category and links: [`listing.md`](listing.md).
 - Single purpose, permission justifications, remote code and data usage answers: [`permissions.md`](permissions.md).
-- Privacy policy: [`privacy.md`](privacy.md).
+- Privacy policy: [`privacy.md`](privacy.md), published by the site at https://plotdown.cc/privacy/.
 
 ## Left to do
 
-1. **Publish the privacy policy at a URL** (the stores take a link): the file on GitHub once merged, or a page of plotdown.cc.
+1. **Privacy policy URL**: https://plotdown.cc/privacy/ (built from `privacy.md` with the site; check that it is live before submitting).
 2. **Chrome Web Store** ([developer dashboard](https://chrome.google.com/webstore/devconsole), one-time registration fee): new item, upload `plotdown-chrome-<version>.zip`; fill in the store listing from `listing.md` with the images; the privacy tab from `permissions.md`; distribution public. Expect a longer review for the access to all sites.
 3. **Microsoft Edge Add-ons** ([Partner Center](https://partner.microsoft.com/dashboard/microsoftedge/overview)): new extension, upload the same zip; properties, listing (logo 300×300, screenshot, small promotional tile) and notes for certification from `permissions.md`.
 4. **Firefox Add-ons** ([AMO developer hub](https://addons.mozilla.org/developers/)): submit a new add-on "On this site", upload `plotdown-firefox-<version>.zip`; answer "yes" to minified code and upload `plotdown-source-<version>.zip`, with these build steps for the reviewer:

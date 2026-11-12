@@ -50,7 +50,7 @@ import {Plotdown} from "@devlooped/plotdown/react";
 | `onError` | Called with the `PlotdownError` of a block that fails |
 | `className` | Added to the outer `div.plotdown` |
 
-The chart is drawn in an effect, on the client: on the server and in the first paint the component holds the placeholder, so server rendering sends no chart and no mismatch. It uses hooks: in the Next.js App Router, use it from a `"use client"` component. A block that fails shows its source and the reason (`.plotdown-error`, `.plotdown-message`); the chart is removed when the component unmounts.
+The chart is drawn in an effect, on the client: on the server and in the first paint the component holds the placeholder, so server rendering sends no chart and no mismatch. Both modules are marked `"use client"`, so a server component of the Next.js App Router can import and render them. A block that fails shows its source and the reason (`.plotdown-error`, `.plotdown-message`); the chart is removed when the component unmounts.
 
 ## Try it
 
@@ -73,7 +73,7 @@ The [spec](https://plotdown.cc/spec/) lists the marks and options; the [playgrou
 ## Notes
 
 - **Dark mode**: the chart draws with `currentColor`, so it follows your chat's text color.
-- **Titles**: a block's `"title"` and `"subtitle"` become `<h2>` and `<h3>` in the figure and take your chat's heading styles; scope them with `.plotdown h2, .plotdown h3 { … }`.
+- **Titles**: a block's `"title"` and `"subtitle"` become `<p class="plotdown-title">` and `<p class="plotdown-subtitle">` in the figure, styled inline as `plotdown.js` draws them; restyle them with those classes and `!important`.
 - **Without React**: a chat UI that writes HTML can use the [script tag](./script-tag.md), which watches the page and renders a block once its JSON is complete.
 
 > [!NOTE]

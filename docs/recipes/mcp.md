@@ -56,7 +56,7 @@ Invalid plot block at $.marks[0].mark: unknown mark "pie"
 Fix the value at $.marks[0].mark and call render_plot again. The format is in the resource plotdown://spec.
 ```
 
-A host without MCP Apps gets a short summary and the block as a ```` ```plot ```` fence instead of the view; a chat that renders plot blocks (see [React and Streamdown](./react.md)) still shows the chart.
+A host without MCP Apps gets the chart as a PNG image instead of the view, drawn on your machine, with a short summary and the block as a ```` ```plot ```` fence, which a chat that renders plot blocks (see [React and Streamdown](./react.md)) shows as a chart too. Nothing leaves your machine. `--image-links` adds a [plotdown.cc image link](./image-links.md) of the chart to that text, for hosts that show images of the model's answer but not those of a tool result; the link holds the block, so its data goes to whoever opens it.
 
 ## Check it
 
@@ -66,7 +66,7 @@ Ask for a chart: "Plot the body mass of Adelie (3750 g) and Gentoo (5000 g) peng
 
 - **Remote data is off** in the server and in the view: the data must be inline.
 - **The skill** teaches the format without a server, to models that only write Markdown: see [agent skill](./agent-skill.md).
-- **As a library**: `createServer()` and `startHttpServer({port})` are exported for a server of your own.
+- **As a library**: `createServer({imageLinks})` and `startHttpServer({port, imageLinks})` are exported for a server of your own.
 
 > [!NOTE]
-> Tried with `@devlooped/plotdown-mcp` 0.1.0 on Node 24 on 2026-11-12: an MCP SDK client called `render_plot` over stdio (with and without MCP Apps support) and over Streamable HTTP. The host configurations are from the hosts' documentation.
+> Tried with `@devlooped/plotdown-mcp` 0.1.0 on Node 24 on 2026-11-12: an MCP SDK client called `render_plot` over stdio (with and without MCP Apps support) and over Streamable HTTP, and the packed package ran from `npx` outside the repository. The host configurations are from the hosts' documentation; the server was not tried in Claude, ChatGPT or VS Code yet.

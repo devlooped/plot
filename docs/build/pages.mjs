@@ -153,7 +153,7 @@ ${gallery}
   <ul class="links">
     <li><a href="/recipes/agent-skill/">The agent skill</a>: <code>SKILL.md</code> for Claude Code, Codex, Copilot and other agents that read skills.</li>
     <li><a href="/llms.txt">llms.txt</a> and <a href="/llms-full.txt">llms-full.txt</a>: the rules, the catalog of marks and 30 examples, for any system prompt.</li>
-    <li><a href="${input.schemaUrl}">plot.schema.json</a>: JSON Schema 2020-12, for structured outputs and editors.</li>
+    <li><a href="/schema/plot.schema.json">plot.schema.json</a>: JSON Schema 2020-12, for structured outputs and editors, and for files named <code>*.plotdown.json</code>. This URL follows the current spec; <a href="${input.schemaUrl}">${escapeHtml(input.schemaUrl)}</a> stays that of this version.</li>
     <li><a href="/recipes/mcp/">The MCP App</a>: a <code>render_plot</code> tool that shows the chart inside Claude, ChatGPT and VS Code.</li>
   </ul>
 </section>

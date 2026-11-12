@@ -68,6 +68,13 @@ describe("files at fixed paths", () => {
     for (const name of fixtures) expect(JSON.parse(read(path.join(dist, "examples", name)))).toEqual(JSON.parse(read(path.join(root, "spec/fixtures", name))));
   });
 
+  it("publishes the privacy policy of the extension, which the stores link to", () => {
+    const page = read(path.join(dist, "privacy/index.html"));
+    expect(page).toContain("collects no data and makes no network request");
+    expect(read(path.join(dist, "sitemap.xml"))).toContain("<loc>https://plotdown.cc/privacy/</loc>");
+    for (const file of ["listing.md", "readme.md"]) expect(read(path.join(root, "packages/extension/store", file))).toContain("https://plotdown.cc/privacy/");
+  });
+
   it("has a 404 page, a sitemap and robots.txt", () => {
     for (const name of ["404.html", "sitemap.xml", "robots.txt", "favicon.svg"]) expect(existsSync(path.join(dist, name))).toBe(true);
   });

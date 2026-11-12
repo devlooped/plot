@@ -50,7 +50,7 @@ For a model that takes no skills (an API call, a custom chat, a chat app's custo
 
 ## Structured outputs
 
-To make a model return a block in the right shape, give it the JSON Schema as the response format: `https://plotdown.cc/schema/0.1/plot.schema.json` (JSON Schema 2020-12; also `node_modules/@devlooped/plotdown/dist/plot.schema.json`). The schema checks the shape; `validate()` of `@devlooped/plotdown` checks the block as the renderer will, and its error names the JSON path to fix.
+To make a model return a block in the right shape, give it the JSON Schema as the response format: `https://plotdown.cc/schema/plot.schema.json`, the current version, or `https://plotdown.cc/schema/0.1/plot.schema.json`, which stays that of spec 0.1 (JSON Schema 2020-12; also `node_modules/@devlooped/plotdown/dist/plot.schema.json`). The schema checks the shape; `validate()` of `@devlooped/plotdown` checks the block as the renderer will, and its error names the JSON path to fix.
 
 ## Check it
 

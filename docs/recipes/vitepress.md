@@ -50,7 +50,7 @@ The [spec](https://plotdown.cc/spec/) lists the marks and options; the [playgrou
 - **Vue templates**: VitePress compiles each page as a Vue template. The plugin sees that (mdit-vue's `env`) and writes Plot's `<style>` as `<component is="style">` and braces as character references, so a label such as `{{ 6 * 7 }}` stays text. Force it with `md.use(plotdown, {vue: true})`.
 - **Dark mode**: the chart draws with `currentColor`, so it follows VitePress's toggle.
 - **Errors**: VitePress styles only its own code blocks; give `.plotdown-error pre` and `.plotdown-message` a style in your theme's CSS. `md.use(plotdown, {strict: true})` fails the build instead, and `onError: (error) => console.warn(error.message)` logs each one.
-- **Titles**: a `"title"` becomes an `<h2>` inside the figure and takes VitePress's heading style (with its rule above).
+- **Titles**: a `"title"` and a `"subtitle"` become `<p class="plotdown-title">` and `<p class="plotdown-subtitle">` inside the figure, not headings, so they stay out of VitePress's outline and heading style.
 - **Remote data**: markdown-it cannot wait, so a block with `{"url": …}` data fails at build time even with `allowRemote`. Put the data inline, or use `mode: "client"` and the [script tag](./script-tag.md) with `data-allow-remote`.
 
 > [!NOTE]

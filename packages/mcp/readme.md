@@ -61,7 +61,7 @@ claude mcp add plotdown -- npx -y @devlooped/plotdown-mcp
 npx -y @devlooped/plotdown-mcp --http --port 3001    # http://127.0.0.1:3001/mcp
 ```
 
-It binds `127.0.0.1` by default and then refuses requests whose `Host` header is not a local name. `--host 0.0.0.0` exposes it on the network, with no authentication: put it behind a proxy that adds some.
+Add `--image-links` to either form to give hosts without MCP Apps a plotdown.cc link too (see below). It binds `127.0.0.1` by default and then refuses requests whose `Host` header is not a local name. `--host 0.0.0.0` exposes it on the network, with no authentication: put it behind a proxy that adds some.
 
 ## What the server offers
 
@@ -83,7 +83,9 @@ Fix the value at $.marks[0].transform[0].binX.y and call render_plot again. The 
 
 `structuredContent.error` holds `{path, message, line?, column?}`.
 
-**Hosts without MCP Apps** (no `io.modelcontextprotocol/ui` extension in the client's capabilities) get a summary of the chart and the block as a Markdown fence, which any page or editor with plotdown renders. A static image will take this place once the standalone SVG renderer exists (`src/fallback.ts`).
+**Hosts without MCP Apps** (no `io.modelcontextprotocol/ui` extension in the client's capabilities) get the chart as a **PNG image** content block, and a text with a summary and the block as a Markdown fence, which any page or editor with plotdown renders. The PNG is drawn on the user's machine (`@devlooped/plotdown/static`, then [resvg](https://github.com/linebender/resvg) with the Liberation Sans fonts of `fonts/`), at twice the CSS size, in light colors: chat hosts and model APIs take PNG, not SVG, and a PNG cannot follow the host's theme. Nothing leaves the machine. When resvg cannot run on the platform, or the chart passes 4,096 pixels a side, the text comes alone (`src/fallback.ts`).
+
+`--image-links` (or `imageLinks: true`) also puts a `https://plotdown.cc/png/pako:…` Markdown image in that text, for hosts that show the images of the model's answer but not those of a tool result. It is off by default: the link holds the block, so the chart's data goes to plotdown.cc and to whoever opens the link.
 
 ## As a library
 
@@ -91,7 +93,7 @@ Fix the value at $.marks[0].transform[0].binX.y and call render_plot again. The 
 import {createServer, startHttpServer} from "@devlooped/plotdown-mcp";
 import {serveStdio} from "@modelcontextprotocol/server/stdio";
 
-serveStdio(() => createServer());                 // or:
+serveStdio(() => createServer({imageLinks: false})); // or:
 const {url} = await startHttpServer({port: 3001});
 ```
 

@@ -108,7 +108,7 @@ Without the rule, outside Vercel, or when the firewall does not answer within a 
 pnpm build                                  # the core, then the service
 node packages/service/dist/serve.js 8787    # a plain Node server: http://localhost:8787/api/health
 pnpm exec plotdown link --base-url http://localhost:8787 chart.json
-vercel dev                                  # the Vercel function and its rewrites (needs the site placeholders filled)
+vercel dev                                  # the Vercel function and its rewrites, beside the site (after pnpm build)
 ```
 
 As a library: `createService({renderer, rendererId, limits, rateLimit})` turns a `Request` into a `Response` (Fetch API) with any `ImageRenderer`; `createNodeService()` runs it with worker threads; `createInProcessRenderer()` draws in the calling thread (no time limit: tests and trusted input).

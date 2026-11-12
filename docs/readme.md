@@ -21,6 +21,7 @@ pnpm --filter plotdown-site test:browser    # Edge or Chrome: charts in light an
 | `/gallery/` | the 30 fixtures of `spec/fixtures`, titled in `build/catalog.mjs` |
 | `/spec/` | `spec/spec.md`, rendered as it is |
 | `/recipes/<slug>/` | `recipes/<slug>.md`, listed by route in `build/catalog.mjs` |
+| `/privacy/` | `packages/extension/store/privacy.md`: the privacy policy of the browser extension, which the stores link to |
 | `/llms.txt`, `/llms-full.txt` | `llms.txt`, `llms-full.txt` of this folder, copied |
 | `/schema/<version>/plot.schema.json` | `spec/plot.schema.json`; the build checks that its `$id` is this URL and the version is that of `spec/spec.md` |
 | `/schema/plot.schema.json` | the same file: the current version at a URL that does not change, for SchemaStore's catalog |
@@ -42,7 +43,7 @@ Markdown pages are rendered with markdown-it and plotdown's own plugin in client
 
 The editor's text goes into a `<pre><code class="language-plot">` block of the preview, which `plotdown.js` watches like any block of a page; the playground reads the block's `data-plotdown` state and shows plotdown's error, with its JSON path, where the chart would be, and marks the place in the editor. The block travels in the URL as `#pako:…` (zlib, then base64url: `site/share.ts`), the encoding of the image service, so `https://plotdown.cc/playground/#pako:X` and `https://plotdown.cc/svg/pako:X` hold the same block. `?example=<name>` loads a fixture.
 
-The **Copy image link** button is in the toolbar, disabled (`data-copy-image`). The image service enables it: `encodeSpec()` of `site/share.ts` gives the token.
+**Copy image link** (`data-copy-image`) copies the block as an image of the service on the same origin (`imageLink()` of `@devlooped/plotdown/link`): a Markdown image of the SVG, the SVG link, or the PNG link at scale 2, as the **Image** list next to it says. It refuses a block with an error and a block too long for a link.
 
 ## Deploying on Vercel
 

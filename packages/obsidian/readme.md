@@ -23,6 +23,8 @@ A block holds the options of `Plot.plot()` as strict JSON, with marks and transf
 
 ## Install
 
+The plugin is not in the community plugins yet and has no release yet: until then, build it and copy it into a vault as [Develop](#develop) says (`pnpm --filter plotdown-obsidian vault -- "<path to the vault>"`). The ways below work once it is released.
+
 ### From the community plugins
 
 Once the plugin is listed: **Settings → Community plugins → Browse**, search for "Plotdown", then **Install** and **Enable**.

@@ -80,7 +80,7 @@ ${page.body}
 <footer class="colophon">
   <p>plotdown is open source under the MIT license: <a href="${REPO}">devlooped/plotdown</a>. Charts are drawn by <a href="https://observablehq.com/plot/">Observable Plot</a> (ISC).</p>
   <p>plotdown is not affiliated with Observable, Inc.</p>
-  <p class="files"><a href="/llms.txt">llms.txt</a> <a href="/llms-full.txt">llms-full.txt</a> <a href="${assets.schema}">plot.schema.json</a> <a href="/plotdown.js">plotdown.js</a></p>
+  <p class="files"><a href="/llms.txt">llms.txt</a> <a href="/llms-full.txt">llms-full.txt</a> <a href="${assets.schema}">plot.schema.json</a> <a href="/plotdown.js">plotdown.js</a> <a href="/privacy/">Privacy</a></p>
 </footer>
 </body>
 </html>

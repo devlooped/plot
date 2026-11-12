@@ -67,8 +67,17 @@ export const GROUPS = [
     how: "commits an SVG next to each block, or links an image. Readers need nothing.",
     recipes: [
       {slug: "github", name: "GitHub", what: "Action, extension, image links"},
-      {slug: "gitlab-ci", name: "GitLab", what: "A CI job"}
+      {slug: "gitlab-ci", name: "GitLab", what: "A CI job"},
+      {slug: "cli", name: "Command line", what: "plotdown render, plotdown link"},
+      {slug: "image-links", name: "Image links", what: "Comments, chat, email"}
     ]
+  },
+  {
+    id: "readers",
+    title: "Sites you only read",
+    who: "The reader",
+    how: "installs the browser extension or the userscript. Blocks become charts on GitHub, GitLab, AI chats and any page, for that reader alone.",
+    recipes: [{slug: "browser-extension", name: "Browser extension", what: "Chrome, Edge, Firefox, userscript"}]
   },
   {
     id: "tools",
@@ -76,6 +85,7 @@ export const GROUPS = [
     who: "You",
     how: "install a plugin, or give your model the skill so that it writes valid blocks.",
     recipes: [
+      {slug: "vscode", name: "VS Code", what: "Markdown preview and notebooks"},
       {slug: "obsidian", name: "Obsidian", what: "A community plugin"},
       {slug: "mcp", name: "MCP hosts", what: "An MCP App server"},
       {slug: "agent-skill", name: "Agent skill", what: "SKILL.md and llms.txt"}
