@@ -1,6 +1,6 @@
 ---
 title: Plotdown: render ```plot blocks as Observable Plot charts on every Markdown surface
-status: in-progress
+status: blocked
 created: 2026-11-12
 summary: Define a JSON subset of Plot.plot() options and one small core renderer (plotdown), then reach GitHub, GitLab, docs sites, editors and AI chat UIs through ten thin routes (static images, browser extension, script tag, parser plugins, React/Streamdown, the plotdown.cc image service, editor plugins, MCP App, agent skill, upstream PRs).
 ---
