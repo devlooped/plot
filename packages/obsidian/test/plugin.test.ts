@@ -98,7 +98,7 @@ describe("plugin", () => {
 
 describe("sample note", () => {
   const note = fs.readFileSync(path.resolve(__dirname, "../sample/plotdown.md"), "utf8");
-  const blocks = [...note.matchAll(/^```(plot|oplot|observable-plot)\n([\s\S]*?)^```$/gm)].map((m) => ({language: m[1]!, source: m[2]!}));
+  const blocks = [...note.matchAll(/^```(plot|oplot|observable-plot)\r?\n([\s\S]*?)^```\r?$/gm)].map((m) => ({language: m[1]!, source: m[2]!}));
 
   it("renders every block but the last, which shows its mistake", async () => {
     expect(blocks).toHaveLength(4);
