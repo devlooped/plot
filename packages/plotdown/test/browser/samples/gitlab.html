@@ -1,16 +1,22 @@
-<!-- GitLab. The first block is copied as is from the README of gitlab-org/cli on gitlab.com
-     (GET /gitlab-org/cli/-/blob/main/README.md?format=json&viewer=rich, 2026-11-12). gitlab.com's Markdown API
-     needs a token, so the plot blocks follow the same markup as GitLab writes it for a fence Rouge has no lexer
-     for (lib/banzai/filter/syntax_highlight_filter.rb: language "plaintext", data-canonical-lang kept, one
-     span.line per line). -->
+<!-- GitLab (gitlab.com, 2026-11-12), as a reader sees it once the page's scripts ran. Copied as is from
+     gitlab-org/gitlab on gitlab.com: the `ruby` block from doc/development/aggregation_engines.md and a ```code
+     block (a name Rouge has no lexer for) from doc/development/code_intelligence/_index.md, copy-button icons left
+     out. For such a name GitLab keeps it in data-canonical-lang and highlights as plaintext, one span.line per
+     line. The plot blocks are written exactly as that ```code block. The first version of this sample, written
+     from GitLab's source, lacked what the live page adds: code-syntax-highlight-theme, an id on the <pre>, the
+     button inside <copy-code>; it had v-pre="true", which the live page no longer shows. -->
 <div class="file-content js-markup-content md">
-<div class="gl-relative markdown-code-block js-markdown-code"><pre data-sourcepos="120:1-122:3" data-canonical-lang="shell" class="code highlight js-syntax-highlight language-shell" v-pre="true"><code><span id="LC1" class="line" data-lang="shell">glab &lt;<span class="nb">command</span><span class="o">&gt;</span> &lt;subcommand&gt; <span class="o">[</span>flags]</span></code></pre><copy-code></copy-code><insert-code-snippet></insert-code-snippet></div>
-<div class="gl-relative markdown-code-block js-markdown-code"><pre data-sourcepos="1:1-9:3" data-canonical-lang="plot" class="code highlight js-syntax-highlight language-plaintext" v-pre="true"><code><span id="LC1" class="line" data-lang="plaintext">{</span>
+<div class="gl-relative markdown-code-block js-markdown-code"><pre data-sourcepos="251:1-253:3" data-canonical-lang="ruby" class="code highlight js-syntax-highlight language-ruby code-syntax-highlight-theme" id="code-114"><code><span id="LC1" class="line" data-lang="ruby"><span class="n">measurement</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="ss">description: </span><span class="kp">nil</span><span class="p">)</span></span></code></pre><copy-code><button type="button" class="btn btn-default btn-md gl-button btn-icon has-tooltip" data-title="Copy to clipboard" aria-label="Copy to clipboard" data-clipboard-target="pre#code-114"></button></copy-code></div>
+<div class="gl-relative markdown-code-block js-markdown-code"><pre data-sourcepos="55:4-61:6" data-canonical-lang="code" class="code highlight js-syntax-highlight language-plaintext code-syntax-highlight-theme" id="code-63"><code><span id="LC1" class="line" data-lang="plaintext">app</span>
+<span id="LC2" class="line" data-lang="plaintext">  controllers</span>
+<span id="LC3" class="line" data-lang="plaintext">    application_controller.rb</span></code></pre><copy-code><button type="button" class="btn btn-default btn-md gl-button btn-icon has-tooltip" data-title="Copy to clipboard" aria-label="Copy to clipboard" data-clipboard-target="pre#code-63"></button></copy-code></div>
+<p data-sourcepos="63:1-63:8" dir="auto">A chart:</p>
+<div class="gl-relative markdown-code-block js-markdown-code"><pre data-sourcepos="65:1-73:3" data-canonical-lang="plot" class="code highlight js-syntax-highlight language-plaintext code-syntax-highlight-theme" id="code-64"><code><span id="LC1" class="line" data-lang="plaintext">{</span>
 <span id="LC2" class="line" data-lang="plaintext">  "x": {"label": "Day"},</span>
 <span id="LC3" class="line" data-lang="plaintext">  "marks": [</span>
 <span id="LC4" class="line" data-lang="plaintext">    {"mark": "lineY", "data": [{"d": 1, "v": 3}, {"d": 2, "v": 5}, {"d": 3, "v": 4}], "x": "d", "y": "v"},</span>
 <span id="LC5" class="line" data-lang="plaintext">    {"mark": "ruleY", "data": [0]}</span>
 <span id="LC6" class="line" data-lang="plaintext">  ]</span>
-<span id="LC7" class="line" data-lang="plaintext">}</span></code></pre><copy-code></copy-code><insert-code-snippet></insert-code-snippet></div>
-<div class="gl-relative markdown-code-block js-markdown-code"><pre data-sourcepos="11:1-13:3" data-canonical-lang="observable-plot" class="code highlight js-syntax-highlight language-plaintext" v-pre="true"><code><span id="LC1" class="line" data-lang="plaintext">{"marks": [{"mark": "dot", "data": [1, 2, 3], "x": [1, 2, 3]}]}</span></code></pre><copy-code></copy-code><insert-code-snippet></insert-code-snippet></div>
+<span id="LC7" class="line" data-lang="plaintext">}</span></code></pre><copy-code><button type="button" class="btn btn-default btn-md gl-button btn-icon has-tooltip" data-title="Copy to clipboard" aria-label="Copy to clipboard" data-clipboard-target="pre#code-64"></button></copy-code></div>
+<div class="gl-relative markdown-code-block js-markdown-code"><pre data-sourcepos="75:1-77:3" data-canonical-lang="observable-plot" class="code highlight js-syntax-highlight language-plaintext code-syntax-highlight-theme" id="code-65"><code><span id="LC1" class="line" data-lang="plaintext">{"marks": [{"mark": "dot", "data": [1, 2, 3], "x": [1, 2, 3]}]}</span></code></pre><copy-code><button type="button" class="btn btn-default btn-md gl-button btn-icon has-tooltip" data-title="Copy to clipboard" aria-label="Copy to clipboard" data-clipboard-target="pre#code-65"></button></copy-code></div>
 </div>

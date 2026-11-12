@@ -2,6 +2,12 @@
 // per kind of markup. A later entry for a new host is a few lines and a saved
 // HTML sample under test/browser/samples. A selector that no longer matches
 // means "not rendered", never a broken page.
+//
+// Read from the live sites on 2026-11-12: none of GitHub, GitLab, Gitea,
+// Forgejo, Bitbucket, Azure DevOps, ChatGPT, Claude or Gemini draws its
+// Markdown inside a shadow root, so one observer on the document sees every
+// block. A host that does needs BlockRenderer.observe(shadowRoot) and a scan of
+// it, for each such root (an extension would watch for them being attached).
 import {isPlotFence} from "../fences.js";
 
 /** One kind of markup that holds a plot block. */
@@ -47,6 +53,75 @@ function fenceFromClass(element: Element): string | null {
  * render a block twice.
  */
 export const SELECTORS: readonly BlockSelector[] = [
+  // Sites whose block has a header (language label, copy button) around the
+  // <pre>: these come first, so that the header hides with the code.
+  {
+    // ChatGPT (chatgpt.com, 2026-11-12): <div><div><span>plot</span></div>
+    // <pre><code data-code-language="plot">…</code></pre></div>; the copy button
+    // joins the wrapper once the answer ends. Not in a shadow root.
+    name: "chatgpt",
+    selector: "pre > code[data-code-language]",
+    fence: (element) => element.getAttribute("data-code-language"),
+    block: (element) => {
+      const pre = closestPre(element);
+      // The wrapper starts with the label that names the fence: hide it with the code.
+      return pre.previousElementSibling?.textContent?.trim() === element.getAttribute("data-code-language") ? pre.parentElement : pre;
+    }
+  },
+  {
+    // Claude (claude.ai, 2026-11-12): <div role="group" aria-label="sql code">
+    // <div>copy</div><div>sql</div><div class="overflow-x-auto"><pre
+    // class="code-block__code"><code class="language-sql">. Claude reads the
+    // fence name with /language-(\w+)/: `observable-plot` arrives as `observable`.
+    name: "claude",
+    selector: 'div[role="group"][aria-label$=" code"] pre.code-block__code',
+    fence: (element) => element.closest('[role="group"]')?.getAttribute("aria-label")?.replace(/ code$/, ""),
+    block: (element) => element.closest('[role="group"]')
+  },
+  {
+    // Claude's `observable-plot`, named "observable": render only a plot spec.
+    name: "claude-observable",
+    selector: 'div[role="group"][aria-label="observable code"] pre.code-block__code',
+    ambiguous: true,
+    block: (element) => element.closest('[role="group"]')
+  },
+  {
+    // Gemini (gemini.google.com, 2026-11-12) drops the fence name: a `plot` block
+    // is <code-block>…<span>Code snippet</span>…<pre><code data-test-id="code-content"
+    // class="code-container formatted">. Not in a shadow root.
+    name: "gemini",
+    selector: 'code-block code[data-test-id="code-content"]',
+    ambiguous: true,
+    block: (element) => element.closest("code-block")
+  },
+  {
+    // Bitbucket Cloud (2026-11-12) drops every fence name, known or not:
+    // <div class="codehilite"><pre><span></span>…</pre></div>.
+    name: "bitbucket",
+    selector: "div.codehilite > pre",
+    ambiguous: true,
+    block: (element) => element.parentElement
+  },
+  {
+    // Azure DevOps (a public repo README, 2026-11-12) keeps a known language as a
+    // bare class (<code class="yaml">) and drops an unknown one:
+    // <div class="copy-btn-container"><button>…</button><pre class="hljs"><code>.
+    name: "azure-devops",
+    selector: ['.markdown-content pre.hljs > code:not([class])', '.markdown-content pre.hljs > code[class=""]'].join(", "),
+    ambiguous: true,
+    block: (element) => element.closest(".copy-btn-container") ?? closestPre(element)
+  },
+  {
+    // Gitea (gitea.com, 2026-11-12): <div class="code-block-container"><pre
+    // class="code-block"><code class="chroma language-plot">. Gitea turns every
+    // character but [a-z0-9_] into "_" in that class: observable-plot is
+    // language-observable_plot (modules/highlight/highlight.go). Forgejo
+    // (Codeberg) keeps the name: the "markdown" entry finds it.
+    name: "gitea",
+    selector: "div.code-block-container > pre.code-block > code",
+    fence: (element) => (element.classList.contains("language-observable_plot") ? "observable-plot" : fenceFromClass(element)),
+    block: (element) => element.parentElement!.parentElement
+  },
   {
     // markdown-it, marked, remark/rehype, Hugo, Jekyll (kramdown with Rouge
     // off), highlight.js and Prism: <pre><code class="language-plot">.

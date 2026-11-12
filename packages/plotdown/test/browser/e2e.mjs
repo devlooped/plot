@@ -37,7 +37,9 @@ function pageFor(url) {
 
 const server = http.createServer((request, response) => {
   const url = new URL(request.url, "http://localhost");
-  const headers = {"Content-Security-Policy": CSP, "Cache-Control": "no-store"};
+  // Pages copied from a site keep their style="" attributes: ?attrstyle=1 allows those, and only those.
+  const csp = url.searchParams.get("attrstyle") ? `${CSP}; style-src-attr 'unsafe-inline'` : CSP;
+  const headers = {"Content-Security-Policy": csp, "Cache-Control": "no-store"};
   try {
     if (url.pathname.startsWith("/dist/")) {
       const file = path.join(packageDir, "dist", path.basename(url.pathname));
@@ -170,7 +172,55 @@ await test("GitLab markup", async (page) => {
   await page.goto(`${origin}/sample/gitlab.html`);
   await waitForCharts(page, 2);
   assert.equal((await inspect(page)).charts.length, 2);
-  assert.equal(await page.locator("pre.language-shell").isVisible(), true);
+  assert.equal(await page.locator("pre.language-ruby").isVisible(), true);
+});
+
+// Each site's sample: its two plot blocks render with their header hidden, its other code stays visible.
+const SITES = [
+  {file: "gitea.html", code: "code.language-shell"},
+  {file: "forgejo.html", code: "code.language-shellsession"},
+  {file: "bitbucket.html", code: "div.codehilite", text: "not a chart"},
+  {file: "azure-devops.html", code: "code.yaml"},
+  {file: "chatgpt.html", code: 'code[data-code-language="python"]'},
+  {file: "claude.html", code: "code.language-sql"},
+  {file: "gemini.html", code: "code-block", text: "print"}
+];
+for (const {file, code, text} of SITES) {
+  await test(`${file.replace(".html", "")} markup`, async (page) => {
+    await page.goto(`${origin}/sample/${file}?script=classic&attrstyle=1`);
+    await waitForCharts(page, 2);
+    await page.waitForTimeout(200);
+    const result = await inspect(page);
+    assert.equal(result.charts.length, 2);
+    assert.deepEqual(result.errors, []);
+    for (const chart of result.charts) assert.ok(chart.svg && chart.marks > 0 && chart.hiddenBlock);
+    assert.equal(await page.locator(code, text ? {hasText: text} : {}).first().isVisible(), true);
+  });
+}
+
+await test("a ChatGPT answer streamed in its own markup renders once, its label hidden", async (page) => {
+  await page.goto(`${origin}/sample/empty`);
+  await page.waitForFunction(() => !!window.plotdown);
+  const log = await page.evaluate(async () => {
+    const seen = {errors: 0, charts: new Set()};
+    new MutationObserver(() => {
+      seen.errors += document.querySelectorAll("plotdown-error").length;
+      for (const chart of document.querySelectorAll("plotdown-chart")) seen.charts.add(chart);
+    }).observe(document.body, {childList: true, subtree: true});
+    // As chatgpt.com does: the label and the <pre> first, the text in chunks, the copy button at the end.
+    const main = document.querySelector("main");
+    main.insertAdjacentHTML("beforeend", `<section><p>Here:</p><div class="wrap"><div><span>plot</span></div><pre><code data-code-language="plot"></code></pre></div></section>`);
+    const code = main.querySelector("code");
+    const text = JSON.stringify({title: "Streamed", marks: [{mark: "barY", data: [{a: "x", b: 1}, {a: "y", b: 3}], x: "a", y: "b"}]}, null, 2);
+    for (const chunk of text.match(/[\s\S]{1,12}/g)) {
+      code.append(chunk);
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    main.querySelector(".wrap").insertAdjacentHTML("afterbegin", `<span data-message-content-controls=""><button aria-label="Copy code"></button></span>`);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    return {errors: seen.errors, charts: seen.charts.size, now: document.querySelectorAll("plotdown-chart").length, label: getComputedStyle(main.querySelector(".wrap")).display};
+  });
+  assert.deepEqual(log, {errors: 0, charts: 1, now: 1, label: "none"});
 });
 
 await test("a block streamed piece by piece renders once, when complete, with no error on the way", async (page) => {
