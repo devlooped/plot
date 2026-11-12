@@ -215,6 +215,7 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
   - Done 2026-11-12, each read from the live site. Unknown-language markup could not be seen on Gitea and Claude without an account: those two samples are marked UNVERIFIED. Gemini, Bitbucket and Azure DevOps drop the fence name, so there a block renders only when its text is a plot spec.
 - [x] 11. Build the extension in `packages/extension` (Manifest V3; Chrome, Edge, Firefox): a manifest for all sites, the detector, the bundled `plotdown.js` it injects on demand, and an on/off switch per site. Build the userscript as `plotdown.js` under a `@match *://*/*` header.
 - [ ] 12. Publish `plotdown` to npm, with `skills/plot/SKILL.md` and `llms.txt` generated from the spec, and submit the extension to the three stores.
+  - 2026-11-12: the skill and `llms.txt` are generated from the spec and ship in the package. `@devlooped/plotdown` 0.1.0 and `@devlooped/plotdown-mcp` 0.1.0 are packed and checked, but `npm publish` stopped at the account's one-time password, which only the user has. The extension is built with its store packages and listing; nothing is submitted to the three stores (they need the user's accounts).
 
 **Phase 2: libraries**
 
@@ -244,16 +245,20 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 
 ## How it is verified
 
-- [ ] `pnpm test` passes: every fixture validates against the schema and its SVG equals the SVG of the hand-written Plot call.
-- [ ] A spec with a function-like string, an unknown mark, a `javascript:` link or a remote URL is rejected with an error that names the path.
-- [ ] `pnpm exec plotdown render readme.md` twice in a row leaves `git status` clean after the first run.
-- [ ] The rendered SVG of this repo's readme is legible on github.com in the light and the dark theme.
+- [x] `pnpm test` passes: every fixture validates against the schema and its SVG equals the SVG of the hand-written Plot call.
+- [x] A spec with a function-like string, an unknown mark, a `javascript:` link or a remote URL is rejected with an error that names the path.
+- [x] `pnpm exec plotdown render readme.md` twice in a row leaves `git status` clean after the first run.
+- [x] The rendered SVG of this repo's readme is legible on github.com in the light and the dark theme.
+  - Seen on github.com in the dark theme; the light colors were checked on a light page, not on github.com itself.
 - [ ] With the extension loaded unpacked, `plot`, `oplot` and `observable-plot` blocks render in a GitHub issue comment, a GitLab README and a streamed ChatGPT answer; a real `gnuplot` block on GitHub stays code.
-- [ ] With the extension loaded, a page without a block never receives `plotdown.js` (checked in the browser's developer tools).
-- [ ] A page with only `<script type="module" src=".../plotdown.js">` and a `language-plot` block shows the chart under `Content-Security-Policy: script-src 'self'`.
-- [ ] The Streamdown sample shows a placeholder while the block streams and the chart when it completes.
-- [ ] VitePress, Docusaurus and a marked page each build a sample document whose block is a chart.
+  - Verified with the extension on live github.com file pages (`plot`, `oplot`; a real gnuplot block stays code) in Edge and Firefox; `observable-plot` only on a local copy of GitHub's markup. Not verified: an issue comment, a GitLab README, and ChatGPT through the extension (a streamed ChatGPT answer rendered with the same `plotdown.js` injected by hand).
+- [x] With the extension loaded, a page without a block never receives `plotdown.js` (checked in the browser's developer tools).
+  - Checked against the extension's own record of injections, on live github.com and local pages, not in the developer tools.
+- [x] A page with only `<script type="module" src=".../plotdown.js">` and a `language-plot` block shows the chart under `Content-Security-Policy: script-src 'self'`.
+- [x] The Streamdown sample shows a placeholder while the block streams and the chart when it completes.
+- [x] VitePress, Docusaurus and a marked page each build a sample document whose block is a chart.
 - [ ] Phase 3: `curl https://plotdown.cc/svg/pako:…` returns the SVG the CLI writes for the same spec; a spec with a data URL gets a `400`; the image shows in a GitHub issue comment and in a Slack message (PNG).
+  - Verified on the live service: the SVG has the same bytes as the CLI's render, and a block with a data URL gets `400` with its path. Not verified: the image in a GitHub issue comment and the PNG in a Slack message.
 
 ## Decisions
 
@@ -271,6 +276,7 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 | Static output | SVG from jsdom, no headless browser | Runs in any CI in seconds; `rehype-mermaid` needs Chromium and fails on common hosts |
 | Image service | Later phase (3), stateless, on `plotdown.cc` | Chosen in review. Stateless means nothing to store, back up or moderate |
 | Where the service runs | Vercel, with the DNS of `plotdown.cc` in Cloudflare | Changed during execution (2026-11-12): the user asked for Vercel. The plan assumed a Cloudflare Worker |
+| Block in a file of its own | `*.plotdown.json`, with the schema also at the stable URL `https://plotdown.cc/schema/plot.schema.json` | Added during execution (2026-11-12): the user asked to publish the schema to SchemaStore, which applies a schema by file name ([SchemaStore/schemastore#6638](https://github.com/SchemaStore/schemastore/pull/6638)) |
 
 ## Risks
 
