@@ -26,7 +26,7 @@ describe("renderBlocks", () => {
     const result = await renderBlocks(root).done;
     expect(result).toEqual({rendered: 1, failed: 0, pending: 0});
     const [chart] = charts(root);
-    expect(chart!.shadowRoot!.querySelector("svg")).not.toBeNull();
+    expect(chart!.shadowRoot!.querySelector(".chart svg")).not.toBeNull();
     expect(chart!.nextElementSibling!.getAttribute("data-plotdown")).toBe("rendered");
     expect((chart!.nextElementSibling as HTMLElement).style.display).toBe("none");
   });
@@ -93,7 +93,7 @@ describe("notebook renderer", () => {
       document.body.append(element);
       renderer.renderOutputItem(item(text), element);
       await new Promise((r) => setTimeout(r, 0));
-      expect(element.querySelector("plotdown-chart")!.shadowRoot!.querySelector("svg")).not.toBeNull();
+      expect(element.querySelector("plotdown-chart")!.shadowRoot!.querySelector(".chart svg")).not.toBeNull();
     }
   });
 

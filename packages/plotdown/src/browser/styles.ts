@@ -9,12 +9,25 @@ export const HOST_CSS = `
 :host { display: block; margin: 0 0 16px; color: var(--plotdown-color, inherit); }
 :host([data-forced]) { background: var(--plotdown-background); padding: 8px; border-radius: 6px; }
 [hidden] { display: none !important; }
-.toolbar { display: flex; justify-content: flex-end; min-height: 0; }
+.toolbar { display: flex; justify-content: flex-end; align-items: stretch; gap: 6px; min-height: 0; }
 button {
   font: 12px/1.5 system-ui, sans-serif; color: inherit; background: transparent; cursor: pointer;
   border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 6px; padding: 1px 8px; opacity: 0.6;
 }
-button:hover, button:focus-visible { opacity: 1; }
+button:hover, button:focus-visible, button[aria-expanded="true"] { opacity: 1; }
+button.icon { display: inline-flex; align-items: center; padding: 1px 6px; }
+button.icon svg { display: block; }
+button[data-state="done"] { color: #1a7f37; opacity: 1; }
+:host([data-scheme="dark"]) button[data-state="done"] { color: #3fb950; }
+button[data-state="failed"] { color: #d1242f; opacity: 1; }
+.copy { position: relative; display: flex; }
+.menu {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 10; display: flex; flex-direction: column; min-width: 80px; padding: 4px;
+  background: var(--plotdown-background, Canvas); border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 6px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+}
+.menu button { border: 0; border-radius: 4px; text-align: left; padding: 2px 10px; opacity: 0.85; }
+.menu button:hover, .menu button:focus-visible { opacity: 1; background: color-mix(in srgb, currentColor 12%, transparent); outline: none; }
 .chart { overflow-x: auto; }
 .chart svg { --plot-background: var(--plotdown-background); }
 figure { margin: 0; }

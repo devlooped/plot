@@ -253,7 +253,7 @@ pre.shiki .fence, pre.shiki .fence span { color: var(--fence) !important; font-w
 .specimen-title { font-size: 1.05rem; font-weight: 720; margin: 0 0 10px; padding-top: 12px; border-top: 1px solid var(--rule); }
 .specimen-title a { color: var(--ink); text-decoration: none; }
 .specimen-title a:hover { color: var(--link); }
-.specimen plotdown-chart { min-height: 180px; }
+.specimen plotdown-chart:not([data-view="source"]) { min-height: 180px; }
 .specimen .plot-source { max-height: 260px; overflow: auto; margin: 0 0 12px; padding: 12px; background: var(--surface); border-radius: var(--radius); font-size: 0.75rem; }
 .specimen pre[data-plotdown="pending"], .specimen pre[data-plotdown="rendering"] { min-height: 220px; }
 .specimen figcaption { margin-top: auto; font-size: 0.85rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; justify-content: space-between; }

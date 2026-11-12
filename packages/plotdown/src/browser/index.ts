@@ -4,7 +4,7 @@
 import {BlockRenderer, type BrowserOptions, type ScanResult} from "./renderer.js";
 
 export * from "../index.js";
-export {BlockRenderer, CHART_TAG, ERROR_TAG, STATE_ATTRIBUTE, type BrowserOptions, type ScanResult} from "./renderer.js";
+export {BlockRenderer, CHART_TAG, ERROR_TAG, STATE_ATTRIBUTE, VIEW_ATTRIBUTE, type BrowserOptions, type ScanResult} from "./renderer.js";
 export {findBlocks, readBlock, SELECTORS, type BlockSelector, type FoundBlock} from "./selectors.js";
 export {detectScheme, detectTheme, type Scheme, type Theme, type ThemeOption} from "./theme.js";
 

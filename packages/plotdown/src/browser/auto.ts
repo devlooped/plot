@@ -12,6 +12,7 @@
 //   data-allow-remote="true"          or a list of origins: "https://a.example https://b.example"
 //   data-theme="light"                "auto" (default), "light" or "dark"
 //   data-toggle="false"               no chart/source button
+//   data-copy="false"                 no Copy button (JSON, PNG, SVG)
 //   data-settle="3000"                ms before a block that does not parse shows its error; "false": never
 import * as api from "./index.js";
 import type {BrowserOptions} from "./renderer.js";
@@ -61,6 +62,8 @@ export function readScriptOptions(script: HTMLOrSVGScriptElement | Element | nul
   if (auto !== undefined) options.auto = auto;
   const toggle = flag(data.toggle);
   if (toggle !== undefined) options.toggle = toggle;
+  const copy = flag(data.copy);
+  if (copy !== undefined) options.copy = copy;
   if (data.theme === "light" || data.theme === "dark" || data.theme === "auto") options.theme = data.theme;
   if (data.settle !== undefined) options.settle = flag(data.settle) === false ? false : Number(data.settle) || 0;
   if (data.allowRemote !== undefined) {

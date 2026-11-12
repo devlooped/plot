@@ -4,6 +4,7 @@ import {isPlotSpec} from "../fences.js";
 import {parse} from "../parse.js";
 import {renderAsync} from "../render.js";
 import type {FetchOptions, PlotdownOptions} from "../types.js";
+import {copyBlock, COPY_FORMATS, icon} from "./copy.js";
 import {findBlocks, readBlock, SELECTORS, type BlockSelector, type FoundBlock} from "./selectors.js";
 import {adoptStyles, HOST_CSS, takeStyles} from "./styles.js";
 import {detectTheme, type ThemeOption} from "./theme.js";
@@ -14,6 +15,8 @@ export interface BrowserOptions extends PlotdownOptions {
   theme?: ThemeOption;
   /** A button that switches between the chart and its source (default true). */
   toggle?: boolean;
+  /** A Copy button whose menu copies the block as JSON, or the chart as PNG or SVG (default true). */
+  copy?: boolean;
   /**
    * While the page is watched, how long (ms) a block that starts like JSON but
    * does not parse must stay unchanged before its syntax error shows, so that a
@@ -39,6 +42,8 @@ export const STATE_ATTRIBUTE = "data-plotdown";
 export const CHART_TAG = "plotdown-chart";
 /** The tag of the element that holds an error, inserted after its block. */
 export const ERROR_TAG = "plotdown-error";
+/** The attribute of a chart element that says what it shows: "chart", or "source" when the block shows instead. */
+export const VIEW_ATTRIBUTE = "data-view";
 
 type State = "pending" | "rendering" | "rendered" | "error";
 
@@ -200,7 +205,7 @@ export class BlockRenderer {
     const document = entry.block.ownerDocument;
     let figure: Element;
     try {
-      const {theme: _theme, toggle: _toggle, settle: _settle, selectors: _selectors, ...core} = this.options;
+      const {theme: _theme, toggle: _toggle, copy: _copy, settle: _settle, selectors: _selectors, ...core} = this.options;
       figure = await renderAsync(entry.text, {...core, baseUrl: core.baseUrl ?? document.baseURI, document});
     } catch (error) {
       if (entry.version === version && this.entries.get(entry.block) === entry) this.fail(entry, error);
@@ -218,24 +223,31 @@ export class BlockRenderer {
     const chart = document.createElement("div");
     chart.className = "chart";
     chart.append(figure);
-    if (this.options.toggle ?? true) {
+    host.setAttribute(VIEW_ATTRIBUTE, "chart");
+    const toggle = this.options.toggle ?? true;
+    const copy = this.options.copy ?? true;
+    if (toggle || copy) {
       const toolbar = document.createElement("div");
       toolbar.className = "toolbar";
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = "Source";
-      button.title = "Show the source of this chart";
-      button.setAttribute("aria-pressed", "false");
-      button.addEventListener("click", () => {
-        const showSource = !chart.hidden;
-        chart.hidden = showSource;
-        if (showSource) this.show(entry);
-        else this.hide(entry);
-        button.textContent = showSource ? "Chart" : "Source";
-        button.title = showSource ? "Show the chart" : "Show the source of this chart";
-        button.setAttribute("aria-pressed", String(showSource));
-      });
-      toolbar.append(button);
+      if (copy) toolbar.append(copyMenu(entry, host));
+      if (toggle) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "Source";
+        button.title = "Show the source of this chart";
+        button.setAttribute("aria-pressed", "false");
+        button.addEventListener("click", () => {
+          const showSource = !chart.hidden;
+          chart.hidden = showSource;
+          if (showSource) this.show(entry);
+          else this.hide(entry);
+          host.setAttribute(VIEW_ATTRIBUTE, showSource ? "source" : "chart");
+          button.textContent = showSource ? "Chart" : "Source";
+          button.title = showSource ? "Show the chart" : "Show the source of this chart";
+          button.setAttribute("aria-pressed", String(showSource));
+        });
+        toolbar.append(button);
+      }
       shadow.append(toolbar);
     }
     shadow.append(chart);
@@ -400,6 +412,104 @@ export class BlockRenderer {
       if (entry.error && !entry.error.isConnected && entry.restored++ < MAX_RESTORE) entry.block.after(entry.error);
     }
   }
+}
+
+const FEEDBACK_DELAY = 1500;
+
+/** The Copy button of a chart and its menu: JSON, PNG, SVG. */
+function copyMenu(entry: Entry, host: HTMLElement): HTMLElement {
+  const document = entry.block.ownerDocument;
+  const wrap = document.createElement("div");
+  wrap.className = "copy";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "icon";
+  button.title = "Copy";
+  button.setAttribute("aria-label", "Copy");
+  button.setAttribute("aria-haspopup", "menu");
+  button.setAttribute("aria-expanded", "false");
+  button.append(icon(document, "copy"));
+  const menu = document.createElement("div");
+  menu.className = "menu";
+  menu.setAttribute("role", "menu");
+  menu.hidden = true;
+  const items = COPY_FORMATS.map(({format, label}) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.setAttribute("role", "menuitem");
+    item.tabIndex = -1;
+    item.textContent = label;
+    item.title = format === "json" ? "Copy the block as JSON" : `Copy the chart as ${label}`;
+    item.addEventListener("click", () => {
+      close();
+      button.focus();
+      const scheme = host.getAttribute("data-scheme") === "dark" ? "dark" : "light";
+      let done: Promise<void>;
+      try {
+        done = copyBlock(format, entry.text, scheme, document);
+      } catch (error) {
+        done = Promise.reject(error);
+      }
+      done.then(
+        () => feedback("done", `Copied ${label}`),
+        (error: unknown) => feedback("failed", `Could not copy ${label}: ${describe(error)}`)
+      );
+    });
+    return item;
+  });
+  menu.append(...items);
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const feedback = (state: "done" | "failed", title: string) => {
+    clearTimeout(timer);
+    button.replaceChildren(icon(document, state));
+    button.title = title;
+    button.setAttribute("aria-label", title);
+    button.setAttribute("data-state", state);
+    timer = setTimeout(() => {
+      button.replaceChildren(icon(document, "copy"));
+      button.title = "Copy";
+      button.setAttribute("aria-label", "Copy");
+      button.removeAttribute("data-state");
+    }, FEEDBACK_DELAY);
+  };
+  const onPointer = (event: Event) => {
+    if (!event.composedPath().includes(wrap)) close();
+  };
+  const onKey = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      close();
+      button.focus();
+      return;
+    }
+    const index = items.indexOf(event.composedPath()[0] as HTMLButtonElement);
+    if (index < 0) return;
+    let next: number | undefined;
+    if (event.key === "ArrowDown") next = (index + 1) % items.length;
+    else if (event.key === "ArrowUp") next = (index - 1 + items.length) % items.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = items.length - 1;
+    else if (event.key === "Tab") close();
+    if (next === undefined) return;
+    event.preventDefault();
+    items[next]!.focus();
+  };
+  const open = () => {
+    menu.hidden = false;
+    button.setAttribute("aria-expanded", "true");
+    document.addEventListener("pointerdown", onPointer, true);
+    document.addEventListener("keydown", onKey, true);
+    items[0]!.focus();
+  };
+  function close() {
+    menu.hidden = true;
+    button.setAttribute("aria-expanded", "false");
+    document.removeEventListener("pointerdown", onPointer, true);
+    document.removeEventListener("keydown", onKey, true);
+  }
+  button.addEventListener("click", () => (menu.hidden ? open() : close()));
+  wrap.append(button, menu);
+  return wrap;
 }
 
 function safeFind(root: Element, selectors: readonly BlockSelector[]): FoundBlock[] {

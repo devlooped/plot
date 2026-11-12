@@ -111,7 +111,7 @@ async function test(title, fn) {
 const inspect = (page) =>
   page.evaluate(() => ({
     charts: Array.from(document.querySelectorAll("plotdown-chart")).map((host) => {
-      const svg = host.shadowRoot.querySelector("svg");
+      const svg = host.shadowRoot.querySelector(".chart svg");
       const style = svg && getComputedStyle(svg);
       return {
         svg: !!svg,
@@ -272,11 +272,47 @@ await test("data-auto=false waits for plotdown.start()", async (page) => {
 await test("the chart/source toggle", async (page) => {
   await page.goto(`${origin}/sample/pandoc.html`);
   await waitForCharts(page, 2);
-  const button = page.locator("plotdown-chart").first().locator("button");
+  const host = page.locator("plotdown-chart").first();
+  const button = host.locator("button[aria-pressed]");
+  const height = () => host.evaluate((element) => element.getBoundingClientRect().height);
+  const withChart = await height();
   await button.click();
-  assert.equal(await page.locator("pre.plot").isVisible(), true);
+  assert.equal(await page.locator("pre.plot").first().isVisible(), true);
+  // With its source showing, the chart element holds only its toolbar.
+  assert.ok((await height()) < Math.min(60, withChart), "the chart element shrinks to its toolbar");
   await button.click();
-  assert.equal(await page.locator("pre.plot").isVisible(), false);
+  assert.equal(await page.locator("pre.plot").first().isVisible(), false);
+});
+
+await test("the Copy menu copies JSON, PNG and SVG", async (page) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], {origin});
+  await page.goto(`${origin}/sample/pandoc.html`);
+  await waitForCharts(page, 2);
+  const host = page.locator("plotdown-chart").first();
+  const copy = async (label) => {
+    await host.locator(".copy > button").click();
+    await host.getByRole("menuitem", {name: label}).click();
+    await page.waitForFunction(() => document.querySelector("plotdown-chart").shadowRoot.querySelector(".copy > button[data-state]"));
+    const state = await host.locator(".copy > button").getAttribute("data-state");
+    assert.equal(state, "done", await host.locator(".copy > button").getAttribute("title"));
+    const clip = await page.evaluate(async () => {
+      const [item] = await navigator.clipboard.read();
+      if (item.types.includes("image/png")) {
+        const bitmap = await createImageBitmap(await item.getType("image/png"));
+        return {type: "image/png", width: bitmap.width, height: bitmap.height};
+      }
+      return {type: "text/plain", text: await (await item.getType("text/plain")).text()};
+    });
+    await page.waitForFunction(() => !document.querySelector("plotdown-chart").shadowRoot.querySelector(".copy > button[data-state]"), null, {timeout: 5000});
+    return clip;
+  };
+  const json = await copy("JSON");
+  assert.ok(Array.isArray(JSON.parse(json.text).marks), "JSON: the block");
+  const svg = await copy("SVG");
+  assert.match(svg.text, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+  const png = await copy("PNG");
+  assert.equal(png.type, "image/png");
+  assert.ok(png.width > 200 && png.height > 100, `PNG of ${png.width}x${png.height}`);
 });
 
 await browser.close();

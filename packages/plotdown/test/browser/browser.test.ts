@@ -4,7 +4,7 @@ import {fileURLToPath} from "node:url";
 import {JSDOM} from "jsdom";
 import {afterEach, describe, expect, it} from "vitest";
 import {readScriptOptions} from "../../src/browser/auto.js";
-import {BlockRenderer, CHART_TAG, detectScheme, ERROR_TAG, findBlocks, SELECTORS, STATE_ATTRIBUTE, type BlockSelector} from "../../src/browser/index.js";
+import {BlockRenderer, CHART_TAG, detectScheme, ERROR_TAG, findBlocks, SELECTORS, STATE_ATTRIBUTE, VIEW_ATTRIBUTE, type BlockSelector} from "../../src/browser/index.js";
 import {isPlotSpec} from "../../src/fences.js";
 
 const samplesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "samples");
@@ -106,7 +106,7 @@ describe("renderer", () => {
       expect(charts(document)).toHaveLength(found.length);
       expect(errors(document)).toHaveLength(0);
       for (const chart of charts(document)) {
-        expect(chart.shadowRoot!.querySelector("svg")).not.toBeNull();
+        expect(chart.shadowRoot!.querySelector(".chart svg")).not.toBeNull();
         // Plot's <style> moved to a constructed sheet: nothing for a page's CSP to block.
         expect(chart.shadowRoot!.querySelector("style")).toBeNull();
         expect(chart.shadowRoot!.adoptedStyleSheets.length).toBeGreaterThan(1);
@@ -170,17 +170,49 @@ describe("renderer", () => {
     await renderer().scan(document, true);
     const chart = charts(document)[0]!;
     const block = chart.nextElementSibling as HTMLElement;
-    const button = chart.shadowRoot!.querySelector("button")!;
+    const button = chart.shadowRoot!.querySelector<HTMLButtonElement>("button[aria-pressed]")!;
+    expect(chart.getAttribute(VIEW_ATTRIBUTE)).toBe("chart");
     button.click();
     expect(block.style.display).toBe("");
     expect(chart.shadowRoot!.querySelector<HTMLElement>(".chart")!.hidden).toBe(true);
     expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(chart.getAttribute(VIEW_ATTRIBUTE)).toBe("source");
     button.click();
     expect(block.style.getPropertyValue("display")).toBe("none");
     expect(chart.shadowRoot!.querySelector<HTMLElement>(".chart")!.hidden).toBe(false);
+    expect(chart.getAttribute(VIEW_ATTRIBUTE)).toBe("chart");
     const plain = page(sample("pandoc.html"));
-    await renderer({toggle: false}).scan(plain, true);
+    await renderer({toggle: false, copy: false}).scan(plain, true);
     expect(charts(plain)[0]!.shadowRoot!.querySelector("button")).toBeNull();
+    expect(charts(plain)[0]!.shadowRoot!.querySelector(".toolbar")).toBeNull();
+  });
+
+  it("copies the block as JSON and the chart as SVG from the Copy menu", async () => {
+    const document = page(`<pre><code class="language-plot">{"title": "Dots", "marks": [{"mark": "dot", "data": [1, 2, 3], "x": [1, 2, 3]}]}</code></pre>`);
+    const written: string[] = [];
+    Object.defineProperty(document.defaultView!.navigator, "clipboard", {configurable: true, value: {writeText: async (text: string) => void written.push(text)}});
+    await renderer({toggle: false}).scan(document, true);
+    const shadow = charts(document)[0]!.shadowRoot!;
+    const button = shadow.querySelector<HTMLButtonElement>(".copy > button")!;
+    const menu = shadow.querySelector<HTMLElement>("[role=menu]")!;
+    expect(menu.hidden).toBe(true);
+    button.click();
+    expect(menu.hidden).toBe(false);
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    const items = Array.from(menu.querySelectorAll<HTMLButtonElement>("[role=menuitem]"));
+    expect(items.map((item) => item.textContent)).toEqual(["JSON", "PNG", "SVG"]);
+    items[0]!.click();
+    expect(menu.hidden).toBe(true);
+    button.click();
+    items[2]!.click();
+    await wait(0);
+    expect(JSON.parse(written[0]!).title).toBe("Dots");
+    expect(written[1]).toMatch(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"[^>]*>.*Dots.*<\/svg>\n$/s);
+    expect(button.getAttribute("data-state")).toBe("done");
+    // A click outside closes the menu.
+    button.click();
+    document.body.dispatchEvent(new document.defaultView!.Event("pointerdown", {bubbles: true, composed: true}));
+    expect(menu.hidden).toBe(true);
   });
 
   it("follows the page's color scheme", async () => {
@@ -366,9 +398,9 @@ describe("watching", () => {
 
 describe("script tag", () => {
   it("reads its options from data attributes", () => {
-    const document = page(`<script data-auto="false" data-allow-remote="https://a.example https://b.example" data-theme="dark" data-toggle="no" data-settle="false"></script><script data-allow-remote></script>`);
+    const document = page(`<script data-auto="false" data-allow-remote="https://a.example https://b.example" data-theme="dark" data-toggle="no" data-copy="false" data-settle="false"></script><script data-allow-remote></script>`);
     const [first, second] = Array.from(document.querySelectorAll("script"));
-    expect(readScriptOptions(first!)).toEqual({auto: false, allowRemote: ["https://a.example", "https://b.example"], theme: "dark", toggle: false, settle: false});
+    expect(readScriptOptions(first!)).toEqual({auto: false, allowRemote: ["https://a.example", "https://b.example"], theme: "dark", toggle: false, copy: false, settle: false});
     expect(readScriptOptions(second!)).toEqual({allowRemote: true});
     expect(readScriptOptions(null)).toEqual({});
   });

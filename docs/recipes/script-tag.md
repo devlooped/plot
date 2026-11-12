@@ -41,6 +41,7 @@ On the script tag, or in `globalThis.plotdownConfig` set before the script runs 
 | `data-allow-remote="true"` or origins | `allowRemote: true` or `["https://…"]` | off | Let blocks load `{"url": …}` data and images |
 | `data-theme="dark"` | `theme: "dark"` | `"auto"` | Force `light` or `dark` |
 | `data-toggle="false"` | `toggle: false` | `true` | No Source button |
+| `data-copy="false"` | `copy: false` | `true` | No Copy button (its menu copies the block as JSON, or the chart as PNG or SVG) |
 | `data-settle="1000"` | `settle: 1000` | `3000` | Milliseconds before a block that does not parse shows its error (`false`: never), so a block still streaming shows none |
 
 ## The API

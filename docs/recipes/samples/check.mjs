@@ -67,7 +67,7 @@ for (const p of paths.length ? paths : ["/"]) {
     await page.waitForFunction(() => document.querySelectorAll("plotdown-chart, .plotdown svg").length > 0, null, {timeout: 8000}).catch(() => {});
     await page.waitForTimeout(1500);
     const result = await page.evaluate(() => ({
-      charts: Array.from(document.querySelectorAll("plotdown-chart")).filter((host) => host.shadowRoot?.querySelector("svg")).length,
+      charts: Array.from(document.querySelectorAll("plotdown-chart")).filter((host) => host.shadowRoot?.querySelector(".chart svg")).length,
       // The rehype plugin and the other build-time adapters: <div class="plotdown"> around Plot's svg or figure.
       inline: Array.from(document.querySelectorAll(".plotdown:not(.plotdown-error)")).filter((el) => el.querySelector("svg")).length,
       errors: Array.from(document.querySelectorAll("plotdown-error")).map((host) => (host.shadowRoot?.textContent ?? host.textContent).trim().slice(0, 120)),
