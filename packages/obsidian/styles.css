@@ -1,0 +1,60 @@
+/* plotdown: charts follow the colors of the Obsidian theme, light or dark. */
+
+.plotdown-chart {
+  color: var(--text-normal);
+  overflow-x: auto;
+  margin: var(--size-4-2) 0;
+}
+
+/* Plot paints text and axes in currentColor; tips and halos use --plot-background. */
+.plotdown-chart svg,
+.plotdown-chart figure {
+  --plot-background: var(--background-primary);
+}
+
+.plotdown-chart figure {
+  margin: 0;
+}
+
+/* The title and subtitle of a chart: smaller than the note's own headings. */
+.plotdown-chart figure > h2,
+.plotdown-chart figure > h3 {
+  margin: 0 0 var(--size-4-1);
+  line-height: var(--line-height-tight);
+  font-family: var(--font-interface);
+  border: none;
+  padding: 0;
+}
+
+.plotdown-chart figure > h2 {
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+}
+
+.plotdown-chart figure > h3 {
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-normal);
+  color: var(--text-muted);
+}
+
+.plotdown-chart figcaption {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+/* A block that fails: its source, then the reason. */
+.plotdown-failed > pre {
+  margin-bottom: 0;
+}
+
+.plotdown-error {
+  color: var(--text-error);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: var(--size-4-1) var(--size-4-2);
+  border-left: 2px solid var(--text-error);
+  margin-bottom: var(--size-4-2);
+}

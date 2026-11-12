@@ -1,0 +1,33 @@
+{
+  "name": "plotdown-obsidian",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Obsidian plugin that renders plot code blocks of strict JSON as Observable Plot charts.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devlooped/plotdown.git",
+    "directory": "packages/obsidian"
+  },
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "dev": "node esbuild.config.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "vault": "node scripts/install-to-vault.mjs",
+    "bump": "node scripts/version-bump.mjs"
+  },
+  "dependencies": {
+    "@devlooped/plotdown": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "esbuild": "0.28.2",
+    "jsdom": "31.0.0",
+    "@types/jsdom": "30.0.0",
+    "obsidian": "1.14.4",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

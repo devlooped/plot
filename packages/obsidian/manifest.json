@@ -1,0 +1,11 @@
+{
+  "id": "plotdown",
+  "name": "Plotdown",
+  "version": "0.1.0",
+  "minAppVersion": "1.0.0",
+  "description": "Render plot code blocks of JSON as Observable Plot charts: bars, lines, dots, maps and more, in the colors of your theme.",
+  "author": "Devlooped",
+  "authorUrl": "https://github.com/devlooped",
+  "fundingUrl": "https://github.com/sponsors/devlooped",
+  "isDesktopOnly": false
+}
