@@ -28,5 +28,7 @@ const common: Options = {
 
 export default defineConfig([
   {...common, format: ["esm"]},
-  {...common, format: ["iife"], outExtension: () => ({js: ".iife.js"})}
+  // No map for the classic script: its sources are those of plotdown.js, whose map
+  // DevTools reads; a second copy would add 1.9 MB to every install for no use.
+  {...common, format: ["iife"], sourcemap: false, outExtension: () => ({js: ".iife.js"})}
 ]);

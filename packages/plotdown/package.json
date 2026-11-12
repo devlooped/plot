@@ -9,7 +9,8 @@
     "url": "git+https://github.com/devlooped/plotdown.git",
     "directory": "packages/plotdown"
   },
-  "homepage": "https://github.com/devlooped/plotdown",
+  "homepage": "https://plotdown.cc",
+  "bugs": "https://github.com/devlooped/plotdown/issues",
   "keywords": [
     "observable-plot",
     "plot",
@@ -84,7 +85,8 @@
   },
   "files": [
     "dist",
-    "readme.md"
+    "readme.md",
+    "license.txt"
   ],
   "scripts": {
     "generate": "node scripts/generate.mjs",
