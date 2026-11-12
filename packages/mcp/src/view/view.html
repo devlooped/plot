@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>plotdown</title>
+<style>/*__STYLE__*/</style>
+</head>
+<body>
+<main id="app">
+  <div class="toolbar">
+    <div class="tabs" role="tablist" aria-label="View">
+      <button type="button" role="tab" id="tab-chart" aria-selected="true" aria-controls="chart">Chart</button>
+      <button type="button" role="tab" id="tab-source" aria-selected="false" aria-controls="source">Source</button>
+    </div>
+    <span class="spacer"></span>
+    <button type="button" id="copy" title="Copy the block as a Markdown plot fence">Copy</button>
+    <button type="button" id="fullscreen" title="Show in full screen" hidden>Expand</button>
+  </div>
+  <section id="error" class="error" role="alert" hidden></section>
+  <section id="chart" class="panel" role="tabpanel" aria-labelledby="tab-chart"><p class="status">Waiting for the chart…</p></section>
+  <section id="source" class="panel" role="tabpanel" aria-labelledby="tab-source" hidden><pre><code></code></pre></section>
+</main>
+<script>/*__SCRIPT__*/</script>
+</body>
+</html>
