@@ -6,10 +6,10 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/devlooped/plot.git",
+    "url": "git+https://github.com/devlooped/plotdown.git",
     "directory": "packages/plotdown"
   },
-  "homepage": "https://github.com/devlooped/plot",
+  "homepage": "https://github.com/devlooped/plotdown",
   "keywords": [
     "observable-plot",
     "plot",

@@ -135,7 +135,7 @@ Routes 1 to 3 need nothing but the core, and they cover the two hosts the reques
 
 ```yaml
 # .github/workflows/plots.yml
-- uses: devlooped/plot@v1
+- uses: devlooped/plotdown@v1
   with: { files: "**/*.md", commit: true }
 ```
 

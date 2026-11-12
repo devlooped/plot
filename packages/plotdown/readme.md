@@ -14,7 +14,7 @@ Render fenced `plot` blocks of strict JSON as [Observable Plot](https://observab
 ```
 ````
 
-A block holds the options of `Plot.plot()` as JSON, with marks and transforms as data: `{"mark": "dot", …}` for `Plot.dot(…)`, `"transform": [{"binX": {"y": "count"}}]` for `Plot.binX(…)`. The fence is `plot`, `oplot` or `observable-plot`. The format is defined in [`spec/spec.md`](https://github.com/devlooped/plot/blob/main/spec/spec.md), with a JSON Schema (`@devlooped/plotdown/schema.json`).
+A block holds the options of `Plot.plot()` as JSON, with marks and transforms as data: `{"mark": "dot", …}` for `Plot.dot(…)`, `"transform": [{"binX": {"y": "count"}}]` for `Plot.binX(…)`. The fence is `plot`, `oplot` or `observable-plot`. The format is defined in [`spec/spec.md`](https://github.com/devlooped/plotdown/blob/main/spec/spec.md), with a JSON Schema (`@devlooped/plotdown/schema.json`).
 
 ## Usage
 
