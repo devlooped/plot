@@ -6,6 +6,7 @@ import {defineConfig} from "tsup";
 // "exports" map of package.json.
 export default defineConfig({
   entry: {
+    browser: "src/browser/index.ts",
     index: "src/index.ts"
   },
   format: ["esm"],

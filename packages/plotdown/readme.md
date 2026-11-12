@@ -53,6 +53,26 @@ interface FetchOptions extends PlotdownOptions { fetch?: typeof fetch; signal?: 
 
 Every error is a `PlotdownError` whose `path` names the offending value, such as `$.marks[0].transform[0].binX.y`.
 
+## In the browser: plotdown.js
+
+One line renders every plot block of a page, including those added later (a streamed chat answer renders when its JSON is complete):
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@devlooped/plotdown/dist/plotdown.js"></script>
+```
+
+`dist/plotdown.js` (ESM) and `dist/plotdown.iife.js` (classic script) hold the core, Plot and d3 in one file; they need no `eval` and run under `Content-Security-Policy: script-src 'self'; style-src 'self'`. Each chart is drawn in a shadow root, before its block, with a button to show the source; a block that fails stays code with the reason under it. Colors follow the page (its background, `color-scheme`, GitHub's `data-color-mode`, `prefers-color-scheme`). It finds the markup of Markdown parsers (`pre > code.language-plot`, `pre.plot`, `pre[lang]`), of GitHub and of GitLab; the table is `SELECTORS`.
+
+Options go on the script tag, or in `globalThis.plotdownConfig` set before it: `data-auto="false"` (do not start; call `plotdown.start()`), `data-allow-remote="true"` or a list of origins (remote data is off by default), `data-theme="light|dark"`, `data-toggle="false"`, `data-settle="3000"` (ms before a block that does not parse shows its error). The API is `globalThis.plotdown`, and for bundlers `@devlooped/plotdown/browser` (no side effects, Plot not bundled):
+
+```ts
+start(options?): Promise<ScanResult>     // render the page and watch it
+stop(): void
+renderAll(root?, options?): Promise<ScanResult>  // render now, once
+configure(options): BrowserOptions
+new BlockRenderer(options).scan(root) / .observe(root) / .disconnect()  // for other roots, such as shadow roots
+```
+
 ## Safety
 
 A block may come from anyone, or from a model. plotdown evaluates nothing: it looks up marks, transforms and options in allowlists generated from Plot's own type declarations, rejects unknown keys and strings that look like JavaScript functions, limits links to `http`, `https`, `mailto` and relative URLs, loads nothing from the network unless `allowRemote` says so, rejects CSS `url()` that could load a remote file, caps the size of a block, and checks what Plot drew.
