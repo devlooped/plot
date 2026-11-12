@@ -1,6 +1,6 @@
 # plotdown
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/devlooped/plotdown/blob/main/license.txt)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/devlooped/plotdown/blob/main/LICENSE)
 [![Build](https://github.com/devlooped/plotdown/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/devlooped/plotdown/actions/workflows/build.yml)
 
 <!-- #content -->

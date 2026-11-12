@@ -136,7 +136,7 @@ if (!process.env.PLOTDOWN_OFFLINE) {
   });
 
   await test("live github.com: a page without a block never receives plotdown.js", async (page) => {
-    const url = "https://github.com/devlooped/plotdown/blob/main/license.txt";
+    const url = "https://github.com/devlooped/plotdown/blob/main/LICENSE";
     await page.goto(url);
     await settle(page, 2500);
     assert.deepEqual(await injections(url), []);
