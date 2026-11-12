@@ -27,6 +27,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./markdown-it": {
+      "types": "./dist/markdown-it.d.ts",
+      "import": "./dist/markdown-it.js"
+    },
+    "./rehype": {
+      "types": "./dist/rehype.d.ts",
+      "import": "./dist/rehype.js"
+    },
+    "./marked": {
+      "types": "./dist/marked.d.ts",
+      "import": "./dist/marked.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./streamdown": {
+      "types": "./dist/streamdown.d.ts",
+      "import": "./dist/streamdown.js"
+    },
     "./schema.json": "./dist/plot.schema.json",
     "./package.json": "./package.json"
   },
@@ -45,15 +65,46 @@
   "dependencies": {
     "@observablehq/plot": "0.6.19"
   },
+  "peerDependencies": {
+    "jsdom": ">=22",
+    "linkedom": ">=0.16",
+    "markdown-it": ">=13",
+    "marked": ">=13",
+    "react": ">=18",
+    "streamdown": ">=2.7"
+  },
+  "peerDependenciesMeta": {
+    "jsdom": {"optional": true},
+    "linkedom": {"optional": true},
+    "markdown-it": {"optional": true},
+    "marked": {"optional": true},
+    "react": {"optional": true},
+    "streamdown": {"optional": true}
+  },
   "devDependencies": {
     "@types/d3-dsv": "3.0.7",
+    "@types/hast": "3.0.5",
     "@types/jsdom": "30.0.0",
+    "@types/markdown-it": "14.2.0",
     "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "ajv": "8.20.0",
     "d3-dsv": "3.0.2",
+    "hast-util-from-dom": "5.0.1",
     "jsdom": "31.0.0",
+    "linkedom": "0.18.15",
+    "markdown-it": "15.0.3",
+    "marked": "18.2.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "rehype-stringify": "10.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "streamdown": "2.7.1",
     "tsup": "9.0.0",
     "typescript": "7.0.2",
+    "unified": "11.0.5",
     "vitest": "5.1.0"
   }
 }
