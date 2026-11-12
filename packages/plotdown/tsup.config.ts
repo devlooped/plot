@@ -1,4 +1,5 @@
 import {copyFileSync, mkdirSync} from "node:fs";
+import {cpSync} from "node:fs";
 import {defineConfig} from "tsup";
 
 // One entry per public module. Later entries (the browser bundle, the CLI, the
@@ -21,5 +22,9 @@ export default defineConfig({
   onSuccess: async () => {
     mkdirSync("dist", {recursive: true});
     copyFileSync("../../spec/plot.schema.json", "dist/plot.schema.json");
+    // The agent skill and the llms.txt files ship in the package (see scripts/skill.mjs).
+    cpSync("../../skills/plot", "dist/skills/plot", {recursive: true});
+    copyFileSync("../../docs/llms.txt", "dist/llms.txt");
+    copyFileSync("../../docs/llms-full.txt", "dist/llms-full.txt");
   }
 });

@@ -1,0 +1,1918 @@
+# plotdown
+
+> plotdown renders a fenced `plot` block of Markdown — the options of Observable Plot's `Plot.plot()` as strict JSON, with marks and transforms written as data — as a chart, on GitHub, GitLab, docs sites, editors and chat apps.
+
+This file holds, in one place, what a model needs to write valid `plot` blocks: the agent skill, the catalog of every name a block accepts, the specification (spec 0.1, Observable Plot 0.6.19) and complete examples. Source: https://github.com/devlooped/plotdown.
+
+## Writing plot blocks
+
+A `plot` block is a fenced code block of Markdown that holds **one strict JSON object**: the options of Observable Plot's `Plot.plot()`, with each mark and transform written as data instead of a function call. A renderer (plotdown) draws it as a chart. It evaluates nothing, so anything that is not plain data is an error, and so is every key it does not know.
+
+<!-- generated:versions -->
+Spec 0.1 · Observable Plot 0.6.19. Generated parts come from [the spec](https://github.com/devlooped/plotdown/blob/main/skills/plot/references/spec.md).
+<!-- /generated:versions -->
+
+### Rules
+
+1. **Fence**: open with ` ```plot ` (canonical); ` ```oplot ` and ` ```observable-plot ` mean the same and are not colored as gnuplot by GitHub. Put nothing but the JSON inside.
+2. **Strict JSON**: double quotes, no comments, no trailing commas, no `NaN`, `Infinity`, `undefined`, functions, `new Date()` or `d3.*`. Do not wrap it in `Plot.plot(…)`.
+3. **Top level**: `"marks"` (required, an array), `"data"` (named datasets), and the options of `Plot.plot()` with their own names: `width`, `height`, `margin…`, `title`, `subtitle`, `caption`, `grid`, the scales `x`, `y`, `fx`, `fy`, `color`, `r`, `opacity`, `symbol`, `length`, `projection`, `facet`, `style`. An unknown key anywhere is an error.
+4. **A mark** is `{"mark": "<name>", "data": …, …options, "transform": […]}`. `Plot.dot(rows, {x: "a", y: "b"})` becomes `{"mark": "dot", "data": rows, "x": "a", "y": "b"}`. Mark names are exact and case-sensitive: `barY`, not `bar` or `Plot.barY`.
+5. **Channels** (`x`, `y`, `fill`, `stroke`, `r`, `text`, `title`, `fx`, …): a string is a **field name** of each row; for `fill` and `stroke` a CSS color string (`"steelblue"`, `"#e45"`) is a constant; a number, boolean or `null` is a constant; an array gives one value per row; `{"value": "field", "label": "Axis title"}` adds options. Field names are matched exactly (`"a.b"` is the key `a.b`, not a path).
+6. **Transforms**: `"transform": [{"<name>": <first argument>}, …]`, an **array** of objects with **exactly one key**. The second argument of the JavaScript call (the options) is the mark itself. Entries apply **in order, the first is the innermost call**: `Plot.groupX({y: "count"}, Plot.filter("sex", opts))` is `"transform": [{"filter": "sex"}, {"groupX": {"y": "count"}}]`.
+7. **Transform options on the mark** (`thresholds`, `interval`, `domain`, `cumulative` for bin; `binWidth` for hexbin; `z` for select; `seed` for shuffle) are valid only when the mark lists that transform.
+8. **Data** of a mark is one of: inline rows `[{"x": 1, "y": 2}, …]`; an array of values `[0]`; CSV text `{"csv": "x,y\n1,2\n"}` or TSV `{"tsv": "…"}` (numbers, `true`/`false`, empty → `null` are typed); the **name** of a dataset of the top-level `"data"` object; a GeoJSON object. `frame`, `sphere`, `graticule` and `hexgrid` take no `data` key at all. Remote data (`{"url": …}`) is off by default: put the data inline.
+9. **Dates** are ISO 8601 strings: `"2024-03-01"`, `"2024-03"`, `"2024-03-01T14:30Z"`. A column (or array) whose every non-null value is such a string becomes dates. A bare year `"2024"` is **not** a date: write years as numbers (with `"x": {"tickFormat": "d"}` so 2024 is not shown as 2,024) or as `"2024-01-01"`.
+10. **Names stay strings**: reducers (`"count"`, `"sum"`, `"mean"`), curves (`"catmull-rom"`), schemes (`"blues"`, `"tableau10"`), intervals (`"month"`, `"5 days"`), projections (`"equal-earth"`), formats (`"tickFormat": ".0%"`, `"%b %Y"`).
+
+### From JavaScript: the usual mistakes
+
+| You might write | Write instead |
+| --- | --- |
+| `Plot.plot({marks: [Plot.barY(data, {x: "a", y: "b"})]})` | `{"marks": [{"mark": "barY", "data": …, "x": "a", "y": "b"}]}` |
+| `"binX": {"y": "count"}` on the mark, or `"transform": {"binX": …}` | `"transform": [{"binX": {"y": "count"}}]` |
+| `{"type": "binX", "y": "count"}` | `{"binX": {"y": "count"}}` |
+| `Plot.binX({y: "count"}, {x: "w", thresholds: 20})` | `"x": "w", "thresholds": 20, "transform": [{"binX": {"y": "count"}}]` |
+| `x: d => d.date` or `"x": "d => d.date"` | `"x": "date"` (compute anything else in the data, or use a transform) |
+| `y: d => d.value / 1000`, `fill: d => d.x > 0 ? "red" : "blue"` | Put the computed column in the data rows |
+| `"data": {"values": […]}` (Vega-Lite habit), `"encoding"` | `"data": […]` on the mark; channels on the mark |
+| `Plot.ruleY([0])` | `{"mark": "ruleY", "data": [0]}` |
+| `new Date("2024-03-01")`, `1709251200000` for a date | `"2024-03-01"` |
+| `tickFormat: d3.format(".0%")` | `"tickFormat": ".0%"` (or `"percent": true` on the scale) |
+| `scheme: d3.schemeTableau10`, `interval: d3.utcMonth` | `"scheme": "tableau10"`, `"interval": "month"` |
+| `title: html\`<b>…</b>\`` | `"title": "…"` (plain text) |
+| `tip: {format: {x: d3.utcFormat("%b %d")}}`, or `"format"` on the mark | `"tip": {"format": {"x": "%b %d", "y": ",.0f"}}`: tip options go inside `"tip"` |
+| `"fill": "red"` meaning a field named red | Rename the field: color strings are constants |
+| A pie or donut chart | Plot has none: a `barX` stacked to 100 % (see below), a `waffleY`, or a sorted `barX` |
+| `"facet": {"x": "group"}` with no `"data"` | `"fx": "group"` on the mark, or `"facet": {"data": "<dataset name>", "x": "group"}` |
+
+### Before you emit a block
+
+- It parses as JSON; `"marks"` is an array; every mark has `"mark"` and a name from the list below.
+- Every field name you use exists in the data, with the same case.
+- Every dataset name you use is a key of the top-level `"data"`.
+- Every `"transform"` is an array of one-key objects, in the order the JavaScript calls nest from the inside out.
+- Categories on an axis are sorted alphabetically: keep their order with `"x": {"domain": ["Mon", "Tue", "Wed"]}`, or sort by value with `"sort": {"x": "-y"}` on the mark.
+- Bars, areas and histograms usually end with `{"mark": "ruleY", "data": [0]}` (or `ruleX` for horizontal ones).
+- `"tip": true` shows values on hover in a browser; it is harmless in a static image.
+- If a tool can run JavaScript, `validate(text)` of `@devlooped/plotdown` throws a `PlotdownError` whose `path` (`$.marks[1].transform[0].binX.y`) names the problem; the JSON Schema is [references/plot.schema.json](https://github.com/devlooped/plotdown/blob/main/skills/plot/references/plot.schema.json).
+
+### Examples
+
+**Bar chart**, sorted, with labels:
+
+```plot
+{
+  "data": {"langs": [
+    {"language": "Python", "users": 51}, {"language": "JavaScript", "users": 62},
+    {"language": "TypeScript", "users": 38}, {"language": "Rust", "users": 13}, {"language": "Go", "users": 14}
+  ]},
+  "y": {"grid": true, "label": "Users (%)"},
+  "marks": [
+    {"mark": "barY", "data": "langs", "x": "language", "y": "users", "fill": "steelblue", "sort": {"x": "-y"}},
+    {"mark": "text", "data": "langs", "x": "language", "y": "users", "text": "users", "dy": -6},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+**Lines over time**, one per series, with a legend and a tip:
+
+```plot
+{
+  "data": {"sales": {"csv": "month,region,revenue\n2024-01,North,120\n2024-02,North,135\n2024-03,North,150\n2024-04,North,160\n2024-01,South,90\n2024-02,South,110\n2024-03,South,105\n2024-04,South,130\n"}},
+  "color": {"legend": true},
+  "x": {"label": "Month"},
+  "y": {"grid": true, "label": "Revenue (k$)"},
+  "marks": [
+    {"mark": "lineY", "data": "sales", "x": "month", "y": "revenue", "stroke": "region", "marker": "dot", "tip": true},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+**Scatter plot** with color by group and a regression line:
+
+```plot
+{
+  "data": {"cars": [
+    {"weight": 2.6, "mpg": 31, "origin": "Japan"}, {"weight": 3.4, "mpg": 22, "origin": "USA"},
+    {"weight": 2.2, "mpg": 35, "origin": "Japan"}, {"weight": 4.1, "mpg": 17, "origin": "USA"},
+    {"weight": 3.0, "mpg": 26, "origin": "Europe"}, {"weight": 2.8, "mpg": 29, "origin": "Europe"},
+    {"weight": 3.7, "mpg": 19, "origin": "USA"}, {"weight": 2.4, "mpg": 33, "origin": "Japan"}
+  ]},
+  "grid": true,
+  "color": {"legend": true},
+  "x": {"label": "Weight (1000 lb)"},
+  "y": {"label": "Miles per gallon"},
+  "marks": [
+    {"mark": "linearRegressionY", "data": "cars", "x": "weight", "y": "mpg", "stroke": "gray"},
+    {"mark": "dot", "data": "cars", "x": "weight", "y": "mpg", "fill": "origin", "r": 5, "tip": true}
+  ]
+}
+```
+
+**Histogram** (the bin transform counts rows; `thresholds` sits on the mark):
+
+```plot
+{
+  "data": {"times": {"csv": "ms\n120\n135\n150\n180\n95\n240\n160\n170\n130\n145\n310\n155\n140\n125\n200\n"}},
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "rectY", "data": "times", "x": "ms", "thresholds": 8, "fill": "teal", "transform": [{"binX": {"y": "count"}}]},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+**Grouped bars**, one group per quarter (the `fx` channel facets them):
+
+```plot
+{
+  "data": {"q": [
+    {"quarter": "Q1", "product": "A", "units": 30}, {"quarter": "Q1", "product": "B", "units": 22},
+    {"quarter": "Q2", "product": "A", "units": 34}, {"quarter": "Q2", "product": "B", "units": 28},
+    {"quarter": "Q3", "product": "A", "units": 25}, {"quarter": "Q3", "product": "B", "units": 35}
+  ]},
+  "color": {"legend": true},
+  "x": {"axis": null},
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "barY", "data": "q", "fx": "quarter", "x": "product", "y": "units", "fill": "product"},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+**Shares of a whole** (instead of a pie): one bar stacked to 100 %:
+
+```plot
+{
+  "data": {"share": [{"browser": "Chrome", "pct": 65}, {"browser": "Safari", "pct": 19}, {"browser": "Edge", "pct": 5}, {"browser": "Other", "pct": 11}]},
+  "height": 120,
+  "x": {"percent": true, "label": "Share (%)"},
+  "color": {"legend": true},
+  "marks": [
+    {"mark": "barX", "data": "share", "x": "pct", "fill": "browser", "transform": [{"stackX": {"offset": "normalize"}}]},
+    {"mark": "text", "data": "share", "x": "pct", "text": "browser", "fill": "white", "transform": [{"stackX": {"offset": "normalize"}}]}
+  ]
+}
+```
+
+**Heatmap** with a color scheme:
+
+```plot
+{
+  "data": {"load": [
+    {"day": "Mon", "hour": "09", "requests": 120}, {"day": "Mon", "hour": "12", "requests": 300}, {"day": "Mon", "hour": "18", "requests": 180},
+    {"day": "Tue", "hour": "09", "requests": 140}, {"day": "Tue", "hour": "12", "requests": 280}, {"day": "Tue", "hour": "18", "requests": 220},
+    {"day": "Wed", "hour": "09", "requests": 100}, {"day": "Wed", "hour": "12", "requests": 350}, {"day": "Wed", "hour": "18", "requests": 160}
+  ]},
+  "color": {"scheme": "blues", "legend": true, "label": "Requests"},
+  "x": {"label": "Hour"},
+  "marks": [
+    {"mark": "cell", "data": "load", "x": "hour", "y": "day", "fill": "requests", "inset": 1},
+    {"mark": "text", "data": "load", "x": "hour", "y": "day", "text": "requests", "fill": "black"}
+  ]
+}
+```
+
+**Running total and moving average** (map and window transforms):
+
+```plot
+{
+  "data": {"daily": [
+    {"date": "2024-05-01", "signups": 12}, {"date": "2024-05-02", "signups": 18}, {"date": "2024-05-03", "signups": 9},
+    {"date": "2024-05-04", "signups": 22}, {"date": "2024-05-05", "signups": 15}, {"date": "2024-05-06", "signups": 30}
+  ]},
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "lineY", "data": "daily", "x": "date", "y": "signups", "stroke": "orange", "transform": [{"mapY": "cumsum"}]},
+    {"mark": "lineY", "data": "daily", "x": "date", "y": "signups", "stroke": "steelblue", "transform": [{"windowY": {"k": 3, "reduce": "mean"}}]},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+### Marks, transforms and names at a glance
+
+<!-- generated:glance -->
+**Marks** (the value of `"mark"`):
+
+- area: `area`, `areaX`, `areaY`
+- arrow: `arrow`
+- auto: `auto`
+- axis and grid: `axisX`, `axisY`, `axisFx`, `axisFy`, `gridX`, `gridY`, `gridFx`, `gridFy`
+- bar: `barX`, `barY`
+- bollinger: `bollingerX`, `bollingerY`
+- box: `boxX`, `boxY`
+- cell: `cell`, `cellX`, `cellY`
+- contour: `contour`
+- crosshair: `crosshair`, `crosshairX`, `crosshairY`
+- delaunay: `delaunayLink`, `delaunayMesh`, `hull`, `voronoi`, `voronoiMesh`
+- density: `density`
+- difference: `differenceX`, `differenceY`
+- dot: `dot`, `dotX`, `dotY`, `circle`, `hexagon`
+- frame: `frame`
+- geo: `geo`, `sphere`, `graticule`
+- hexgrid: `hexgrid`
+- image: `image`
+- line: `line`, `lineX`, `lineY`
+- linear regression: `linearRegressionX`, `linearRegressionY`
+- link: `link`
+- raster: `raster`
+- rect: `rect`, `rectX`, `rectY`
+- rule: `ruleX`, `ruleY`
+- text: `text`, `textX`, `textY`
+- tick: `tickX`, `tickY`
+- tip: `tip`
+- tree: `tree`, `cluster`
+- vector: `vector`, `vectorX`, `vectorY`, `spike`
+- waffle: `waffleX`, `waffleY`
+
+Without data: `frame`, `sphere`, `graticule`, `hexgrid`. Data optional: `axisX`, `axisY`, `axisFx`, `axisFy`, `gridX`, `gridY`, `gridFx`, `gridFy`, `contour`, `raster`.
+
+**Transforms** (the key of each entry of `"transform"`):
+
+- bin: `bin`, `binX`, `binY`
+- group: `group`, `groupX`, `groupY`, `groupZ`
+- hexbin: `hexbin`
+- map: `map`, `mapX`, `mapY`
+- normalize: `normalizeX`, `normalizeY`
+- window: `windowX`, `windowY`
+- stack: `stackX`, `stackX1`, `stackX2`, `stackY`, `stackY1`, `stackY2`
+- dodge: `dodgeX`, `dodgeY`
+- select: `select`, `selectFirst`, `selectLast`, `selectMinX`, `selectMinY`, `selectMaxX`, `selectMaxY`
+- shift: `shiftX`, `shiftY`
+- basic: `filter`, `sort`, `reverse`, `shuffle`
+- centroid: `centroid`, `geoCentroid`
+- tree: `treeNode`, `treeLink`
+- pointer: `pointer`, `pointerX`, `pointerY`
+
+**Reducers**: `first`, `last`, `identity`, `count`, `distinct`, `sum`, `proportion`, `proportion-facet`, `deviation`, `min`, `min-index`, `max`, `max-index`, `mean`, `median`, `variance`, `mode`, `"p25"`…`"p99"`. **Window reducers**: `difference`, `ratio`, `first`, `last`, `deviation`, `sum`, `min`, `max`, `mean`, `median`, `variance`, `mode`.
+
+**Curves**: `basis`, `basis-closed`, `basis-open`, `bundle`, `bump-x`, `bump-y`, `cardinal`, `cardinal-closed`, `cardinal-open`, `catmull-rom`, `catmull-rom-closed`, `catmull-rom-open`, `linear`, `linear-closed`, `monotone-x`, `monotone-y`, `natural`, `step`, `step-after`, `step-before`. **Symbols**: `asterisk`, `circle`, `cross`, `diamond`, `diamond2`, `hexagon`, `plus`, `square`, `square2`, `star`, `times`, `triangle`, `triangle2`, `wye`.
+<!-- /generated:glance -->
+
+### More
+
+- [references/catalog.md](https://github.com/devlooped/plotdown/blob/main/skills/plot/references/catalog.md): every option of every mark, scale, projection and transform, color schemes and formats.
+- [references/examples.md](https://github.com/devlooped/plotdown/blob/main/skills/plot/references/examples.md): 30 complete blocks covering every mark and transform family.
+- [references/spec.md](https://github.com/devlooped/plotdown/blob/main/skills/plot/references/spec.md): the full format: data forms, CSV typing, date rules, security, errors and limits.
+- [references/plot.schema.json](https://github.com/devlooped/plotdown/blob/main/skills/plot/references/plot.schema.json): the JSON Schema (2020-12) of a block.
+
+## Catalog
+
+Every name a `plot` block accepts, for spec 0.1 and Observable Plot 0.6.19. A key that is not listed for its place is an error. The format itself is in [spec.md](#specification); complete blocks are in [examples.md](#examples).
+
+### Top-level keys
+
+`marks` (required), `$schema`, `data`, `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `clamp`, `nice`, `zero`, `round`, `align`, `padding`, `axis`, `grid`, `legend`, `label`, `labelArrow`, `width`, `height`, `aspectRatio`, `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft`, `style`, `className`, `title`, `subtitle`, `caption`, `figure`, `ariaLabel`, `ariaDescription`, `clip`, `x`, `y`, `r`, `color`, `opacity`, `symbol`, `length`, `projection`, `fx`, `fy`, `facet`.
+
+### Scales
+
+The scales are `x`, `y`, `fx`, `fy`, `r`, `color`, `opacity`, `symbol`, `length`. Each takes an object of: `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `clamp`, `nice`, `zero`, `round`, `align`, `padding`, `axis`, `grid`, `legend`, `label`, `labelArrow`, `type`, `domain`, `range`, `unknown`, `reverse`, `interval`, `percent`, `scheme`, `interpolate`, `exponent`, `base`, `constant`, `n`, `quantiles`, `pivot`, `symmetric`, `paddingInner`, `paddingOuter`, `ticks`, `tickSize`, `tickSpacing`, `tickPadding`, `tickFormat`, `tickRotate`, `fontVariant`, `ariaLabel`, `ariaDescription`, `labelAnchor`, `labelOffset`, `line`.
+
+- `color` also takes the legend options `width`, `columns`, `swatchSize`, `swatchWidth`, `swatchHeight`, `height`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft`, `ticks`, `tickSize`, `round`, `opacity`, `legend`.
+- `opacity` also takes the legend options `width`, `height`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft`, `ticks`, `tickSize`, `round`, `color`, `legend`.
+- `symbol` also takes the legend options `width`, `columns`, `swatchSize`, `swatchWidth`, `swatchHeight`, `fill`, `fillOpacity`, `stroke`, `strokeOpacity`, `strokeWidth`, `r`, `legend`.
+
+Scale types: `linear`, `pow`, `sqrt`, `log`, `symlog`, `utc`, `time`, `point`, `band`, `ordinal`, `sequential`, `cyclical`, `diverging`, `diverging-log`, `diverging-pow`, `diverging-sqrt`, `diverging-symlog`, `categorical`, `threshold`, `quantile`, `quantize`, `identity`.
+
+Color schemes (`"scheme"`, any case): `accent`, `category10`, `dark2`, `observable10`, `paired`, `pastel1`, `pastel2`, `set1`, `set2`, `set3`, `tableau10`, `brbg`, `prgn`, `piyg`, `puor`, `rdbu`, `rdgy`, `rdylbu`, `rdylgn`, `spectral`, `burd`, `buylrd`, `blues`, `greens`, `greys`, `oranges`, `purples`, `reds`, `turbo`, `viridis`, `magma`, `inferno`, `plasma`, `cividis`, `cubehelix`, `warm`, `cool`, `bugn`, `bupu`, `gnbu`, `orrd`, `pubu`, `pubugn`, `purd`, `rdpu`, `ylgn`, `ylgnbu`, `ylorbr`, `ylorrd`, `rainbow`, `sinebow`.
+
+### Projection and facets
+
+`projection` is a name, `albers-usa`, `albers`, `azimuthal-equal-area`, `azimuthal-equidistant`, `conic-conformal`, `conic-equal-area`, `conic-equidistant`, `equal-earth`, `equirectangular`, `gnomonic`, `identity`, `reflect-y`, `mercator`, `orthographic`, `stereographic`, `transverse-mercator`, or an object of `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `type`, `domain`, `rotate`, `parallels`, `precision`, `clip`.
+
+`facet` is an object of `data`, `x`, `y`, `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft`, `grid`, `label`; marks can also take `fx` and `fy` channels.
+
+### Marks
+
+Every mark but `auto` takes the common options `filter`, `reverse`, `sort`, `fx`, `fy`, `facet`, `facetAnchor`, `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft`, `className`, `ariaDescription`, `ariaHidden`, `ariaLabel`, `pointerEvents`, `title`, `tip`, `pool`, `clip`, `dx`, `dy`, `fill`, `fillOpacity`, `stroke`, `strokeDasharray`, `strokeDashoffset`, `strokeLinecap`, `strokeLinejoin`, `strokeMiterlimit`, `strokeOpacity`, `strokeWidth`, `opacity`, `mixBlendMode`, `imageFilter`, `paintOrder`, `shapeRendering`, `href`, `target`, `channels`.
+
+Each mark also takes the options below, plus `mark`, `data` (unless it takes no data) and `transform`. Options that a transform reads (see Transforms) are only valid when the mark lists that transform.
+
+#### area
+
+- `area` (data): `offset`, `order`, `z`, `curve`, `tension`, `x1`, `x2`, `y1`, `y2`, `color`
+- `areaX` (data): `offset`, `order`, `z`, `curve`, `tension`, `x1`, `x2`, `color`, `interval`, `x`, `y`, `reduce`, `line`, `marker`, `markerStart`, `markerMid`, `markerEnd`
+- `areaY` (data): `offset`, `order`, `z`, `curve`, `tension`, `y1`, `y2`, `color`, `interval`, `x`, `y`, `reduce`, `line`, `marker`, `markerStart`, `markerMid`, `markerEnd`
+
+#### arrow
+
+- `arrow` (data): `x`, `y`, `x1`, `y1`, `x2`, `y2`, `bend`, `headAngle`, `headLength`, `inset`, `insetStart`, `insetEnd`, `sweep`
+
+#### auto
+
+- `auto` (data, no common options): `x`, `y`, `color`, `size`, `fx`, `fy`, `autoMark`
+
+#### axis and grid
+
+- `axisX` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `x`, `y`, `text`, `frameAnchor`, `lineAnchor`, `rotate`, `label`, `labelArrow`, `tickSize`, `tickPadding`, `tickFormat`, `tickRotate`, `labelAnchor`, `labelOffset`, `textStroke`, `textStrokeOpacity`, `textStrokeWidth`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetTop`, `insetBottom`
+- `axisY` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `x`, `y`, `text`, `frameAnchor`, `lineAnchor`, `rotate`, `label`, `labelArrow`, `tickSize`, `tickPadding`, `tickFormat`, `tickRotate`, `labelAnchor`, `labelOffset`, `textStroke`, `textStrokeOpacity`, `textStrokeWidth`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetRight`, `insetLeft`
+- `axisFx` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `x`, `y`, `text`, `frameAnchor`, `lineAnchor`, `rotate`, `label`, `labelArrow`, `tickSize`, `tickPadding`, `tickFormat`, `tickRotate`, `labelAnchor`, `labelOffset`, `textStroke`, `textStrokeOpacity`, `textStrokeWidth`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetTop`, `insetBottom`
+- `axisFy` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `x`, `y`, `text`, `frameAnchor`, `lineAnchor`, `rotate`, `label`, `labelArrow`, `tickSize`, `tickPadding`, `tickFormat`, `tickRotate`, `labelAnchor`, `labelOffset`, `textStroke`, `textStrokeOpacity`, `textStrokeWidth`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetRight`, `insetLeft`
+- `gridX` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetTop`, `insetBottom`, `x`, `y`, `y1`, `y2`
+- `gridY` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetRight`, `insetLeft`, `x`, `x1`, `x2`, `y`
+- `gridFx` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetTop`, `insetBottom`, `x`, `y`, `y1`, `y2`
+- `gridFy` (optional data): `interval`, `ticks`, `tickSpacing`, `anchor`, `color`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetRight`, `insetLeft`, `x`, `x1`, `x2`, `y`
+
+#### bar
+
+- `barX` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `interval`, `x`, `x1`, `x2`, `y`
+- `barY` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `interval`, `y`, `y1`, `y2`, `x`
+
+#### bollinger
+
+- `bollingerX` (data): `n`, `k`, `anchor`, `strict`, `color`, `offset`, `order`, `z`, `curve`, `tension`, `x1`, `x2`, `interval`, `x`, `y`, `reduce`, `marker`, `markerStart`, `markerMid`, `markerEnd`
+- `bollingerY` (data): `n`, `k`, `anchor`, `strict`, `color`, `offset`, `order`, `z`, `curve`, `tension`, `y1`, `y2`, `interval`, `x`, `y`, `reduce`, `marker`, `markerStart`, `markerMid`, `markerEnd`
+
+#### box
+
+- `boxX` (data): `x`, `y`, `r`, `rotate`, `symbol`, `frameAnchor`, `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `interval`, `x1`, `x2`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `y1`, `y2`
+- `boxY` (data): `x`, `y`, `r`, `rotate`, `symbol`, `frameAnchor`, `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `interval`, `y1`, `y2`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `x1`, `x2`
+
+#### cell
+
+- `cell` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `x`, `y`
+- `cellX` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `x`, `y`
+- `cellY` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `x`, `y`
+
+#### contour
+
+- `contour` (optional data): `x`, `y`, `x1`, `x2`, `y1`, `y2`, `width`, `height`, `pixelSize`, `blur`, `interpolate`, `colorSpace`, `smooth`, `value`, `interval`
+
+#### crosshair
+
+- `crosshair` (data): `x`, `y`, `color`, `ruleStroke`, `ruleStrokeOpacity`, `ruleStrokeWidth`, `textFill`, `textStroke`, `textStrokeOpacity`, `textStrokeWidth`
+- `crosshairX` (data): `x`, `y`, `color`, `ruleStroke`, `ruleStrokeOpacity`, `ruleStrokeWidth`, `textFill`, `textStroke`, `textStrokeOpacity`, `textStrokeWidth`
+- `crosshairY` (data): `x`, `y`, `color`, `ruleStroke`, `ruleStrokeOpacity`, `ruleStrokeWidth`, `textFill`, `textStroke`, `textStrokeOpacity`, `textStrokeWidth`
+
+#### delaunay
+
+- `delaunayLink` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`
+- `delaunayMesh` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`
+- `hull` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`
+- `voronoi` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`
+- `voronoiMesh` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`
+
+#### density
+
+- `density` (data): `x`, `y`, `z`, `weight`, `bandwidth`
+
+#### difference
+
+- `differenceX` (data): `curve`, `tension`, `x1`, `x2`, `x`, `y1`, `y2`, `y`, `positiveFill`, `negativeFill`, `positiveFillOpacity`, `negativeFillOpacity`, `z`
+- `differenceY` (data): `curve`, `tension`, `x1`, `x2`, `x`, `y1`, `y2`, `y`, `positiveFill`, `negativeFill`, `positiveFillOpacity`, `negativeFillOpacity`, `z`
+
+#### dot
+
+- `dot` (data): `x`, `y`, `r`, `rotate`, `symbol`, `frameAnchor`
+- `dotX` (data): `x`, `r`, `rotate`, `symbol`, `frameAnchor`, `y`, `interval`
+- `dotY` (data): `y`, `r`, `rotate`, `symbol`, `frameAnchor`, `x`, `interval`
+- `circle` (data): `x`, `y`, `r`, `rotate`, `frameAnchor`
+- `hexagon` (data): `x`, `y`, `r`, `rotate`, `frameAnchor`
+
+#### frame
+
+- `frame` (no data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `anchor`
+
+#### geo
+
+- `geo` (data): `x`, `y`, `r`
+- `sphere` (no data): `x`, `y`, `r`
+- `graticule` (no data): `x`, `y`, `r`
+
+#### hexgrid
+
+- `hexgrid` (no data): no other options
+
+#### image
+
+- `image` (data): `x`, `y`, `width`, `height`, `r`, `rotate`, `src`, `preserveAspectRatio`, `crossOrigin`, `frameAnchor`, `imageRendering`
+
+#### line
+
+- `line` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`
+- `lineX` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`, `interval`, `reduce`
+- `lineY` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `z`, `interval`, `reduce`
+
+#### linear regression
+
+- `linearRegressionX` (data): `interval`, `z`, `ci`, `precision`, `reduce`, `y`, `x`
+- `linearRegressionY` (data): `interval`, `z`, `ci`, `precision`, `reduce`, `x`, `y`
+
+#### link
+
+- `link` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x`, `y`, `x1`, `y1`, `x2`, `y2`
+
+#### raster
+
+- `raster` (optional data): `x`, `y`, `x1`, `x2`, `y1`, `y2`, `width`, `height`, `pixelSize`, `blur`, `interpolate`, `imageRendering`, `colorSpace`
+
+#### rect
+
+- `rect` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `x`, `x1`, `x2`, `y`, `y1`, `y2`, `interval`
+- `rectX` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `x`, `x1`, `x2`, `y`, `y1`, `y2`, `interval`
+- `rectY` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `x`, `x1`, `x2`, `y`, `y1`, `y2`, `interval`
+
+#### rule
+
+- `ruleX` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `interval`, `inset`, `insetTop`, `insetBottom`, `x`, `y`, `y1`, `y2`
+- `ruleY` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `interval`, `inset`, `insetRight`, `insetLeft`, `x`, `x1`, `x2`, `y`
+
+#### text
+
+- `text` (data): `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `x`, `y`, `text`, `frameAnchor`, `lineAnchor`, `rotate`
+- `textX` (data): `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `x`, `text`, `frameAnchor`, `lineAnchor`, `rotate`, `y`, `interval`
+- `textY` (data): `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `y`, `text`, `frameAnchor`, `lineAnchor`, `rotate`, `x`, `interval`
+
+#### tick
+
+- `tickX` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetTop`, `insetBottom`, `x`, `y`
+- `tickY` (data): `marker`, `markerStart`, `markerMid`, `markerEnd`, `inset`, `insetRight`, `insetLeft`, `y`, `x`
+
+#### tip
+
+- `tip` (data): `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `x`, `x1`, `x2`, `y`, `y1`, `y2`, `frameAnchor`, `anchor`, `preferredAnchor`, `format`, `pathFilter`, `pointerSize`, `textPadding`
+
+#### tree
+
+- `tree` (data): `x`, `y`, `r`, `rotate`, `symbol`, `frameAnchor`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x1`, `y1`, `x2`, `y2`, `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `text`, `lineAnchor`, `treeLayout`, `treeSeparation`, `treeSort`, `dot`, `textStroke`, `textLayout`
+- `cluster` (data): `x`, `y`, `r`, `rotate`, `symbol`, `frameAnchor`, `marker`, `markerStart`, `markerMid`, `markerEnd`, `curve`, `tension`, `x1`, `y1`, `x2`, `y2`, `textAnchor`, `lineHeight`, `lineWidth`, `textOverflow`, `monospace`, `fontFamily`, `fontSize`, `fontStyle`, `fontVariant`, `fontWeight`, `text`, `lineAnchor`, `treeLayout`, `treeSeparation`, `treeSort`, `dot`, `textStroke`, `textLayout`
+
+#### vector
+
+- `vector` (data): `x`, `y`, `r`, `length`, `rotate`, `shape`, `anchor`, `frameAnchor`
+- `vectorX` (data): `x`, `y`, `r`, `length`, `rotate`, `shape`, `anchor`, `frameAnchor`
+- `vectorY` (data): `x`, `y`, `r`, `length`, `rotate`, `shape`, `anchor`, `frameAnchor`
+- `spike` (data): `x`, `y`, `r`, `length`, `rotate`, `shape`, `anchor`, `frameAnchor`
+
+#### waffle
+
+- `waffleX` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `interval`, `x`, `x1`, `x2`, `y`, `multiple`, `unit`, `gap`, `round`
+- `waffleY` (data): `inset`, `insetTop`, `insetRight`, `insetBottom`, `insetLeft`, `r`, `rx1`, `ry1`, `rx2`, `ry2`, `rx1y1`, `rx1y2`, `rx2y1`, `rx2y2`, `rx`, `ry`, `offset`, `order`, `z`, `interval`, `y`, `y1`, `y2`, `x`, `multiple`, `unit`, `gap`, `round`
+
+### Transforms
+
+Write `"transform": [{"<name>": <argument>}, …]` on a mark. The first entry is applied first (it is the innermost call in JavaScript).
+
+| Transform | Argument | Reads from the mark |
+| --- | --- | --- |
+| `bin` | `{"y": "count"}`: channel → reducer; also `data`, `filter`, `sort`, `reverse`, `z`, `cumulative`, `domain`, `thresholds`, `interval` | `cumulative`, `domain`, `thresholds`, `interval` |
+| `binX` | `{"y": "count"}`: channel → reducer; also `data`, `filter`, `sort`, `reverse`, `z`, `cumulative`, `domain`, `thresholds`, `interval` | `cumulative`, `domain`, `thresholds`, `interval` |
+| `binY` | `{"y": "count"}`: channel → reducer; also `data`, `filter`, `sort`, `reverse`, `z`, `cumulative`, `domain`, `thresholds`, `interval` | `cumulative`, `domain`, `thresholds`, `interval` |
+| `group` | `{"y": "count"}`: channel → reducer; also `data`, `filter`, `sort`, `reverse`, `z` |  |
+| `groupX` | `{"y": "count"}`: channel → reducer; also `data`, `filter`, `sort`, `reverse`, `z` |  |
+| `groupY` | `{"y": "count"}`: channel → reducer; also `data`, `filter`, `sort`, `reverse`, `z` |  |
+| `groupZ` | `{"y": "count"}`: channel → reducer; also `data`, `filter`, `sort`, `reverse`, `z` |  |
+| `hexbin` | `{"y": "count"}`: channel → reducer | `binWidth` |
+| `map` | `{"y": "cumsum"}`: channel → `cumsum`, `rank`, `quantile` |  |
+| `mapX` | `cumsum`, `rank`, `quantile` |  |
+| `mapY` | `cumsum`, `rank`, `quantile` |  |
+| `normalizeX` | `true`, a basis (`deviation`, `first`, `last`, `max`, `mean`, `median`, `min`, `sum`, `extent`, `"pNN"`) or `{"basis"}` |  |
+| `normalizeY` | `true`, a basis (`deviation`, `first`, `last`, `max`, `mean`, `median`, `min`, `sum`, `extent`, `"pNN"`) or `{"basis"}` |  |
+| `windowX` | `k` (an integer) or `{"k", "reduce", "anchor", "shift", "strict"}` |  |
+| `windowY` | `k` (an integer) or `{"k", "reduce", "anchor", "shift", "strict"}` |  |
+| `stackX` | `true` or `{"offset", "order", "reverse", "z"}` |  |
+| `stackX1` | `true` or `{"offset", "order", "reverse", "z"}` |  |
+| `stackX2` | `true` or `{"offset", "order", "reverse", "z"}` |  |
+| `stackY` | `true` or `{"offset", "order", "reverse", "z"}` |  |
+| `stackY1` | `true` or `{"offset", "order", "reverse", "z"}` |  |
+| `stackY2` | `true` or `{"offset", "order", "reverse", "z"}` |  |
+| `dodgeX` | an anchor (`"left"`, `"right"`, `"middle"`), `{"anchor", "padding", "r"}` or `true` |  |
+| `dodgeY` | an anchor (`"top"`, `"bottom"`, `"middle"`), `{"anchor", "padding", "r"}` or `true` |  |
+| `select` | `"first"`, `"last"` or `{"<channel>": "min" \| "max"}` | `z` |
+| `selectFirst` | `true` or `{"z"}` | `z` |
+| `selectLast` | `true` or `{"z"}` | `z` |
+| `selectMinX` | `true` or `{"z"}` | `z` |
+| `selectMinY` | `true` or `{"z"}` | `z` |
+| `selectMaxX` | `true` or `{"z"}` | `z` |
+| `selectMaxY` | `true` or `{"z"}` | `z` |
+| `shiftX` | an interval: a number or `"5 days"` |  |
+| `shiftY` | an interval: a number or `"5 days"` |  |
+| `filter` | a field name (keeps rows where it is truthy) or an array of booleans |  |
+| `sort` | a field name, `{"channel": "-y"}` or `{"value", "order"}` |  |
+| `reverse` | `true` |  |
+| `shuffle` | `true` or `{"seed"}` | `seed` |
+| `centroid` | `true` or `{"geometry"}` | `geometry` |
+| `geoCentroid` | `true` or `{"geometry"}` | `geometry` |
+| `treeNode` | `true` or `{"path", "delimiter", "treeAnchor"}` | `path`, `delimiter`, `treeAnchor` |
+| `treeLink` | `true` or `{"path", "delimiter", "treeAnchor"}` | `path`, `delimiter`, `treeAnchor` |
+| `pointer` | `true` or `{"maxRadius", "px", "py"}` | `maxRadius`, `px`, `py` |
+| `pointerX` | `true` or `{"maxRadius", "px", "py"}` | `maxRadius`, `px`, `py` |
+| `pointerY` | `true` or `{"maxRadius", "px", "py"}` | `maxRadius`, `px`, `py` |
+
+Reducers of `bin`, `group` and `hexbin` outputs: `first`, `last`, `identity`, `count`, `distinct`, `sum`, `proportion`, `proportion-facet`, `deviation`, `min`, `min-index`, `max`, `max-index`, `mean`, `median`, `variance`, `mode`, percentiles `"p00"`…`"p99"`; bin outputs also take `"x"`, `"x1"`, `"x2"`, `"y"`, `"y1"`, `"y2"`, `"z"` and group outputs `"x"`, `"y"`, `"z"`. An output may also be `{"reduce", "scale", "label"}` or `null`.
+
+Window reducers: `difference`, `ratio`, `first`, `last`, `deviation`, `sum`, `min`, `max`, `mean`, `median`, `variance`, `mode` and percentiles. Normalize bases: `deviation`, `first`, `last`, `max`, `mean`, `median`, `min`, `sum`, `extent` and percentiles. Maps: `cumsum`, `rank`, `quantile`.
+
+### Named values
+
+- Curves (`"curve"`): `basis`, `basis-closed`, `basis-open`, `bundle`, `bump-x`, `bump-y`, `cardinal`, `cardinal-closed`, `cardinal-open`, `catmull-rom`, `catmull-rom-closed`, `catmull-rom-open`, `linear`, `linear-closed`, `monotone-x`, `monotone-y`, `natural`, `step`, `step-after`, `step-before`, `"auto"`.
+- Symbols (`"symbol"` constant): `asterisk`, `circle`, `cross`, `diamond`, `diamond2`, `hexagon`, `plus`, `square`, `square2`, `star`, `times`, `triangle`, `triangle2`, `wye`.
+- Markers (`"marker"`, `"markerStart"`, `"markerMid"`, `"markerEnd"`): `arrow`, `arrow-reverse`, `dot`, `circle`, `circle-fill`, `circle-stroke`, `tick`, `tick-x`, `tick-y`, `none`, `true`.
+- Time intervals (`"interval"`, `shiftX`/`shiftY`): `second`, `minute`, `hour`, `day`, `week`, `month`, `quarter`, `half`, `year`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`, optionally with a count and a plural (`"3 months"`, `"10 years"`); or a number.
+- Formats (`"tickFormat"`, tip `"format"`): [d3-format](https://d3js.org/d3-format) strings such as `",.0f"`, `".1%"`, `"$.2s"`, `"d"`, or [d3-time-format](https://d3js.org/d3-time-format) strings such as `"%b %Y"`, `"%Y-%m-%d"`.
+
+## Specification
+
+**Spec version 0.1** · Observable Plot **0.6.19** · Schema: [`plot.schema.json`](https://raw.githubusercontent.com/devlooped/plotdown/main/spec/plot.schema.json) · Examples: [`fixtures/`](#examples)
+
+A plotdown block is a fenced code block of Markdown that holds a chart as **strict JSON**: the options of [Observable Plot](https://observablehq.com/plot/)'s `Plot.plot()`, with marks and transforms written as data instead of function calls. A renderer turns the block into the same chart that the equivalent JavaScript draws.
+
+````markdown
+```plot
+{
+  "title": "Penguin body mass",
+  "data": {"penguins": {"csv": "species,body_mass_g\nAdelie,3750\nGentoo,5000\nChinstrap,3500\n"}},
+  "color": {"legend": true},
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "rectY", "data": "penguins", "x": "body_mass_g", "fill": "species",
+     "transform": [{"binX": {"y": "count"}}]},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+````
+
+is the JSON form of
+
+```js
+Plot.plot({
+  title: "Penguin body mass", color: {legend: true}, y: {grid: true},
+  marks: [
+    Plot.rectY(penguins, Plot.binX({y: "count"}, {x: "body_mass_g", fill: "species"})),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. "Renderer" means an implementation of this spec; the reference renderer is the npm package `plotdown`.
+
+### 1. Versions
+
+- This document is spec version **0.1**. The schema's `$id` carries it: `https://plotdown.cc/schema/0.1/plot.schema.json`.
+- The option names and values are those of **Observable Plot 0.6.19**. A renderer pins one Plot version; the allowlists of this spec (marks, transforms, option keys) are generated from that version's type declarations, so they change only with a new spec version.
+- A block MAY name the schema it was written against with a top-level `"$schema"` key. Renderers ignore its value.
+
+### 2. Fences
+
+A block is a fenced code block whose info string starts with one of these words, in any case:
+
+| Fence | Use |
+| --- | --- |
+| `plot` | Canonical. GitHub highlights it as gnuplot (Linguist maps `.plot` to Gnuplot). |
+| `oplot` | Same meaning; not highlighted by GitHub. Short for Observable Plot. |
+| `observable-plot` | Same meaning; not highlighted by GitHub. |
+
+Anything after the first word of the info string is ignored.
+
+Because a `plot` fence may also hold a gnuplot script, a renderer that finds blocks in rendered HTML (where the fence name may be lost or ambiguous) SHOULD render a block only when its text, trimmed, starts with `{`, ends with `}`, parses as JSON and is an object with a `marks` array. The same test tells a complete block from one that is still streaming. A block that passes this test but fails validation is shown with its error (section 10), not left as code silently.
+
+### 3. The block
+
+The block is one JSON object (RFC 8259): no comments, no trailing commas, no `NaN`, no functions. Its keys are:
+
+| Key | Value |
+| --- | --- |
+| `marks` | **Required.** An array of marks (section 4), drawn in order. |
+| `data` | An object of named datasets (section 7) that marks refer to by name. |
+| `$schema` | Optional URL of the schema. |
+| Every other key | An option of `Plot.plot()`, with the same name and meaning (section 8). |
+
+Every key that is not in this spec is an error (section 10). A typo is an error rather than a chart that silently differs.
+
+### 4. Marks
+
+A mark is an object:
+
+```json
+{"mark": "dot", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "fill": "species", "transform": [ … ]}
+```
+
+- `mark` (required) is the name of a Plot mark function: `"dot"` means `Plot.dot`.
+- `data` is the mark's data (section 7).
+- `transform` is an array of transforms (section 6).
+- Every other key is an option of that mark in Plot, with the same name and value.
+
+The mark is called as `Plot.<mark>(data, options)`, where `options` holds every key but `mark`, `data` and `transform`, after the transforms are applied to it.
+
+#### 4.1 The marks
+
+| Family | Marks |
+| --- | --- |
+| area | `area`, `areaX`, `areaY` |
+| arrow | `arrow` |
+| auto | `auto` |
+| axis and grid | `axisX`, `axisY`, `axisFx`, `axisFy`, `gridX`, `gridY`, `gridFx`, `gridFy` |
+| bar | `barX`, `barY` |
+| bollinger | `bollingerX`, `bollingerY` |
+| box | `boxX`, `boxY` |
+| cell | `cell`, `cellX`, `cellY` |
+| contour | `contour` |
+| crosshair | `crosshair`, `crosshairX`, `crosshairY` |
+| delaunay | `delaunayLink`, `delaunayMesh`, `hull`, `voronoi`, `voronoiMesh` |
+| density | `density` |
+| difference | `differenceX`, `differenceY` |
+| dot | `dot`, `dotX`, `dotY`, `circle`, `hexagon` |
+| frame | `frame` |
+| geo | `geo`, `sphere`, `graticule` |
+| hexgrid | `hexgrid` |
+| image | `image` |
+| line | `line`, `lineX`, `lineY` |
+| linear regression | `linearRegressionX`, `linearRegressionY` |
+| link | `link` |
+| raster | `raster` |
+| rect | `rect`, `rectX`, `rectY` |
+| rule | `ruleX`, `ruleY` |
+| text | `text`, `textX`, `textY` |
+| tick | `tickX`, `tickY` |
+| tip | `tip` |
+| tree | `tree`, `cluster` |
+| vector | `vector`, `vectorX`, `vectorY`, `spike` |
+| waffle | `waffleX`, `waffleY` |
+
+No other name is a mark: not `plot`, `legend`, `marks`, `autoSpec`, nor any helper of Plot.
+
+#### 4.2 How each mark takes data
+
+- `frame`, `sphere`, `graticule` and `hexgrid` take no data: a `data` key is an error. They are called `Plot.<mark>(options)`.
+- The axis and grid marks, `contour` and `raster` take optional data. Without `data` they are called `Plot.<mark>(options)`.
+- Every other mark is called `Plot.<mark>(data, options)`; without `data`, `data` is `undefined`.
+
+#### 4.3 Options
+
+A mark accepts the options Plot declares for it (its `…Options` interface in Plot's type declarations), except those that only take a function: `transform`, `initializer` and `render`. Most marks share Plot's common mark options (`fill`, `stroke`, `strokeWidth`, `opacity`, `title`, `href`, `tip`, `fx`, `fy`, `sort`, `filter`, `dx`, `dy`, `clip`, `className`, …); the schema lists, per mark, the keys it accepts.
+
+One name differs from Plot: the `auto` mark's own `mark` option (`"area"`, `"bar"`, `"dot"`, `"line"`, `"rule"`) is written **`autoMark`**, since `mark` names the plotdown mark.
+
+```json
+{"mark": "auto", "data": "penguins", "x": "species", "y": {"value": "body_mass_g", "reduce": "mean"}, "autoMark": "bar"}
+```
+
+Options that hold names in Plot hold the same names here: curves (`"curve": "catmull-rom"`), symbols (`"symbol": "triangle"`), markers (`"markerEnd": "arrow"`), reducers, intervals (`"interval": "month"`), color schemes (`"scheme": "blues"`), projections (`"projection": "albers-usa"`), number and time formats (`"tickFormat": "$.2f"`, `"tickFormat": "%b %Y"`, d3-format and d3-time-format strings).
+
+### 5. Channels
+
+A channel is a mark option that varies per datum: `x`, `y`, `x1`, `x2`, `y1`, `y2`, `z`, `fill`, `stroke`, `r`, `text`, `title`, `href`, `src`, `symbol`, `fx`, `fy`, `fontSize`, `rotate`, `length`, `opacity`, `strokeWidth`, `fillOpacity`, `strokeOpacity`, `weight`, `width`, `height`, `geometry`, `path`, and the like. Its value is one of:
+
+| Value | Meaning | Example |
+| --- | --- | --- |
+| string | The name of a field of each row | `"x": "body_mass_g"` |
+| string that is a CSS color, for `fill` and `stroke` | A constant color (Plot's own rule) | `"fill": "steelblue"`, `"stroke": "#e45"` |
+| number, boolean, `null` | A constant | `"r": 3`, `"fillOpacity": 0.5`, `"stroke": null` |
+| array | One value per datum | `"x": [1, 2, 3]` |
+| object | `{"value": <field, constant or array>, "label": "…", "scale": "…" \| true \| false \| null}`, plus `interval`, `thresholds`, `domain`, `cumulative` where Plot accepts them (a bin input such as `{"value": "weight", "thresholds": 20}`) and `reduce`, `zero`, `color` for the `auto` mark | `"x": {"value": "date", "label": "Date"}` |
+
+A field name that is also a CSS color cannot be referenced for `fill` or `stroke` (as in Plot without an accessor). Fields of nested objects cannot be reached: a field name is looked up on the row as is (`"a.b"` is the key `a.b`).
+
+The `channels` option (extra channels for the tip) is an object of channel values. The `tip` option is `true`, `false`, `"x"`, `"y"`, `"xy"` or an object of tip options (the options of the `tip` mark, plus `pointer`: `"x"`, `"y"` or `"xy"`). The mark-level `sort` option is a field name, `{"channel": "-y", "order": …}`, or a domain sort such as `{"x": "-y", "reduce": "sum", "limit": 10}`.
+
+### 6. Transforms
+
+A transform is an object with exactly one key, the name of a Plot transform, whose value is the transform's **argument**:
+
+```json
+"transform": [{"filter": "sex"}, {"groupX": {"y": "count"}}]
+```
+
+#### 6.1 Order
+
+Transforms apply **in array order**: the first one transforms the mark's options, the next one transforms the result, and so on. `[A, B]` is `Plot.B(argB, Plot.A(argA, options))`; the example above is
+
+```js
+Plot.groupX({y: "count"}, Plot.filter("sex", options))
+```
+
+that is, the first entry is the innermost call, as Plot composes transforms: rows are filtered, then grouped. Marks that stack implicitly (`barY`, `areaY`, `rectY`, `waffleY` and their X forms) still do so after the listed transforms, as in Plot.
+
+#### 6.2 Arguments
+
+| Transforms | Argument | Call |
+| --- | --- | --- |
+| `bin`, `binX`, `binY` | Outputs: channel name → reducer. Also `data`, `filter`, `sort` (reducers), `reverse`, `z`, and the bin options `cumulative`, `domain`, `thresholds`, `interval` | `Plot.binX(arg, options)` |
+| `group`, `groupX`, `groupY`, `groupZ` | Outputs: channel name → reducer. Also `data`, `filter`, `sort`, `reverse`, `z` | `Plot.groupX(arg, options)` |
+| `hexbin` | Outputs: channel name → reducer | `Plot.hexbin(arg, options)` |
+| `map` | Outputs: channel name → `"cumsum"`, `"rank"` or `"quantile"` | `Plot.map(arg, options)` |
+| `mapX`, `mapY` | `"cumsum"`, `"rank"` or `"quantile"` | `Plot.mapY(arg, options)` |
+| `normalizeX`, `normalizeY` | A basis (`"first"`, `"last"`, `"min"`, `"max"`, `"mean"`, `"median"`, `"sum"`, `"extent"`, `"deviation"`, `"pNN"`), `{"basis": …}`, or `true` for the default | `Plot.normalizeY(arg, options)` |
+| `windowX`, `windowY` | `k` (a positive integer) or `{"k", "reduce", "anchor", "shift", "strict"}` | `Plot.windowY(arg, options)` |
+| `stackX`, `stackX1`, `stackX2`, `stackY`, `stackY1`, `stackY2` | `{"offset", "order", "reverse", "z"}` or `true` for the defaults | `Plot.stackY(arg, options)` |
+| `dodgeX`, `dodgeY` | An anchor, `{"anchor", "padding", "r"}` or `true` | `Plot.dodgeY(arg, options)` |
+| `select` | `"first"`, `"last"`, or `{"<channel>": "min" \| "max"}` | `Plot.select(arg, options)` |
+| `selectFirst`, `selectLast`, `selectMinX`, `selectMinY`, `selectMaxX`, `selectMaxY` | `true`, or `{"z": …}` | `Plot.selectLast({...options, ...arg})` |
+| `shiftX`, `shiftY` | An interval: a number or a time interval such as `"5 days"` | `Plot.shiftX(arg, options)` |
+| `filter` | A channel: a field name (rows where it is truthy) or an array of booleans | `Plot.filter(arg, options)` |
+| `sort` | A channel (field name), or `{"channel": "-y"}`, `{"value": …, "order": "ascending" \| "descending"}` | `Plot.sort(arg, options)` |
+| `reverse` | `true` | `Plot.reverse(options)` |
+| `shuffle` | `true` or `{"seed": n}` | `Plot.shuffle({...options, ...arg})` |
+| `centroid`, `geoCentroid` | `true` or `{"geometry": …}` | `Plot.centroid({...options, ...arg})` |
+| `treeNode`, `treeLink` | `true` or `{"path", "delimiter", "treeAnchor"}` | `Plot.treeNode({...options, ...arg})` |
+| `pointer`, `pointerX`, `pointerY` | `true` or `{"maxRadius", "px", "py"}` | `Plot.pointerX({...options, ...arg})` |
+
+**Reducers** are names: `"count"`, `"distinct"`, `"sum"`, `"proportion"`, `"proportion-facet"`, `"min"`, `"min-index"`, `"max"`, `"max-index"`, `"mean"`, `"median"`, `"mode"`, `"variance"`, `"deviation"`, `"first"`, `"last"`, `"identity"`, a percentile `"p00"`…`"p99"`; bin outputs also take `"x"`, `"x1"`, `"x2"`, `"y"`, `"y1"`, `"y2"`, `"z"`, and group outputs `"x"`, `"y"`, `"z"`. An output may be `{"reduce": <name>, "scale": …, "label": …}` or `null`. Window reducers are `"mean"`, `"median"`, `"sum"`, `"min"`, `"max"`, `"mode"`, `"variance"`, `"deviation"`, `"difference"`, `"ratio"`, `"first"`, `"last"` and percentiles.
+
+#### 6.3 Transform options on the mark
+
+Some transforms read options from the mark's options, as in Plot: the bin transforms read `thresholds`, `interval`, `domain` and `cumulative`; `hexbin` reads `binWidth`; the pointer transforms read `maxRadius`, `px`, `py`; the tree transforms read `path`, `delimiter`, `treeAnchor`; `centroid` reads `geometry`; `shuffle` reads `seed`; the select transforms read `z`. These keys are valid on a mark **only when it lists a transform that reads them**; otherwise they are errors that name the transform.
+
+```json
+{"mark": "rectY", "data": "penguins", "x": "body_mass_g", "thresholds": 20, "transform": [{"binX": {"y": "count"}}]}
+```
+
+Not supported: Plot's `transform` and `initializer` helpers, the `find` reducer, `Plot.normalize`/`Plot.window`/`Plot.bollinger` as map functions, custom reducers, maps, selectors, intervals or thresholds given as functions.
+
+### 7. Data
+
+#### 7.1 Forms
+
+The `data` of a mark (and the `data` of the `facet` option) is one of:
+
+| Form | Example |
+| --- | --- |
+| Inline rows: an array of objects, of values, or of arrays | `[{"x": 1, "y": 2}, {"x": 2, "y": 5}]`, `[0]` |
+| The name of a dataset of the top-level `data` map | `"penguins"` |
+| CSV text with a header row | `{"csv": "x,y\n1,2\n2,5\n"}` |
+| TSV text with a header row | `{"tsv": "x\ty\n1\t2\n"}` |
+| A remote file (off by default, 7.4) | `{"url": "https://example.com/data.csv", "format": "csv"}` |
+| A GeoJSON object | `{"type": "FeatureCollection", "features": [ … ]}` |
+| `null` | no data |
+
+The top-level `data` map holds named datasets in any of these forms but a name: `"data": {"penguins": {"csv": "…"}}`. Dataset names start with a letter or `_` and hold letters, digits, `_` and `-`. Marks that name the same dataset receive **the same array**, so Plot's facets (which match data by identity) work across marks:
+
+```json
+{"facet": {"data": "penguins", "x": "sex"}, "marks": [{"mark": "frame"}, {"mark": "dot", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g"}]}
+```
+
+A GeoJSON object is recognized by its `type`: `Feature`, `FeatureCollection`, `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `GeometryCollection` or `Sphere`. Plot reads a FeatureCollection as its features.
+
+#### 7.2 CSV and TSV
+
+CSV follows RFC 4180: fields separated by `,` (TSV: tab), quoted with `"`, a `""` inside quotes is a quote, records end with LF or CRLF, blank lines are skipped. The first record names the columns; a duplicate name is an error, and the names `__proto__`, `constructor` and `prototype` are rejected. Each cell is typed:
+
+| Cell (after trimming spaces) | Value |
+| --- | --- |
+| empty | `null` |
+| `true`, `false` | boolean |
+| a decimal number: `-12`, `3.5`, `.5`, `1e6` | number |
+| anything else | the text as written |
+
+Hexadecimal, `NaN` and `Infinity` stay text. Then the date rule applies to each column.
+
+#### 7.3 Dates
+
+JSON has no dates; this rule makes them:
+
+> An array of values, or a column of rows, in which **every value that is not `null` is an ISO 8601 date string**, and there is at least one, becomes **Date** values (and `null` stays `null`).
+
+An ISO 8601 date string here is `YYYY-MM`, `YYYY-MM-DD`, or `YYYY-MM-DDTHH:MM`, with optional `:SS` and `.sss` (up to 9 digits, read to milliseconds), and an optional `Z` or offset `±HH:MM` / `±HHMM`. A six-digit year with a sign (`+YYYYYY`) is allowed. Values must be real dates (`2023-02-30` is not one). A date-time without an offset is **UTC**, so that a chart renders the same in every time zone. A bare year (`"2024"`) is not a date, and a column with one string that is not a date stays text.
+
+The rule applies to: inline rows and CSV/TSV rows (per field of object rows, per index of array rows), arrays of values given as data (`"data": ["2024-03-01"]`), and every array of values in the options, such as a channel given as an array, a scale's `domain`, `ticks` or `grid`, a bin `domain`. It does not apply inside GeoJSON objects or to single strings (a single string in a channel is a field name).
+
+#### 7.4 Remote data and images
+
+A `{"url": …}` dataset and the `src` of an `image` mark load from the network. Renderers MUST NOT load them unless the host allows it, and SHOULD let the host allow nothing (the default), everything, or a list of origins. Rules:
+
+- Only `http` and `https` URLs. A relative URL resolves against the host's base URL; with a list of origins it needs one.
+- `format` is `"csv"`, `"tsv"` or `"json"`; without it, the file extension (`.csv`, `.tsv`, `.json`, `.geojson`) decides, and an unknown extension is an error. A JSON file holds rows (an array) or a GeoJSON object.
+- Requests carry no credentials and no referrer. A redirect to an origin outside the list is an error.
+- The loaded data is checked exactly like inline data (limits, links, CSS).
+- An `image` `src` that is a `data:image/…` URL needs no network and is always allowed; `file:` and `blob:` are never allowed.
+
+The `src` of an image is a constant when it starts with `./`, `../`, `/` or a scheme (Plot's rule), and a field name otherwise.
+
+### 8. Plot options
+
+The top-level keys other than `marks`, `data` and `$schema` are those of `Plot.plot()`:
+
+- **Layout:** `width`, `height`, `aspectRatio`, `margin`, `marginTop`, `marginRight`, `marginBottom`, `marginLeft`, `inset`…, `style`, `className`, `clip`, `figure`.
+- **Text:** `title`, `subtitle`, `caption` (strings: HTML elements in Plot are not available), `ariaLabel`, `ariaDescription`.
+- **Scales:** `x`, `y`, `fx`, `fy`, `r`, `color`, `opacity`, `symbol`, `length`: objects of scale options (`type`, `domain`, `range`, `scheme`, `interpolate` by name, `nice`, `zero`, `reverse`, `label`, `grid`, `ticks`, `tickFormat`, `tickRotate`, `percent`, `legend`, …). `color`, `opacity` and `symbol` also take their legend options (`legend`, `width`, `columns`, `swatchSize`, …). The scale defaults (`grid`, `label`, `axis`, `nice`, `zero`, `round`, `clamp`, `padding`, `align`, `inset`…) are also valid at the top level, as in Plot.
+- **Projection:** `projection`: a name (`"albers-usa"`, `"equal-earth"`, `"mercator"`, `"orthographic"`, …) or `{"type", "domain" (GeoJSON), "rotate", "parallels", "precision", "clip", "inset"…}`.
+- **Facets:** `facet`: `{"data", "x", "y", "margin"…, "grid", "label"}`; or the `fx` and `fy` channels of marks.
+
+The `style` option is a string of CSS or an object of CSS properties with string or number values; it MUST NOT contain backslash escapes, `@import`, or the CSS functions `url()` (other than `url(#id)`), `image()`, `image-set()`, `cross-fade()`, `element()`, `expression()`.
+
+### 9. Security
+
+A block may come from anyone, including a language model, and renderers run it in the reader's browser, in extensions and on servers. A conforming renderer:
+
+1. **Evaluates nothing.** The block is parsed as JSON; mark and transform names are looked up in fixed allowlists (sections 4.1 and 6.2) as own properties, never on prototypes; no string becomes code.
+2. **Rejects function-like strings** in options: a string that starts like a JavaScript function — `function`, `async`, `(a, b) =>`, `d =>` — is an error, since Plot would read it as a field name and draw the wrong chart. Free text is exempt: the top-level `title`, `subtitle`, `caption`, `ariaLabel`, `ariaDescription`, any `label`, and data values.
+3. **Limits links.** Every value of an `href` channel (on the mark or in its tip), resolved over the mark's data, is an `http`, `https` or `mailto` URL or a relative one. Whitespace and control characters inside a scheme (`java\tscript:`) are ignored when the scheme is read.
+4. **Loads nothing from the network** unless the host allows it (7.4).
+5. **Rejects CSS `url()`** that is not a `#fragment`, in any string of the block, data included: Plot accepts `url(…)` as a color, and an SVG paint server or filter can load a remote file.
+6. **Rejects the keys `__proto__`, `constructor` and `prototype`** anywhere in the block, data included.
+7. **Applies limits** (section 10).
+8. **Checks its own output** (recommended): no `<script>`, `<foreignObject>` or other active element, no `on…` attribute, no unsafe link, no remote `url()`, images only as allowed.
+
+### 10. Errors and limits
+
+These are errors:
+
+- text that is not JSON, or JSON that is not an object; a missing `marks` array;
+- a key that is not a Plot option of its place (top level, scale, projection, facet, mark, tip, channel object, transform argument, output), with the rules of 4.3 and 6.3;
+- an unknown mark, transform, reducer or map name; a transform object without exactly one key;
+- `data` on a mark that takes none; a dataset name that is not in the `data` map;
+- the security rules of section 9 and the remote rules of 7.4;
+- the limits below;
+- whatever Plot itself rejects when the chart is built (an unknown curve, an invalid scale type…).
+
+The reference renderer's limits (a host may change them):
+
+| Limit | Default |
+| --- | --- |
+| Source text | 524,288 characters |
+| Nesting of arrays and objects | 64 levels |
+| Marks | 64 |
+| Rows of one dataset, or values of one channel array | 100,000 |
+| `width`, `height` | 10,000 px |
+| Thresholds given as a count (bins, contours, density) | 10,000 |
+| `pixelSize` of raster and contour | at least 0.5 |
+| `binWidth` of hexbin and hexgrid | at least 1 |
+| Remote file | 5,242,880 characters, 10 s |
+
+An error names the **JSON path** of the offending value, written `$` for the block, `.key` for a key that is an identifier, `["key"]` for any other key, and `[n]` for an index: `$.marks[1].transform[0].binX.y`. An error in a value of a dataset names the cell (`$.data.links[3].url`) or, for CSV and TSV text, the text with the row and column in the message. A JSON syntax error also carries a line and a column. A renderer that cannot render a block SHOULD leave the block as code and show the error next to it.
+
+### 11. Conformance
+
+- [`plot.schema.json`](https://raw.githubusercontent.com/devlooped/plotdown/main/spec/plot.schema.json) (JSON Schema 2020-12) describes the block. It accepts on every mark the transform options of 6.3 whether or not the transform is present, and it does not check links, URLs, dates, function-like strings, CSS or limits: a valid block MUST pass the schema; passing the schema is not enough.
+- [`fixtures/`](#examples) holds 30 blocks ported from the Plot documentation, one per mark family, covering every transform family. A renderer conforms when each fixture renders the same SVG as the equivalent hand-written `Plot.plot()` call with the pinned Plot version (ids of clip paths, markers, patterns and filters aside).
+
+### 12. Writing blocks (for people and models)
+
+- Start from the JavaScript you would write and replace each call: `Plot.dot(data, {…})` → `{"mark": "dot", "data": …, …}`; `Plot.binX({y: "count"}, {…})` → `"transform": [{"binX": {"y": "count"}}]`; nested transforms → the innermost first.
+- Name fields with strings; never write `d => …`. For a derived value, use a transform (`normalizeY`, `mapY`, `windowY`, `binX`, `groupX`…) or compute it in the data.
+- Put data inline: rows for small tables, `{"csv": …}` for more; give it a name in `data` when several marks use it. Write dates as ISO 8601 strings.
+- Constant colors are CSS colors (`"fill": "steelblue"`); other strings are field names.
+- Validate against `plot.schema.json` (with JSON Schema 2020-12 support) before emitting a block.
+
+#### Example: a line with a moving average and a tip
+
+```plot
+{
+  "y": {"grid": true, "label": "Close ($)"},
+  "data": {"aapl": [
+    {"date": "2024-03-01", "close": 129.6}, {"date": "2024-03-02", "close": 130.2},
+    {"date": "2024-03-03", "close": 128.9}, {"date": "2024-03-04", "close": 131.5},
+    {"date": "2024-03-05", "close": 133.1}, {"date": "2024-03-06", "close": 132.4}
+  ]},
+  "marks": [
+    {"mark": "lineY", "data": "aapl", "x": "date", "y": "close", "strokeOpacity": 0.3},
+    {"mark": "lineY", "data": "aapl", "x": "date", "y": "close", "transform": [{"windowY": {"k": 3, "reduce": "mean"}}]},
+    {"mark": "tip", "data": "aapl", "x": "date", "y": "close", "transform": [{"pointerX": true}]}
+  ]
+}
+```
+
+### 13. The reference renderer
+
+`plotdown` (npm) implements this spec in TypeScript with `@observablehq/plot` as its only dependency; its core runs in browsers, Manifest V3 extensions, workers and Node (with a jsdom or linkedom document).
+
+```ts
+import {render, renderAsync, validate, parse, isPlotSpec, isPlotFence, FENCE_NAMES, PlotdownError} from "@devlooped/plotdown";
+
+const figure = render(source, {document, allowRemote: false, baseUrl}); // sync; throws PlotdownError {path, message}
+const figure2 = await renderAsync(source, {allowRemote: ["https://data.example.com"], fetch}); // loads data URLs first
+```
+
+`render` is synchronous and refuses a block with a data URL (even when remote data is allowed) with an error that points to `renderAsync`, or to `resolveRemoteData`, which returns a copy of the block with the remote data inlined. `toPlotOptions` returns the options of `Plot.plot()` for hosts that call Plot themselves.
+
+*plotdown is not affiliated with Observable, Inc. Observable Plot is © Observable, Inc., ISC license.*
+
+## Examples
+
+30 complete blocks, ported from the Observable Plot documentation, that cover every mark family and every transform family. Each one renders with plotdown and matches the hand-written `Plot.plot()` call.
+
+### area-stacked
+
+Marks: `areaY`, `ruleY`. Transforms: `stackY`.
+
+```plot
+{
+  "title": "Unemployed workers by industry",
+  "data": {
+    "jobs": [
+      {"date": "2024-01-01", "industry": "Construction", "unemployed": 612},
+      {"date": "2024-02-01", "industry": "Construction", "unemployed": 640},
+      {"date": "2024-03-01", "industry": "Construction", "unemployed": 690},
+      {"date": "2024-04-01", "industry": "Construction", "unemployed": 720},
+      {"date": "2024-05-01", "industry": "Construction", "unemployed": 700},
+      {"date": "2024-06-01", "industry": "Construction", "unemployed": 650},
+      {"date": "2024-01-01", "industry": "Manufacturing", "unemployed": 830},
+      {"date": "2024-02-01", "industry": "Manufacturing", "unemployed": 810},
+      {"date": "2024-03-01", "industry": "Manufacturing", "unemployed": 800},
+      {"date": "2024-04-01", "industry": "Manufacturing", "unemployed": 790},
+      {"date": "2024-05-01", "industry": "Manufacturing", "unemployed": 770},
+      {"date": "2024-06-01", "industry": "Manufacturing", "unemployed": 760},
+      {"date": "2024-01-01", "industry": "Retail", "unemployed": 910},
+      {"date": "2024-02-01", "industry": "Retail", "unemployed": 880},
+      {"date": "2024-03-01", "industry": "Retail", "unemployed": 860},
+      {"date": "2024-04-01", "industry": "Retail", "unemployed": 900},
+      {"date": "2024-05-01", "industry": "Retail", "unemployed": 940},
+      {"date": "2024-06-01", "industry": "Retail", "unemployed": 920}
+    ]
+  },
+  "y": {"grid": true, "label": "Unemployed (thousands)"},
+  "color": {"legend": true},
+  "marks": [
+    {"mark": "areaY", "data": "jobs", "x": "date", "y": "unemployed", "fill": "industry", "transform": [{"stackY": {"order": "appearance"}}]},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+### arrow-change
+
+Marks: `arrow`, `text`.
+
+```plot
+{
+  "x": {"type": "log", "label": "Population (millions)"},
+  "y": {"label": "Inequality", "grid": true},
+  "data": {
+    "metros": [
+      {"Metro": "New York", "POP_1980": 16, "POP_2015": 20.2, "R90_10_1980": 6.4, "R90_10_2015": 7.9},
+      {"Metro": "Los Angeles", "POP_1980": 11.5, "POP_2015": 13.3, "R90_10_1980": 5.6, "R90_10_2015": 7.4},
+      {"Metro": "Chicago", "POP_1980": 8, "POP_2015": 9.5, "R90_10_1980": 5, "R90_10_2015": 6.2},
+      {"Metro": "Houston", "POP_1980": 3.2, "POP_2015": 6.7, "R90_10_1980": 4.9, "R90_10_2015": 6},
+      {"Metro": "Phoenix", "POP_1980": 1.6, "POP_2015": 4.6, "R90_10_1980": 4.6, "R90_10_2015": 5.2}
+    ]
+  },
+  "marks": [
+    {"mark": "arrow", "data": "metros", "x1": "POP_1980", "y1": "R90_10_1980", "x2": "POP_2015", "y2": "R90_10_2015", "bend": true, "stroke": "steelblue"},
+    {"mark": "text", "data": "metros", "x": "POP_2015", "y": "R90_10_2015", "text": "Metro", "dy": -8, "fontSize": 9}
+  ]
+}
+```
+
+### auto-bar
+
+Marks: `auto`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "marks": [
+    {"mark": "auto", "data": "penguins", "x": "species", "y": {"value": "body_mass_g", "reduce": "mean"}, "autoMark": "bar"}
+  ]
+}
+```
+
+### axis-custom
+
+Marks: `gridY`, `axisY`, `axisX`, `lineY`.
+
+```plot
+{
+  "data": {
+    "aapl": [
+      {"date": "2024-03-01", "close": 129.6},
+      {"date": "2024-03-02", "close": 130.2},
+      {"date": "2024-03-03", "close": 128.9},
+      {"date": "2024-03-04", "close": 131.5},
+      {"date": "2024-03-05", "close": 133.1},
+      {"date": "2024-03-06", "close": 132.4},
+      {"date": "2024-03-07", "close": 134.8},
+      {"date": "2024-03-08", "close": 136},
+      {"date": "2024-03-09", "close": 135.2},
+      {"date": "2024-03-10", "close": 137.9},
+      {"date": "2024-03-11", "close": 139.4},
+      {"date": "2024-03-12", "close": 138.1},
+      {"date": "2024-03-13", "close": 140.6},
+      {"date": "2024-03-14", "close": 142.3},
+      {"date": "2024-03-15", "close": 141},
+      {"date": "2024-03-16", "close": 143.8},
+      {"date": "2024-03-17", "close": 145.2},
+      {"date": "2024-03-18", "close": 144.1},
+      {"date": "2024-03-19", "close": 146.7},
+      {"date": "2024-03-20", "close": 148}
+    ]
+  },
+  "marginRight": 50,
+  "marks": [
+    {"mark": "gridY", "strokeDasharray": "2,3", "strokeOpacity": 0.3},
+    {"mark": "axisY", "anchor": "right", "label": "Close ($)", "tickFormat": "$.0f"},
+    {"mark": "axisX", "ticks": "week", "tickFormat": "%b %d", "label": null},
+    {"mark": "lineY", "data": "aapl", "x": "date", "y": "close"}
+  ]
+}
+```
+
+### bar-group
+
+Marks: `barY`, `ruleY`. Transforms: `filter`, `groupX`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "color": {"legend": true},
+  "marks": [
+    {
+      "mark": "barY",
+      "data": "penguins",
+      "x": "island",
+      "fill": "species",
+      "sort": {"x": "-y"},
+      "transform": [{"filter": "sex"}, {"groupX": {"y": "count"}}]
+    },
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+### bollinger
+
+Marks: `bollingerY`, `lineY`.
+
+```plot
+{
+  "data": {
+    "aapl": [
+      {"date": "2024-03-01", "close": 129.6},
+      {"date": "2024-03-02", "close": 130.2},
+      {"date": "2024-03-03", "close": 128.9},
+      {"date": "2024-03-04", "close": 131.5},
+      {"date": "2024-03-05", "close": 133.1},
+      {"date": "2024-03-06", "close": 132.4},
+      {"date": "2024-03-07", "close": 134.8},
+      {"date": "2024-03-08", "close": 136},
+      {"date": "2024-03-09", "close": 135.2},
+      {"date": "2024-03-10", "close": 137.9},
+      {"date": "2024-03-11", "close": 139.4},
+      {"date": "2024-03-12", "close": 138.1},
+      {"date": "2024-03-13", "close": 140.6},
+      {"date": "2024-03-14", "close": 142.3},
+      {"date": "2024-03-15", "close": 141},
+      {"date": "2024-03-16", "close": 143.8},
+      {"date": "2024-03-17", "close": 145.2},
+      {"date": "2024-03-18", "close": 144.1},
+      {"date": "2024-03-19", "close": 146.7},
+      {"date": "2024-03-20", "close": 148}
+    ]
+  },
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "bollingerY", "data": "aapl", "x": "date", "y": "close", "n": 5, "k": 2, "fill": "steelblue"},
+    {"mark": "lineY", "data": "aapl", "x": "date", "y": "close", "strokeWidth": 1}
+  ]
+}
+```
+
+### box-tsv
+
+Marks: `boxY`.
+
+```plot
+{
+  "data": {
+    "penguins": {
+      "tsv": "species\tisland\tbody_mass_g\nAdelie\tTorgersen\t3750\nAdelie\tTorgersen\t3800\nAdelie\tBiscoe\t3400\nAdelie\tDream\t4250\nAdelie\tDream\t3150\nChinstrap\tDream\t3500\nChinstrap\tDream\t3900\nChinstrap\tDream\t3650\nChinstrap\tDream\t3525\nGentoo\tBiscoe\t4500\nGentoo\tBiscoe\t5700\nGentoo\tBiscoe\t4450\nGentoo\tBiscoe\t5700\nGentoo\tBiscoe\t5400\n"
+    }
+  },
+  "y": {"grid": true},
+  "marks": [{"mark": "boxY", "data": "penguins", "x": "species", "y": "body_mass_g"}]
+}
+```
+
+### cell-heatmap
+
+Marks: `cell`, `text`.
+
+```plot
+{
+  "padding": 0,
+  "x": {"label": "Episode", "axis": "top"},
+  "y": {"label": "Season"},
+  "color": {"type": "linear", "scheme": "PiYG"},
+  "data": {
+    "ratings": [
+      {"season": 1, "episode": 1, "rating": 7.4, "title": "Simpsons Roasting on an Open Fire"},
+      {"season": 1, "episode": 2, "rating": 7.8, "title": "Bart the Genius"},
+      {"season": 1, "episode": 3, "rating": 7.6, "title": "Homer's Odyssey"},
+      {"season": 1, "episode": 4, "rating": 7.8, "title": "There's No Disgrace Like Home"},
+      {"season": 2, "episode": 1, "rating": 8.2, "title": "Bart Gets an F"},
+      {"season": 2, "episode": 2, "rating": 8.1, "title": "Simpson and Delilah"},
+      {"season": 2, "episode": 3, "rating": 8, "title": "Treehouse of Horror"},
+      {"season": 2, "episode": 4, "rating": 7.8, "title": "Two Cars in Every Garage"},
+      {"season": 3, "episode": 1, "rating": 8.3, "title": "Stark Raving Dad"},
+      {"season": 3, "episode": 2, "rating": 8, "title": "Mr. Lisa Goes to Washington"},
+      {"season": 3, "episode": 3, "rating": 7.5, "title": "When Flanders Failed"},
+      {"season": 3, "episode": 4, "rating": 8.3, "title": "Bart the Murderer"}
+    ]
+  },
+  "marks": [
+    {"mark": "cell", "data": "ratings", "x": "episode", "y": "season", "fill": "rating", "inset": 0.5},
+    {"mark": "text", "data": "ratings", "x": "episode", "y": "season", "text": "rating", "fill": "black", "title": "title"}
+  ]
+}
+```
+
+### contour
+
+Marks: `contour`, `dot`.
+
+```plot
+{
+  "data": {
+    "grid": [
+      {"x": 0, "y": 0, "v": 0},
+      {"x": 0, "y": 1, "v": 0},
+      {"x": 0, "y": 2, "v": 0},
+      {"x": 0, "y": 3, "v": 0},
+      {"x": 0, "y": 4, "v": 0},
+      {"x": 1, "y": 0, "v": 0.58},
+      {"x": 1, "y": 1, "v": 0.52},
+      {"x": 1, "y": 2, "v": 0.36},
+      {"x": 1, "y": 3, "v": 0.13},
+      {"x": 1, "y": 4, "v": -0.1},
+      {"x": 2, "y": 0, "v": 1.04},
+      {"x": 2, "y": 1, "v": 0.94},
+      {"x": 2, "y": 2, "v": 0.65},
+      {"x": 2, "y": 3, "v": 0.26},
+      {"x": 2, "y": 4, "v": -0.15},
+      {"x": 3, "y": 0, "v": 1.3},
+      {"x": 3, "y": 1, "v": 1.18},
+      {"x": 3, "y": 2, "v": 0.84},
+      {"x": 3, "y": 3, "v": 0.37},
+      {"x": 3, "y": 4, "v": -0.12},
+      {"x": 4, "y": 0, "v": 1.31},
+      {"x": 4, "y": 1, "v": 1.2},
+      {"x": 4, "y": 2, "v": 0.89},
+      {"x": 4, "y": 3, "v": 0.46},
+      {"x": 4, "y": 4, "v": 0.02}
+    ]
+  },
+  "color": {"type": "linear", "scheme": "viridis"},
+  "marks": [
+    {"mark": "contour", "data": "grid", "x": "x", "y": "y", "fill": "v", "stroke": "white", "thresholds": 6, "blur": 1},
+    {"mark": "dot", "data": "grid", "x": "x", "y": "y", "r": 1.5, "fill": "black"}
+  ]
+}
+```
+
+### delaunay-voronoi
+
+Marks: `voronoi`, `hull`, `dot`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "marks": [
+    {"mark": "voronoi", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "fill": "species", "fillOpacity": 0.2, "stroke": "white"},
+    {"mark": "hull", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "stroke": "species", "z": "species"},
+    {"mark": "dot", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "fill": "species"}
+  ]
+}
+```
+
+### density
+
+Marks: `density`, `dot`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "inset": 10,
+  "marks": [
+    {"mark": "density", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "stroke": "steelblue", "bandwidth": 15, "thresholds": 4},
+    {"mark": "dot", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "r": 2}
+  ]
+}
+```
+
+### difference-shift
+
+Marks: `differenceY`. Transforms: `shiftX`.
+
+```plot
+{
+  "data": {
+    "aapl": [
+      {"date": "2024-03-01", "close": 129.6},
+      {"date": "2024-03-02", "close": 130.2},
+      {"date": "2024-03-03", "close": 128.9},
+      {"date": "2024-03-04", "close": 131.5},
+      {"date": "2024-03-05", "close": 133.1},
+      {"date": "2024-03-06", "close": 132.4},
+      {"date": "2024-03-07", "close": 134.8},
+      {"date": "2024-03-08", "close": 136},
+      {"date": "2024-03-09", "close": 135.2},
+      {"date": "2024-03-10", "close": 137.9},
+      {"date": "2024-03-11", "close": 139.4},
+      {"date": "2024-03-12", "close": 138.1},
+      {"date": "2024-03-13", "close": 140.6},
+      {"date": "2024-03-14", "close": 142.3},
+      {"date": "2024-03-15", "close": 141},
+      {"date": "2024-03-16", "close": 143.8},
+      {"date": "2024-03-17", "close": 145.2},
+      {"date": "2024-03-18", "close": 144.1},
+      {"date": "2024-03-19", "close": 146.7},
+      {"date": "2024-03-20", "close": 148}
+    ]
+  },
+  "y": {"grid": true, "label": "Change over 5 days"},
+  "marks": [
+    {
+      "mark": "differenceY",
+      "data": "aapl",
+      "x": "date",
+      "y": "close",
+      "positiveFill": "green",
+      "negativeFill": "red",
+      "transform": [{"shiftX": "5 days"}]
+    }
+  ]
+}
+```
+
+### dot-dodge
+
+Marks: `dot`. Transforms: `reverse`, `dodgeY`.
+
+```plot
+{
+  "height": 160,
+  "data": {
+    "cars": [
+      {"name": "car 1", "weight": 3504},
+      {"name": "car 2", "weight": 3693},
+      {"name": "car 3", "weight": 3436},
+      {"name": "car 4", "weight": 3433},
+      {"name": "car 5", "weight": 3449},
+      {"name": "car 6", "weight": 4341},
+      {"name": "car 7", "weight": 4354},
+      {"name": "car 8", "weight": 4312},
+      {"name": "car 9", "weight": 4425},
+      {"name": "car 10", "weight": 3850},
+      {"name": "car 11", "weight": 3563},
+      {"name": "car 12", "weight": 3609},
+      {"name": "car 13", "weight": 3761},
+      {"name": "car 14", "weight": 3086},
+      {"name": "car 15", "weight": 2372},
+      {"name": "car 16", "weight": 2833},
+      {"name": "car 17", "weight": 2774},
+      {"name": "car 18", "weight": 2587},
+      {"name": "car 19", "weight": 2130},
+      {"name": "car 20", "weight": 1835}
+    ]
+  },
+  "marks": [
+    {
+      "mark": "dot",
+      "data": "cars",
+      "x": "weight",
+      "title": "name",
+      "fill": "currentColor",
+      "transform": [{"reverse": true}, {"dodgeY": {"anchor": "middle", "padding": 1}}]
+    }
+  ]
+}
+```
+
+### dot-scatter
+
+Marks: `dot`, `crosshair`. Transforms: `shuffle`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "grid": true,
+  "symbol": {"legend": true},
+  "marks": [
+    {
+      "mark": "dot",
+      "data": "penguins",
+      "x": "flipper_length_mm",
+      "y": "body_mass_g",
+      "stroke": "species",
+      "symbol": "species",
+      "tip": true,
+      "transform": [{"shuffle": {"seed": 1}}]
+    },
+    {"mark": "crosshair", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g"}
+  ]
+}
+```
+
+### frame-facet
+
+Marks: `frame`, `dot`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "facet": {"data": "penguins", "x": "sex", "label": null},
+  "marks": [
+    {"mark": "frame"},
+    {"mark": "dot", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "fill": "species", "r": 3}
+  ]
+}
+```
+
+### geo-orthographic
+
+Marks: `sphere`, `graticule`, `geo`, `dot`. Transforms: `centroid`.
+
+```plot
+{
+  "projection": {"type": "orthographic", "rotate": [20, -20]},
+  "data": {
+    "shapes": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {"name": "A"},
+          "geometry": {"type": "Polygon", "coordinates": [[[-10, 40], [-10, 55], [10, 55], [10, 40], [-10, 40]]]}
+        },
+        {
+          "type": "Feature",
+          "properties": {"name": "B"},
+          "geometry": {"type": "Polygon", "coordinates": [[[20, -10], [20, 10], [40, 10], [40, -10], [20, -10]]]}
+        },
+        {
+          "type": "Feature",
+          "properties": {"name": "C"},
+          "geometry": {"type": "Polygon", "coordinates": [[[-70, -30], [-70, -10], [-50, -10], [-50, -30], [-70, -30]]]}
+        }
+      ]
+    }
+  },
+  "marks": [
+    {"mark": "sphere", "fill": "aliceblue"},
+    {"mark": "graticule"},
+    {"mark": "geo", "data": "shapes", "fill": "tan", "stroke": "brown"},
+    {"mark": "dot", "data": "shapes", "r": 3, "fill": "black", "transform": [{"centroid": true}]}
+  ]
+}
+```
+
+### hexbin
+
+Marks: `hexgrid`, `dot`. Transforms: `hexbin`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "color": {"scheme": "blues"},
+  "marks": [
+    {"mark": "hexgrid", "binWidth": 20},
+    {
+      "mark": "dot",
+      "data": "penguins",
+      "x": "flipper_length_mm",
+      "y": "body_mass_g",
+      "binWidth": 20,
+      "transform": [{"hexbin": {"r": "count", "fill": "count"}}]
+    }
+  ]
+}
+```
+
+### image-logos
+
+Marks: `image`.
+
+```plot
+{
+  "data": {
+    "logos": [
+      {
+        "name": "Red",
+        "value": 3,
+        "logo": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOSIgZmlsbD0icmVkIi8+PC9zdmc+"
+      },
+      {
+        "name": "Green",
+        "value": 5,
+        "logo": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOSIgZmlsbD0iZ3JlZW4iLz48L3N2Zz4="
+      },
+      {
+        "name": "Blue",
+        "value": 4,
+        "logo": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOSIgZmlsbD0iYmx1ZSIvPjwvc3ZnPg=="
+      }
+    ]
+  },
+  "y": {"domain": [0, 6], "grid": true},
+  "marks": [{"mark": "image", "data": "logos", "x": "name", "y": "value", "src": "logo", "width": 24}]
+}
+```
+
+### line-cumsum
+
+Marks: `lineY`, `dot`. Transforms: `mapY`, `map`.
+
+```plot
+{
+  "data": {
+    "sales": [
+      {"date": "2024-01-01", "units": 12},
+      {"date": "2024-02-01", "units": 7},
+      {"date": "2024-03-01", "units": 15},
+      {"date": "2024-04-01", "units": 9},
+      {"date": "2024-05-01", "units": 20},
+      {"date": "2024-06-01", "units": 11}
+    ]
+  },
+  "y": {"grid": true, "label": "Units sold (cumulative)"},
+  "marks": [
+    {"mark": "lineY", "data": "sales", "x": "date", "y": "units", "transform": [{"mapY": "cumsum"}]},
+    {"mark": "dot", "data": "sales", "x": "date", "y": "units", "transform": [{"map": {"y": "cumsum"}}]}
+  ]
+}
+```
+
+### line-normalize
+
+Marks: `ruleY`, `lineY`, `text`. Transforms: `normalizeY`, `selectLast`.
+
+```plot
+{
+  "data": {
+    "stocks": [
+      {"date": "2024-01-01", "symbol": "AAPL", "close": 185},
+      {"date": "2024-02-01", "symbol": "AAPL", "close": 181},
+      {"date": "2024-03-01", "symbol": "AAPL", "close": 171},
+      {"date": "2024-04-01", "symbol": "AAPL", "close": 170},
+      {"date": "2024-05-01", "symbol": "AAPL", "close": 192},
+      {"date": "2024-06-01", "symbol": "AAPL", "close": 210},
+      {"date": "2024-01-01", "symbol": "GOOG", "close": 140},
+      {"date": "2024-02-01", "symbol": "GOOG", "close": 141},
+      {"date": "2024-03-01", "symbol": "GOOG", "close": 152},
+      {"date": "2024-04-01", "symbol": "GOOG", "close": 163},
+      {"date": "2024-05-01", "symbol": "GOOG", "close": 173},
+      {"date": "2024-06-01", "symbol": "GOOG", "close": 183},
+      {"date": "2024-01-01", "symbol": "MSFT", "close": 376},
+      {"date": "2024-02-01", "symbol": "MSFT", "close": 397},
+      {"date": "2024-03-01", "symbol": "MSFT", "close": 420},
+      {"date": "2024-04-01", "symbol": "MSFT", "close": 389},
+      {"date": "2024-05-01", "symbol": "MSFT", "close": 415},
+      {"date": "2024-06-01", "symbol": "MSFT", "close": 446}
+    ]
+  },
+  "y": {"type": "log", "grid": true, "label": "Change in price (×)"},
+  "marks": [
+    {"mark": "ruleY", "data": [1]},
+    {"mark": "lineY", "data": "stocks", "x": "date", "y": "close", "stroke": "symbol", "transform": [{"normalizeY": "first"}]},
+    {
+      "mark": "text",
+      "data": "stocks",
+      "x": "date",
+      "y": "close",
+      "z": "symbol",
+      "text": "symbol",
+      "textAnchor": "start",
+      "dx": 3,
+      "transform": [{"normalizeY": "first"}, {"selectLast": true}]
+    }
+  ]
+}
+```
+
+### line-window
+
+Marks: `lineY`, `dot`, `tip`. Transforms: `sort`, `windowY`, `select`, `pointerX`.
+
+```plot
+{
+  "data": {
+    "aapl": [
+      {"date": "2024-03-01", "close": 129.6},
+      {"date": "2024-03-02", "close": 130.2},
+      {"date": "2024-03-03", "close": 128.9},
+      {"date": "2024-03-04", "close": 131.5},
+      {"date": "2024-03-05", "close": 133.1},
+      {"date": "2024-03-06", "close": 132.4},
+      {"date": "2024-03-07", "close": 134.8},
+      {"date": "2024-03-08", "close": 136},
+      {"date": "2024-03-09", "close": 135.2},
+      {"date": "2024-03-10", "close": 137.9},
+      {"date": "2024-03-11", "close": 139.4},
+      {"date": "2024-03-12", "close": 138.1},
+      {"date": "2024-03-13", "close": 140.6},
+      {"date": "2024-03-14", "close": 142.3},
+      {"date": "2024-03-15", "close": 141},
+      {"date": "2024-03-16", "close": 143.8},
+      {"date": "2024-03-17", "close": 145.2},
+      {"date": "2024-03-18", "close": 144.1},
+      {"date": "2024-03-19", "close": 146.7},
+      {"date": "2024-03-20", "close": 148}
+    ]
+  },
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "lineY", "data": "aapl", "x": "date", "y": "close", "strokeOpacity": 0.3},
+    {
+      "mark": "lineY",
+      "data": "aapl",
+      "x": "date",
+      "y": "close",
+      "stroke": "steelblue",
+      "transform": [{"sort": "date"}, {"windowY": {"k": 5, "reduce": "mean"}}]
+    },
+    {"mark": "dot", "data": "aapl", "x": "date", "y": "close", "fill": "red", "transform": [{"select": {"y": "max"}}]},
+    {"mark": "tip", "data": "aapl", "x": "date", "y": "close", "transform": [{"pointerX": true}]}
+  ]
+}
+```
+
+### linear-regression
+
+Marks: `dot`, `linearRegressionY`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "grid": true,
+  "marks": [
+    {"mark": "dot", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "fill": "species", "fillOpacity": 0.5},
+    {"mark": "linearRegressionY", "data": "penguins", "x": "flipper_length_mm", "y": "body_mass_g", "stroke": "species"}
+  ]
+}
+```
+
+### link-arcs
+
+Marks: `link`, `text`.
+
+```plot
+{
+  "inset": 20,
+  "data": {
+    "edges": [
+      {"source": "A", "target": "B", "x1": 0, "y1": 0, "x2": 1, "y2": 1, "kind": "depends", "url": "https://example.com/a-b"},
+      {"source": "A", "target": "C", "x1": 0, "y1": 0, "x2": 1, "y2": 2, "kind": "uses", "url": "https://example.com/a-c"},
+      {"source": "B", "target": "D", "x1": 1, "y1": 1, "x2": 2, "y2": 1, "kind": "depends", "url": "/docs/b-d"},
+      {"source": "C", "target": "D", "x1": 1, "y1": 2, "x2": 2, "y2": 1, "kind": "uses", "url": "mailto:team@example.com"}
+    ]
+  },
+  "marks": [
+    {
+      "mark": "link",
+      "data": "edges",
+      "x1": "x1",
+      "y1": "y1",
+      "x2": "x2",
+      "y2": "y2",
+      "stroke": "kind",
+      "curve": "bump-x",
+      "markerEnd": "arrow",
+      "href": "url",
+      "target": "_blank"
+    },
+    {"mark": "text", "data": "edges", "x": "x1", "y": "y1", "text": "source", "dy": -10}
+  ]
+}
+```
+
+### raster
+
+Marks: `raster`.
+
+```plot
+{
+  "data": {
+    "grid": [
+      {"x": 0, "y": 0, "v": 0},
+      {"x": 0, "y": 1, "v": 0},
+      {"x": 0, "y": 2, "v": 0},
+      {"x": 0, "y": 3, "v": 0},
+      {"x": 0, "y": 4, "v": 0},
+      {"x": 1, "y": 0, "v": 0.58},
+      {"x": 1, "y": 1, "v": 0.52},
+      {"x": 1, "y": 2, "v": 0.36},
+      {"x": 1, "y": 3, "v": 0.13},
+      {"x": 1, "y": 4, "v": -0.1},
+      {"x": 2, "y": 0, "v": 1.04},
+      {"x": 2, "y": 1, "v": 0.94},
+      {"x": 2, "y": 2, "v": 0.65},
+      {"x": 2, "y": 3, "v": 0.26},
+      {"x": 2, "y": 4, "v": -0.15},
+      {"x": 3, "y": 0, "v": 1.3},
+      {"x": 3, "y": 1, "v": 1.18},
+      {"x": 3, "y": 2, "v": 0.84},
+      {"x": 3, "y": 3, "v": 0.37},
+      {"x": 3, "y": 4, "v": -0.12},
+      {"x": 4, "y": 0, "v": 1.31},
+      {"x": 4, "y": 1, "v": 1.2},
+      {"x": 4, "y": 2, "v": 0.89},
+      {"x": 4, "y": 3, "v": 0.46},
+      {"x": 4, "y": 4, "v": 0.02}
+    ]
+  },
+  "color": {"scheme": "turbo"},
+  "marks": [{"mark": "raster", "data": "grid", "x": "x", "y": "y", "fill": "v", "interpolate": "nearest", "pixelSize": 4}]
+}
+```
+
+### rect-bin-csv
+
+Marks: `rectY`, `ruleY`. Transforms: `binX`.
+
+```plot
+{
+  "title": "Penguin body mass",
+  "data": {
+    "penguins": {
+      "csv": "species,island,body_mass_g,sex\nAdelie,Torgersen,3750,MALE\nAdelie,Torgersen,3800,FEMALE\nAdelie,Biscoe,3400,FEMALE\nAdelie,Dream,4250,MALE\nAdelie,Dream,3150,\nChinstrap,Dream,3500,FEMALE\nChinstrap,Dream,3900,MALE\nChinstrap,Dream,3650,MALE\nChinstrap,Dream,3525,FEMALE\nGentoo,Biscoe,4500,FEMALE\nGentoo,Biscoe,5700,MALE\nGentoo,Biscoe,4450,FEMALE\nGentoo,Biscoe,5700,MALE\nGentoo,Biscoe,5400,\n"
+    }
+  },
+  "color": {"legend": true},
+  "y": {"grid": true},
+  "marks": [
+    {"mark": "rectY", "data": "penguins", "x": "body_mass_g", "fill": "species", "thresholds": 8, "transform": [{"binX": {"y": "count"}}]},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```
+
+### rule-tick
+
+Marks: `ruleX`, `tickX`.
+
+```plot
+{
+  "data": {
+    "penguins": [
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.1, "flipper_length_mm": 181, "body_mass_g": 3750, "sex": "MALE"},
+      {"species": "Adelie", "island": "Torgersen", "bill_length_mm": 39.5, "flipper_length_mm": 186, "body_mass_g": 3800, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Biscoe", "bill_length_mm": 37.8, "flipper_length_mm": 174, "body_mass_g": 3400, "sex": "FEMALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 40.6, "flipper_length_mm": 199, "body_mass_g": 4250, "sex": "MALE"},
+      {"species": "Adelie", "island": "Dream", "bill_length_mm": 36.5, "flipper_length_mm": 182, "body_mass_g": 3150, "sex": null},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 46.5, "flipper_length_mm": 192, "body_mass_g": 3500, "sex": "FEMALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 50, "flipper_length_mm": 196, "body_mass_g": 3900, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 51.3, "flipper_length_mm": 197, "body_mass_g": 3650, "sex": "MALE"},
+      {"species": "Chinstrap", "island": "Dream", "bill_length_mm": 45.4, "flipper_length_mm": 188, "body_mass_g": 3525, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 46.1, "flipper_length_mm": 211, "body_mass_g": 4500, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 230, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 48.7, "flipper_length_mm": 210, "body_mass_g": 4450, "sex": "FEMALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 50, "flipper_length_mm": 218, "body_mass_g": 5700, "sex": "MALE"},
+      {"species": "Gentoo", "island": "Biscoe", "bill_length_mm": 47.6, "flipper_length_mm": 215, "body_mass_g": 5400, "sex": null}
+    ]
+  },
+  "marginLeft": 70,
+  "marks": [
+    {"mark": "ruleX", "data": [4000], "stroke": "red", "strokeDasharray": "4,2"},
+    {"mark": "tickX", "data": "penguins", "x": "body_mass_g", "y": "species", "stroke": "sex", "strokeWidth": 2}
+  ]
+}
+```
+
+### tree-transforms
+
+Marks: `link`, `dot`, `text`. Transforms: `treeLink`, `treeNode`.
+
+```plot
+{
+  "axis": null,
+  "height": 220,
+  "marginLeft": 40,
+  "marginRight": 110,
+  "data": {
+    "paths": [
+      "flare/analytics/cluster",
+      "flare/analytics/graph",
+      "flare/analytics/optimization",
+      "flare/animate/Easing",
+      "flare/animate/Tween",
+      "flare/data/DataField",
+      "flare/data/DataSchema",
+      "flare/display/DirtySprite"
+    ]
+  },
+  "marks": [
+    {"mark": "link", "data": "paths", "stroke": "#999", "transform": [{"treeLink": true}]},
+    {"mark": "dot", "data": "paths", "fill": "node:internal", "transform": [{"treeNode": true}]},
+    {"mark": "text", "data": "paths", "text": "node:name", "dx": 6, "textAnchor": "start", "transform": [{"treeNode": {"treeAnchor": "left"}}]}
+  ]
+}
+```
+
+### tree
+
+Marks: `tree`.
+
+```plot
+{
+  "axis": null,
+  "height": 220,
+  "margin": 10,
+  "marginLeft": 40,
+  "marginRight": 110,
+  "marks": [
+    {
+      "mark": "tree",
+      "data": [
+        "flare/analytics/cluster",
+        "flare/analytics/graph",
+        "flare/analytics/optimization",
+        "flare/animate/Easing",
+        "flare/animate/Tween",
+        "flare/data/DataField",
+        "flare/data/DataSchema",
+        "flare/display/DirtySprite"
+      ],
+      "textStroke": "white"
+    }
+  ]
+}
+```
+
+### vector-wind
+
+Marks: `vector`.
+
+```plot
+{
+  "inset": 10,
+  "data": {
+    "wind": [
+      {"lon": 0, "lat": 0, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 1, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 2, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 3, "dir": 0, "speed": 1.5},
+      {"lon": 0, "lat": 4, "dir": 0, "speed": 1.5},
+      {"lon": 1, "lat": 0, "dir": 104, "speed": 2.1},
+      {"lon": 1, "lat": 1, "dir": 94, "speed": 2},
+      {"lon": 1, "lat": 2, "dir": 65, "speed": 1.9},
+      {"lon": 1, "lat": 3, "dir": 23, "speed": 1.6},
+      {"lon": 1, "lat": 4, "dir": -18, "speed": 1.4},
+      {"lon": 2, "lat": 0, "dir": 187, "speed": 2.5},
+      {"lon": 2, "lat": 1, "dir": 169, "speed": 2.4},
+      {"lon": 2, "lat": 2, "dir": 117, "speed": 2.2},
+      {"lon": 2, "lat": 3, "dir": 47, "speed": 1.8},
+      {"lon": 2, "lat": 4, "dir": -27, "speed": 1.4},
+      {"lon": 3, "lat": 0, "dir": 234, "speed": 2.8},
+      {"lon": 3, "lat": 1, "dir": 212, "speed": 2.7},
+      {"lon": 3, "lat": 2, "dir": 151, "speed": 2.3},
+      {"lon": 3, "lat": 3, "dir": 67, "speed": 1.9},
+      {"lon": 3, "lat": 4, "dir": -22, "speed": 1.4},
+      {"lon": 4, "lat": 0, "dir": 236, "speed": 2.8},
+      {"lon": 4, "lat": 1, "dir": 216, "speed": 2.7},
+      {"lon": 4, "lat": 2, "dir": 160, "speed": 2.4},
+      {"lon": 4, "lat": 3, "dir": 83, "speed": 2},
+      {"lon": 4, "lat": 4, "dir": 4, "speed": 1.5}
+    ]
+  },
+  "marks": [
+    {"mark": "vector", "data": "wind", "x": "lon", "y": "lat", "rotate": "dir", "length": "speed", "stroke": "speed"}
+  ]
+}
+```
+
+### waffle
+
+Marks: `waffleY`, `ruleY`.
+
+```plot
+{
+  "data": {
+    "fruit": [{"fruit": "apples", "count": 23}, {"fruit": "bananas", "count": 15}, {"fruit": "cherries", "count": 31}]
+  },
+  "marks": [
+    {"mark": "waffleY", "data": "fruit", "x": "fruit", "y": "count", "fill": "fruit", "unit": 1, "gap": 2},
+    {"mark": "ruleY", "data": [0]}
+  ]
+}
+```

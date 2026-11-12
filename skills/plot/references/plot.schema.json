@@ -1,0 +1,3143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plotdown.cc/schema/0.1/plot.schema.json",
+  "title": "plotdown block",
+  "description": "A fenced plot block (plot, oplot or observable-plot): the options of Observable Plot's Plot.plot() as strict JSON, with marks and transforms as data. Spec version 0.1, generated from @observablehq/plot 0.6.19.",
+  "type": "object",
+  "required": ["marks"],
+  "properties": {
+    "$schema": {"type":"string","description":"Optional URL of this schema, for editors."},
+    "data": {
+      "type": "object",
+      "description": "Named datasets that marks refer to by name.",
+      "additionalProperties": {"$ref":"#/$defs/dataset"},
+      "propertyNames": {"pattern":"^[A-Za-z_][A-Za-z0-9_-]*$"}
+    },
+    "inset": {
+      "description": "Shorthand to set the same default for all four insets: **insetTop**, **insetRight**, **insetBottom**, and **insetLeft**.",
+      "type": "number"
+    },
+    "insetTop": {"description":"Insets the top edge by the specified number of pixels.","type":"number"},
+    "insetRight": {"description":"Insets the right edge by the specified number of pixels.","type":"number"},
+    "insetBottom": {"description":"Insets the bottom edge by the specified number of pixels.","type":"number"},
+    "insetLeft": {"description":"Insets the left edge by the specified number of pixels.","type":"number"},
+    "clamp": {
+      "description": "If true, values below the domain minimum are treated as the domain minimum, and values above the domain maximum are treated as the domain maximum.",
+      "type": "boolean"
+    },
+    "nice": {
+      "description": "If true, or a tick count or interval, extend the domain to nice round values.",
+      "anyOf": [{"type":"boolean"},{"type":"number"},{"$ref":"#/$defs/interval"}]
+    },
+    "zero": {"description":"Whether the **domain** must include zero.","type":"boolean"},
+    "round": {
+      "description": "If true, round the output value to the nearest integer (pixel); useful for crisp edges when rendering.",
+      "type": "boolean"
+    },
+    "align": {
+      "description": "How to distribute unused space in the **range** for *point* and *band* scales.",
+      "type": "number"
+    },
+    "padding": {
+      "description": "For *band* scales, how much of the **range** to reserve to separate adjacent bands; defaults to 0.1 (10%).",
+      "type": "number"
+    },
+    "axis": {
+      "description": "The side of the frame on which to place the implicit axis: *top* or *bottom* for *x* or *fx*, or *left* or *right* for *y* or *fy*.",
+      "anyOf": [{"type":"boolean"},{"type":"null"},{"enum":["top","right","bottom","left","both"]}]
+    },
+    "grid": {
+      "description": "Whether to show a grid aligned with the scale’s ticks.",
+      "anyOf": [{"type":"boolean"},{"type":"string"},{"$ref":"#/$defs/interval"},{"type":"array"}]
+    },
+    "legend": {
+      "description": "If true, produces a legend for the scale.",
+      "anyOf": [{"type":"boolean"},{"type":"null"},{"enum":["ramp","swatches"]}]
+    },
+    "label": {
+      "description": "A textual label to show on the axis or legend; if null, show no label.",
+      "anyOf": [{"type":"string"},{"type":"null"}]
+    },
+    "labelArrow": {
+      "description": "Whether to apply a directional arrow such as → or ↑ to the scale label.",
+      "anyOf": [{"type":"null"},{"enum":["auto","up","right","down","left","none",true,false]}]
+    },
+    "width": {"description":"The outer width of the plot in pixels, including margins.","type":"number"},
+    "height": {"description":"The outer height of the plot in pixels, including margins.","type":"number"},
+    "aspectRatio": {
+      "description": "The desired aspect ratio of the *x* and *y* scales, affecting the default height.",
+      "anyOf": [{"type":"number"},{"type":"boolean"},{"type":"null"}]
+    },
+    "margin": {
+      "description": "Shorthand to set the same default for all four margins: **marginTop**, **marginRight**, **marginBottom**, and **marginLeft**.",
+      "type": "number"
+    },
+    "marginTop": {
+      "description": "The top margin; the distance in pixels between the top edges of the inner and outer plot area.",
+      "type": "number"
+    },
+    "marginRight": {
+      "description": "The right margin; the distance in pixels between the right edges of the inner and outer plot area.",
+      "type": "number"
+    },
+    "marginBottom": {
+      "description": "The bottom margin; the distance in pixels between the bottom edges of the inner and outer plot area.",
+      "type": "number"
+    },
+    "marginLeft": {
+      "description": "The left margin; the distance in pixels between the left edges of the inner and outer plot area.",
+      "type": "number"
+    },
+    "style": {
+      "description": "Custom styles to override Plot’s defaults.",
+      "anyOf": [
+        {"type":"string"},
+        {"type":"object","additionalProperties":{"type":["string","number"]}},
+        {"type":"null"}
+      ]
+    },
+    "className": {
+      "description": "The generated SVG element’s class name used for Plot’s default stylesheet; by default, a random string prefixed with “plot-”.",
+      "type": "string"
+    },
+    "title": {"description":"The figure title.","type":["string","null"]},
+    "subtitle": {"description":"The figure subtitle.","type":["string","null"]},
+    "caption": {"description":"The figure caption.","type":["string","null"]},
+    "figure": {
+      "description": "Whether to wrap the generated SVG element with an HTML figure element.",
+      "type": "boolean"
+    },
+    "ariaLabel": {
+      "description": "The [aria-label attribute][1] on the SVG root.",
+      "anyOf": [{"type":"string"},{"type":"null"}]
+    },
+    "ariaDescription": {
+      "description": "The [aria-description attribute][1] on the SVG root.",
+      "anyOf": [{"type":"string"},{"type":"null"}]
+    },
+    "clip": {
+      "description": "How to clip the mark; one of: - *frame* or true - clip to the plot’s frame (inner area) - *sphere* - clip to the projected sphere (*e.g.*, front hemisphere) - geojson - a GeoJSON object, typically with polygonal geometry - null or false - do not clip The *sphere* clip option requires a geographic projection.",
+      "anyOf": [{"enum":["frame","sphere"]},{"type":"boolean"},{"type":"null"},{"$ref":"#/$defs/geojson"}]
+    },
+    "x": {"description":"Options for the horizontal position *x* scale.","$ref":"#/$defs/scale"},
+    "y": {"description":"Options for the vertical position *y* scale.","$ref":"#/$defs/scale"},
+    "r": {
+      "description": "Options for the radius (size) *r* scale for dots or Point geos.",
+      "$ref": "#/$defs/scale"
+    },
+    "color": {"description":"Options for the *color* scale for fill or stroke.","$ref":"#/$defs/scale"},
+    "opacity": {
+      "description": "Options for the *opacity* scale for fill or stroke opacity.",
+      "$ref": "#/$defs/scale"
+    },
+    "symbol": {"description":"Options for the categorical *symbol* scale for dots.","$ref":"#/$defs/scale"},
+    "length": {"description":"Options for the *length* scale for vectors.","$ref":"#/$defs/scale"},
+    "projection": {
+      "description": "Options for projection; one of: - a named built-in projection such as *albers-usa* - a projection implementation, implementing the projection.*stream* method - a function that returns a projection implementation - a projection options object - null, for no projection A projection is an alternative to the *x* and *y* scales for encoding position, and is typically used to convert polygonal geometry in spherical coordinates to a planar visual representation.",
+      "anyOf": [
+        {
+          "enum": ["albers-usa","albers","azimuthal-equal-area","azimuthal-equidistant","conic-conformal","conic-equal-area","conic-equidistant","equal-earth","equirectangular","gnomonic","identity","reflect-y","mercator","orthographic","stereographic","transverse-mercator"]
+        },
+        {"$ref":"#/$defs/projection"},
+        {"type":"null"}
+      ]
+    },
+    "fx": {"description":"Options for the horizontal facet position *fx* scale.","$ref":"#/$defs/scale"},
+    "fy": {"description":"Options for the vertical facet position *fy* scale.","$ref":"#/$defs/scale"},
+    "facet": {
+      "description": "Options for faceting, including shorthand options for the *fx* and *fy* facet scales and axes, and top-level faceting as an alternative to mark-level *fx* and *fy* channels.",
+      "$ref": "#/$defs/facet"
+    },
+    "marks": {
+      "type": "array",
+      "description": "The marks to draw, in order: each is {\"mark\": name, \"data\": …, …options}.",
+      "items": {"$ref":"#/$defs/mark"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "mark": {
+      "type": "object",
+      "required": ["mark"],
+      "properties": {
+        "anchor": {
+          "description": "The side of the frame on which to place the axis: *top* or *bottom* for horizontal axes (axisX and axisFx) and their associated vertical grids (gridX and gridFx), or *left* or *right* for vertical axes (axisY and axisFY) and their associated horizontal grids (gridY and gridFy).",
+          "enum": ["top","right","bottom","left"]
+        },
+        "ariaDescription": {"description":"The [aria-description][1]; a constant textual description.","type":"string"},
+        "ariaHidden": {
+          "description": "The [aria-hidden][1] state; a constant indicating whether the element is exposed to an accessibility API.",
+          "type": "string"
+        },
+        "ariaLabel": {
+          "description": "The [aria-label][1]; a channel specifying short textual labels representing the value in the accessibility tree.",
+          "$ref": "#/$defs/channel"
+        },
+        "autoMark": {
+          "enum": ["area","bar","dot","line","rule"],
+          "description": "The auto mark's own mark option (written autoMark because mark names the plotdown mark)."
+        },
+        "bandwidth": {
+          "description": "The bandwidth, a number in pixels which defaults to 20, specifies the standard deviation of the Gaussian kernel used for density estimation.",
+          "type": "number"
+        },
+        "bend": {
+          "description": "The angle, a constant in degrees, between the straight line intersecting the arrow’s two control points and the outgoing tangent direction of the arrow from the start point.",
+          "anyOf": [{"type":"number"},{"type":"boolean"}]
+        },
+        "binWidth": {
+          "description": "The distance between centers of neighboring hexagons, in pixels; defaults to 20.",
+          "type": "number",
+          "minimum": 1
+        },
+        "blur": {"description":"A non-negative pixel radius for smoothing; defaults to 0.","type":"number"},
+        "channels": {
+          "description": "An object defining additional custom channels.",
+          "type": "object",
+          "additionalProperties": {"$ref":"#/$defs/channel"}
+        },
+        "ci": {
+          "description": "The confidence interval in (0, 1), or 0 to hide bands; defaults to 0.95.",
+          "type": "number"
+        },
+        "className": {"description":"The [class attribute][1]; a constant string.","type":"string"},
+        "clip": {
+          "description": "How to clip the mark; one of: - *frame* or true - clip to the plot’s frame (inner area) - *sphere* - clip to the projected sphere (*e.g.*, front hemisphere) - geojson - a GeoJSON object, typically with polygonal geometry - null or false - do not clip The *sphere* clip option requires a geographic projection.",
+          "anyOf": [
+            {"enum":["frame","sphere"]},
+            {"type":"boolean"},
+            {"type":"null"},
+            {"$ref":"#/$defs/geojson"}
+          ]
+        },
+        "color": {
+          "description": "Shorthand for setting both the fill and the stroke.",
+          "$ref": "#/$defs/channel"
+        },
+        "colorSpace": {"description":"The [color space][1] of the backing canvas."},
+        "crossOrigin": {"description":"The [cross-origin][1] behavior.","type":"string"},
+        "cumulative": {
+          "description": "If false or zero (default), produce a frequency distribution; if true or a positive number, produce a cumulative distribution; if a negative number, produce a [complementary cumulative][1] distribution.",
+          "type": ["boolean","number"]
+        },
+        "curve": {
+          "description": "The curve (interpolation) method for connecting adjacent points.",
+          "$ref": "#/$defs/curve"
+        },
+        "delimiter": {
+          "description": "The path separator, used for inferring the hierarchy from the **path** channel; defaults to forward slash (/).",
+          "type": "string"
+        },
+        "domain": {"description":"The domain of allowed values; optional.","type":"array"},
+        "dot": {
+          "description": "Whether to represent the node with a dot; defaults to true unless a **marker** is specified.",
+          "type": "boolean"
+        },
+        "dx": {"description":"The horizontal offset in pixels; a constant option.","type":"number"},
+        "dy": {"description":"The vertical offset in pixels; a constant option.","type":"number"},
+        "facet": {
+          "description": "Whether to enable or disable faceting; one of: - *auto* (default) - automatically determine if this mark should be faceted - *include* (or true) - draw the subset of the mark’s data in the current facet - *exclude* - draw the subset of the mark’s data *not* in the current facet - *super* - draw this mark in a single frame that covers all facets - null (or false) - repeat this mark’s data across all facets (*i.e.*, no faceting) When a mark uses *super* faceting, it is not allowed to use position scales (*x*, *y*, *fx*, or *fy*); *super* faceting is intended for decorations, such as labels and legends.",
+          "anyOf": [{"type":"boolean"},{"type":"null"},{"enum":["auto","include","exclude","super"]}]
+        },
+        "facetAnchor": {
+          "description": "How to place the mark with respect to facets; one of: - null (default for most marks) - display the mark in each non-empty facet - *top*, *right*, *bottom*, or *left* - display the mark only in facets on the given side - *top-empty*, *right-empty*, *bottom-empty*, or *left-empty* (default for axis marks) - display the mark only in facets that have empty space on the given side: either the margin, or an empty facet - *empty* - display the mark in empty facets only",
+          "anyOf": [
+            {"type":"null"},
+            {
+              "enum": ["top","right","bottom","left","top-left","top-right","bottom-left","bottom-right","top-empty","right-empty","bottom-empty","left-empty","empty"]
+            }
+          ]
+        },
+        "fill": {
+          "description": "The [fill][1]; a constant CSS color string, or a channel typically bound to the *color* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "fillOpacity": {
+          "description": "The [fill-opacity][1]; a constant number between 0 and 1, or a channel typically bound to the *opacity* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "filter": {
+          "description": "Applies a transform to filter the mark’s index according to the given channel values; only truthy values are retained.",
+          "$ref": "#/$defs/channel"
+        },
+        "fontFamily": {
+          "description": "The [font-family][1]; a constant; defaults to the plot’s font family, which is typically [*system-ui*][2].",
+          "type": "string"
+        },
+        "fontSize": {
+          "description": "The [font size][1] in pixels; either a constant or a channel; defaults to the plot’s font size, which is typically 10.",
+          "$ref": "#/$defs/channel"
+        },
+        "fontStyle": {
+          "description": "The [font style][1]; a constant; defaults to the plot’s font style, which is typically *normal*.",
+          "type": "string"
+        },
+        "fontVariant": {
+          "description": "The [font variant][1]; a constant; if the **text** channel contains numbers or dates, defaults to *tabular-nums* to facilitate comparing numbers; otherwise defaults to the plot’s font style, which is typically *normal*.",
+          "type": "string"
+        },
+        "fontWeight": {
+          "description": "The [font weight][1]; a constant; defaults to the plot’s font weight, which is typically *normal*.",
+          "anyOf": [{"type":"string"},{"type":"number"}]
+        },
+        "format": {
+          "description": "How channel values are formatted for display.",
+          "anyOf": [
+            {"type":"string"},
+            {"type":"object","additionalProperties":{"type":["string","boolean","null"]}}
+          ]
+        },
+        "frameAnchor": {
+          "description": "The frame anchor specifies defaults for **x** and **y**, along with **textAnchor** and **lineAnchor**, based on the plot’s frame; it may be one of the four sides (*top*, *right*, *bottom*, *left*), one of the four corners (*top-left*, *top-right*, *bottom-right*, *bottom-left*), or the *middle* of the frame.",
+          "enum": ["middle","top-left","top","top-right","right","bottom-right","bottom","bottom-left","left"]
+        },
+        "fx": {
+          "description": "The horizontal facet position channel, for mark-level faceting, bound to the *fx* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "fy": {
+          "description": "The vertical facet position channel, for mark-level faceting, bound to the *fy* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "gap": {"description":"The gap in pixels between cells; defaults to 1.","type":"number"},
+        "geometry": {
+          "description": "A required channel for the geometry to render; defaults to identity, assuming *data* is a GeoJSON object or an iterable of GeoJSON objects.",
+          "$ref": "#/$defs/channel"
+        },
+        "headAngle": {
+          "description": "How pointy the arrowhead is, in degrees; a constant typically between 0° and 180°, and defaults to 60°.",
+          "type": "number"
+        },
+        "headLength": {
+          "description": "The size of the arrowhead relative to the **strokeWidth**; a constant.",
+          "type": "number"
+        },
+        "height": {
+          "description": "The height (number of rows) of the raster grid, in actual pixels.",
+          "$ref": "#/$defs/channel"
+        },
+        "href": {
+          "description": "Link of each element: a field name; the values must be http, https, mailto or relative URLs.",
+          "$ref": "#/$defs/channel"
+        },
+        "imageFilter": {
+          "description": "A CSS [filter][1]; a constant string used to adjust the rendering of images, such as *blur(5px)*.",
+          "type": "string"
+        },
+        "imageRendering": {
+          "description": "The [image-rendering attribute][1]; defaults to *auto* (bilinear).",
+          "type": "string"
+        },
+        "initializer": {"description":"A custom mark initializer."},
+        "inset": {
+          "description": "Shorthand to set the same default for **insetStart** and **insetEnd**.",
+          "type": "number"
+        },
+        "insetBottom": {"description":"Insets the bottom edge by the specified number of pixels.","type":"number"},
+        "insetEnd": {"description":"The ending inset, a constant in pixels; defaults to 0.","type":"number"},
+        "insetLeft": {"description":"Insets the left edge by the specified number of pixels.","type":"number"},
+        "insetRight": {"description":"Insets the right edge by the specified number of pixels.","type":"number"},
+        "insetStart": {"description":"The starting inset, a constant in pixels; defaults to 0.","type":"number"},
+        "insetTop": {"description":"Insets the top edge by the specified number of pixels.","type":"number"},
+        "interpolate": {
+          "description": "The spatial interpolation method, when using *data* samples.",
+          "anyOf": [{"type":"null"},{"enum":["nearest","barycentric","random-walk","none"]}]
+        },
+        "interval": {
+          "description": "How to subdivide the domain into discrete bins; a stricter alternative to the **thresholds** option allowing the use of shorthand numeric intervals; one of: - an object that implements *floor*, *offset*, and *range* methods - a named time interval such as *day* (for date intervals) - a number (for number intervals), defining intervals at integer multiples of *n* For example, for integer bins: ```js Plot.rectY(numbers, Plot.binX({y: \"count\"}, {interval: 1})) ```",
+          "$ref": "#/$defs/interval"
+        },
+        "k": {
+          "description": "The number of standard deviations to offset the bands; defaults to 2.",
+          "type": "number"
+        },
+        "label": {
+          "description": "A textual label to show on the axis or legend; if null, show no label.",
+          "anyOf": [{"type":"string"},{"type":"null"}]
+        },
+        "labelAnchor": {
+          "description": "Where to place the axis **label** relative to the plot’s frame.",
+          "enum": ["top","right","bottom","left","center"]
+        },
+        "labelArrow": {
+          "description": "Whether to apply a directional arrow such as → or ↑ to the scale label.",
+          "anyOf": [{"type":"null"},{"enum":["auto","up","right","down","left","none",true,false]}]
+        },
+        "labelOffset": {
+          "description": "The axis **label** position offset (in pixels); default depends on margins and orientation.",
+          "type": "number"
+        },
+        "length": {
+          "description": "The vector’s length; either an optional channel bound to the *length* scale or a constant number in pixels.",
+          "$ref": "#/$defs/channel"
+        },
+        "line": {"enum":[false]},
+        "lineAnchor": {
+          "description": "The line anchor controls how text is aligned (typically vertically) relative to its anchor point; it is one of *top*, *bottom*, or *middle*.",
+          "enum": ["top","middle","bottom"]
+        },
+        "lineHeight": {"description":"The line height in ems; defaults to 1.","type":"number"},
+        "lineWidth": {
+          "description": "The line width in ems (e.g., 10 for about 20 characters); defaults to infinity, disabling wrapping and clipping.",
+          "type": "number"
+        },
+        "margin": {
+          "description": "Shorthand to set the same default for all four mark margins: **marginTop**, **marginRight**, **marginBottom**, and **marginLeft**; typically defaults to 0, except for axis marks.",
+          "type": "number"
+        },
+        "marginBottom": {
+          "description": "The mark’s bottom margin; the minimum distance in pixels between the bottom edges of the inner and outer plot area.",
+          "type": "number"
+        },
+        "marginLeft": {
+          "description": "The mark’s left margin; the minimum distance in pixels between the left edges of the inner and outer plot area.",
+          "type": "number"
+        },
+        "marginRight": {
+          "description": "The mark’s right margin; the minimum distance in pixels between the right edges of the mark’s inner and outer plot area.",
+          "type": "number"
+        },
+        "marginTop": {
+          "description": "The mark’s top margin; the minimum distance in pixels between the top edges of the inner and outer plot area.",
+          "type": "number"
+        },
+        "marker": {
+          "description": "Shorthand to set the same default for markerStart, markerMid, and markerEnd; one of: - a marker name such as *arrow* or *circle* - *none* (default) - no marker * true - alias for *circle-fill* * false or null - alias for *none* * a function - a custom marker function; see below Custom marker functions are passed the current marker *color* and a *context* including the current document; they must return an SVG marker element.",
+          "anyOf": [{"$ref":"#/$defs/marker"},{"type":"boolean"},{"type":"null"},{"enum":["none"]}]
+        },
+        "markerEnd": {
+          "description": "The marker for the ending point of a line segment; one of: - a marker name such as *arrow* or *circle* * *none* (default) - no marker * true - alias for *circle-fill* * false or null - alias for *none* * a function - a custom marker function; see below Custom marker functions are passed the current marker *color* and a *context* including the current document; they must return an SVG marker element.",
+          "anyOf": [{"$ref":"#/$defs/marker"},{"type":"boolean"},{"type":"null"},{"enum":["none"]}]
+        },
+        "markerMid": {
+          "description": "The marker for any middle (interior) points of a line segment.",
+          "anyOf": [{"$ref":"#/$defs/marker"},{"type":"boolean"},{"type":"null"},{"enum":["none"]}]
+        },
+        "markerStart": {
+          "description": "The marker for the starting point of a line segment; one of: - a marker name such as *arrow* or *circle* * *none* (default) - no marker * true - alias for *circle-fill* * false or null - alias for *none* * a function - a custom marker function; see below Custom marker functions are passed the current marker *color* and a *context* including the current document; they must return an SVG marker element.",
+          "anyOf": [{"$ref":"#/$defs/marker"},{"type":"boolean"},{"type":"null"},{"enum":["none"]}]
+        },
+        "maxRadius": {
+          "description": "The maximum radius in pixels to determine whether to render the crosshair for closest point; if no point is within this radius to the pointer, the crosshair will be hidden.",
+          "type": "number"
+        },
+        "mixBlendMode": {
+          "description": "The [mix-blend-mode][1]; a constant string specifying how to blend content such as *multiply*.",
+          "type": "string"
+        },
+        "monospace": {
+          "description": "If true, changes the default **fontFamily** to *monospace*, and uses simplified monospaced text metrics calculations.",
+          "type": "boolean"
+        },
+        "multiple": {
+          "description": "The number of cells per row or column; defaults to undefined for automatic.",
+          "type": "number"
+        },
+        "n": {
+          "description": "The number of consecutive values in the window; defaults to 20.",
+          "type": "number"
+        },
+        "negativeFill": {
+          "description": "The fill color when the primary value is less than the secondary value; defaults to blue.",
+          "$ref": "#/$defs/channel"
+        },
+        "negativeFillOpacity": {
+          "description": "The fill opacity when the primary value is less than the secondary value; defaults to **fillOpacity**.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "After stacking, an optional **offset** can be applied to translate and scale stacks, say to produce a streamgraph; defaults to null for a zero baseline (**y** = 0 for stackY, and **x** = 0 for stackX).",
+          "anyOf": [{"type":"string"},{"type":"null"},{"enum":["center","normalize","wiggle"]}]
+        },
+        "opacity": {
+          "description": "The [opacity][1]; a constant between 0 and 1, or a channel typically bound to the *opacity* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "order": {
+          "description": "The order in which stacks are layered; one of: - null (default) for input order - a named stack order method such as *inside-out* or *sum* - a field name, for natural order of the corresponding values - a function of data, for natural order of the corresponding values - an array of explicit **z** values in the desired order If the *wiggle* **offset** is used, as for a streamgraph, the default changes to *inside-out*.",
+          "anyOf": [
+            {"type":"string"},
+            {"type":"array"},
+            {"type":"null"},
+            {"enum":["value","x","y","z","sum","appearance","inside-out"]}
+          ]
+        },
+        "paintOrder": {
+          "description": "The [paint-order][1]; a constant string specifying the order in which the **fill**, **stroke**, and any markers are drawn; defaults to *normal*, which draws the fill, then stroke, then markers; defaults to *stroke* for the text mark to create a “halo” around text to improve legibility.",
+          "type": "string"
+        },
+        "path": {
+          "description": "The location of each node in the hierarchy; typically slash-separated strings, as with UNIX-based file systems or URLs.",
+          "$ref": "#/$defs/channel"
+        },
+        "pathFilter": {
+          "description": "The image filter for the tip’s box; defaults to a drop shadow.",
+          "type": "string"
+        },
+        "pixelSize": {
+          "description": "The effective screen size of a raster pixel, used to determine the height and width of the raster from the frame’s dimensions; defaults to 1.",
+          "type": "number",
+          "minimum": 0.5
+        },
+        "pointerEvents": {
+          "description": "The [pointer-events][1] property; a constant string such as *none*.",
+          "type": "string"
+        },
+        "pointerSize": {"description":"The size of the tip’s pointer in pixels; defaults to 12.","type":"number"},
+        "pool": {
+          "description": "Whether this mark participates in the pointer pool, which ensures that only the closest point is shown when multiple pointer marks are present; defaults to true for the tip mark.",
+          "type": "boolean"
+        },
+        "positiveFill": {
+          "description": "The fill color when the primary value is greater than the secondary value; defaults to green.",
+          "$ref": "#/$defs/channel"
+        },
+        "positiveFillOpacity": {
+          "description": "The fill opacity when the primary value is greater than the secondary value; defaults to **fillOpacity**.",
+          "type": "number"
+        },
+        "precision": {
+          "description": "The distance in pixels between samples of the confidence band; defaults to 4.",
+          "type": "number"
+        },
+        "preferredAnchor": {
+          "description": "If an explicit tip anchor is not specified, an anchor is chosen automatically such that the tip fits within the plot’s frame; if the preferred anchor fits, it is chosen.",
+          "anyOf": [
+            {"type":"null"},
+            {
+              "enum": ["middle","top-left","top","top-right","right","bottom-right","bottom","bottom-left","left"]
+            }
+          ]
+        },
+        "preserveAspectRatio": {"description":"The image [aspect ratio][1]; defaults to *xMidYMid meet*.","type":"string"},
+        "px": {"$ref":"#/$defs/channel"},
+        "py": {"$ref":"#/$defs/channel"},
+        "r": {
+          "description": "The rounded radius for all corners, in pixels; shorthand for **rx1y1**, **rx2y1**, **rx2y2**, and **rx1y2**.",
+          "$ref": "#/$defs/channel"
+        },
+        "reduce": {
+          "description": "How to reduce **x** values when the **y** channel is binned with an **interval**; defaults to *first*.",
+          "$ref": "#/$defs/reducer"
+        },
+        "render": {"description":"A custom render transform."},
+        "reverse": {
+          "description": "Applies a transform to reverse the order of the mark’s index, say for reverse input order.",
+          "type": "boolean"
+        },
+        "rotate": {
+          "description": "The rotation angle in degrees clockwise; a constant or a channel; defaults to 0°.",
+          "$ref": "#/$defs/channel"
+        },
+        "round": {"description":"If true, round to integers to avoid partial cells.","type":"boolean"},
+        "ruleStroke": {"description":"The rule **stroke**; defaults to **color**.","$ref":"#/$defs/channel"},
+        "ruleStrokeOpacity": {"description":"The rule **strokeOpacity**; defaults to 0.2.","$ref":"#/$defs/channel"},
+        "ruleStrokeWidth": {"description":"The rule **strokeWidth**; defaults to 1.","$ref":"#/$defs/channel"},
+        "rx": {
+          "description": "The rounded corner [*x*-radius][1], either in pixels or as a percentage of the rect width.",
+          "anyOf": [{"type":"number"},{"type":"string"}]
+        },
+        "rx1": {
+          "description": "The rounded radius for the **x1** corners (typically left for positive *x*-values), in pixels; shorthand for **rx1y1** and **rx1y2**.",
+          "type": "number"
+        },
+        "rx1y1": {
+          "description": "The rounded radius for the **x1y1** corner (typically bottom-left for positive values), in pixels.",
+          "type": "number"
+        },
+        "rx1y2": {
+          "description": "The rounded radius for the **x1y2** corner (typically top-left for positive values), in pixels.",
+          "type": "number"
+        },
+        "rx2": {
+          "description": "The rounded radius for the **x2** corners (typically right for positive *x*-values), in pixels; shorthand for **rx2y1** and **rx2y2**.",
+          "type": "number"
+        },
+        "rx2y1": {
+          "description": "The rounded radius for the **x2y1** corner (typically bottom-right for positive values), in pixels.",
+          "type": "number"
+        },
+        "rx2y2": {
+          "description": "The rounded radius for the **x2y2** corner (typically top-right for positive values), in pixels.",
+          "type": "number"
+        },
+        "ry": {
+          "description": "The rounded corner [*y*-radius][1], either in pixels or as a percentage of the rect height.",
+          "anyOf": [{"type":"number"},{"type":"string"}]
+        },
+        "ry1": {
+          "description": "The rounded radius for the **y1** corners (typically bottom for positive *y*-values), in pixels; shorthand for **rx1y1** and **rx2y1**.",
+          "type": "number"
+        },
+        "ry2": {
+          "description": "The rounded radius for the **y2** corners (typically top for positive *y*-values), in pixels; shorthand for **rx1y2** and **rx2y2**.",
+          "type": "number"
+        },
+        "seed": {"type":"number"},
+        "shape": {"description":"The shape of the vector; a constant.","enum":["arrow","spike"]},
+        "shapeRendering": {
+          "description": "The [shape-rendering][1]; a constant string such as *crispEdges*.",
+          "type": "string"
+        },
+        "size": {
+          "description": "The size channel (**value**) and reducer (**reduce**).",
+          "$ref": "#/$defs/channel"
+        },
+        "smooth": {
+          "description": "Whether to apply linear interpolation after marching squares when computing contour polygons; defaults to true.",
+          "type": "boolean"
+        },
+        "sort": {
+          "description": "Either applies a transform to sort the mark’s index by the specified channel values, or imputes ordinal scale domains from this mark’s channels.",
+          "$ref": "#/$defs/markSort"
+        },
+        "src": {
+          "description": "Image URL: a field name or a constant URL. Images load from the network: they need the host to allow remote content.",
+          "$ref": "#/$defs/channel"
+        },
+        "strict": {
+          "description": "If true (the default), the output start values or end values or both (depending on the **anchor**) of each series may be undefined since there are not enough elements to create a window of size **n**; output values may also be undefined if some of the input values in the corresponding window are undefined.",
+          "type": "boolean"
+        },
+        "stroke": {
+          "description": "The [stroke][1]; a constant CSS color string, or a channel typically bound to the *color* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "strokeDasharray": {
+          "description": "The [stroke-dasharray][1]; a constant number indicating the length in pixels of alternating dashes and gaps, or a constant string of numbers separated by spaces or commas (_e.g._, *10 2* for dashes of 10 pixels separated by gaps of 2 pixels), or *none* (the default) for no dashing [1]: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray",
+          "anyOf": [{"type":"string"},{"type":"number"}]
+        },
+        "strokeDashoffset": {
+          "description": "The [stroke-dashoffset][1]; a constant indicating the offset in pixels of the first dash along the stroke; defaults to zero.",
+          "anyOf": [{"type":"string"},{"type":"number"}]
+        },
+        "strokeLinecap": {
+          "description": "The [stroke-linecap][1]; a constant specifying how to cap stroked paths, such as *butt*, *round*, or *square*.",
+          "type": "string"
+        },
+        "strokeLinejoin": {
+          "description": "The [stroke-linejoin][1]; a constant specifying how to join stroked paths, such as *bevel*, *miter*, *miter-clip*, or *round*.",
+          "type": "string"
+        },
+        "strokeMiterlimit": {
+          "description": "The [stroke-miterlimit][1]; a constant number specifying how to limit the length of *miter* joins on stroked paths.",
+          "type": "number"
+        },
+        "strokeOpacity": {
+          "description": "The [stroke-opacity][1]; a constant between 0 and 1, or a channel typically bound to the *opacity* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "strokeWidth": {
+          "description": "The [stroke-width][1]; a constant number in pixels, or a channel.",
+          "$ref": "#/$defs/channel"
+        },
+        "sweep": {
+          "description": "The sweep order; defaults to 1 indicating a positive (clockwise) bend angle; -1 indicates a negative (anticlockwise) bend angle; 0 effectively clears the bend angle.",
+          "anyOf": [{"type":"number"},{"enum":["+x","-x","+y","-y"]}]
+        },
+        "symbol": {
+          "description": "The categorical symbol; either a channel or a constant.",
+          "$ref": "#/$defs/channel"
+        },
+        "target": {
+          "description": "The [target][1]; a constant string specifying the target window (_e.g._, *_blank*) for clickable links; used in conjunction with the **href** option.",
+          "type": "string"
+        },
+        "tension": {
+          "description": "The tension option only has an effect on bundle, cardinal and Catmull–Rom splines (*bundle*, *cardinal*, *cardinal-open*, *cardinal-closed*, *catmull-rom*, *catmull-rom-open*, and *catmull-rom-closed*).",
+          "type": "number"
+        },
+        "text": {
+          "description": "The text contents channel, possibly with line breaks (\\n, \\r\\n, or \\r).",
+          "$ref": "#/$defs/channel"
+        },
+        "textAnchor": {
+          "description": "The [text anchor][1] controls how text is aligned (typically horizontally) relative to its anchor point; it is one of *start*, *end*, or *middle*.",
+          "enum": ["start","middle","end"]
+        },
+        "textFill": {"description":"The text **fill**; defaults to **color**.","$ref":"#/$defs/channel"},
+        "textLayout": {
+          "description": "Layout for node labels: if *mirrored*, leaf-node labels are left-anchored, and non-leaf nodes right-anchored (with a -dx offset).",
+          "enum": ["mirrored","normal"]
+        },
+        "textOverflow": {
+          "description": "How truncate (or wrap) lines of text longer than the given **lineWidth**; one of: - null (default) - preserve overflowing characters (and wrap if needed) - *clip* or *clip-end* - remove characters from the end - *clip-start* - remove characters from the start - *ellipsis* or *ellipsis-end* - replace characters from the end with an ellipsis (…) - *ellipsis-start* - replace characters from the start with an ellipsis (…) - *ellipsis-middle* - replace characters from the middle with an ellipsis (…) If no **title** was specified, if text requires truncation, a title containing the non-truncated text will be implicitly added.",
+          "anyOf": [
+            {"type":"null"},
+            {
+              "enum": ["clip","ellipsis","clip-start","clip-end","ellipsis-start","ellipsis-middle","ellipsis-end"]
+            }
+          ]
+        },
+        "textPadding": {"description":"The padding around the text in pixels; defaults to 8.","type":"number"},
+        "textStroke": {
+          "description": "The tick text **stroke**, say for a *white* outline to improve legibility; defaults to null.",
+          "$ref": "#/$defs/channel"
+        },
+        "textStrokeOpacity": {
+          "description": "The tick text **strokeOpacity**; defaults to 1; has no effect unless **textStroke** is set.",
+          "$ref": "#/$defs/channel"
+        },
+        "textStrokeWidth": {
+          "description": "The tick text **strokeWidth**; defaults to 4; has no effect unless **textStroke** is set.",
+          "$ref": "#/$defs/channel"
+        },
+        "thresholds": {
+          "description": "How to subdivide the domain into discrete bins; defaults to *auto*; one of: - a named threshold implementation such as *auto* (default) or *sturges* - a function that returns an array, count, or range interval - a range interval - an array of *n* threshold values for *n* - 1 bins - a count representing the desired number of bins (a hint; not guaranteed) For example, for about ten bins: ```js Plot.rectY(numbers, Plot.binX({y: \"count\"}, {thresholds: 10})) ``` See also the **interval** option.",
+          "anyOf": [
+            {"type":"number"},
+            {"enum":["auto","freedman-diaconis","scott","sturges"]},
+            {"$ref":"#/$defs/interval"},
+            {"type":"array"}
+          ]
+        },
+        "tickFormat": {
+          "description": "How to format inputs (abstract values) for axis tick labels; one of: - a [d3-format][1] string for numeric scales - a [d3-time-format][2] string for temporal scales - a function passed a tick *value* and *index*, returning a string [1]: https://d3js.org/d3-time [2]: https://d3js.org/d3-time-format",
+          "anyOf": [{"type":"string"},{"type":"null"}]
+        },
+        "tickPadding": {
+          "description": "The distance between an axis tick mark and its associated text label (in pixels); often defaults to 3, but may be affected by **tickSize** and **tickRotate**.",
+          "type": "number"
+        },
+        "tickRotate": {
+          "description": "The rotation angle of axis tick labels in degrees clocksize; defaults to 0.",
+          "type": "number"
+        },
+        "ticks": {
+          "description": "The desired approximate number of axis ticks, or an explicit array of tick values, or an interval such as *day* or *month*.",
+          "anyOf": [{"type":"number"},{"$ref":"#/$defs/interval"},{"type":"array"}]
+        },
+        "tickSize": {
+          "description": "The length of axis tick marks in pixels; negative values extend in the opposite direction.",
+          "type": "number"
+        },
+        "tickSpacing": {
+          "description": "The desired approximate spacing between adjacent axis ticks, affecting the default **ticks**; defaults to 80 pixels for *x* and *fx*, and 35 pixels for *y* and *fy*.",
+          "type": "number"
+        },
+        "tip": {
+          "description": "Whether to generate a tooltip for this mark, and any tip options.",
+          "$ref": "#/$defs/tip"
+        },
+        "title": {
+          "description": "The title; a channel specifying accessible, short textual descriptions as strings (possibly with newlines).",
+          "$ref": "#/$defs/channel"
+        },
+        "transform": {
+          "description": "Transforms applied in order: the first entry transforms the mark's options, the next one transforms the result.",
+          "type": "array",
+          "items": {"$ref":"#/$defs/transform"}
+        },
+        "treeAnchor": {
+          "description": "How to orient the tree; one of: - *left* (default) - place the root on the left, with children extending right - *right* - place the root on the right, with children extending left Use the **insetLeft** and **insetRight** *x* scale options if horizontal padding is desired, say to make room for labels.",
+          "enum": ["left","right"]
+        },
+        "treeLayout": {
+          "description": "How to layout the tree; defaults to [d3.tree][1] which implements the Reingold–Tilford “tidy” algorithm."
+        },
+        "treeSeparation": {
+          "description": "How much space to reserve between adjacent nodes in the layout; by default, non-siblings are at least twice as far apart as siblings.",
+          "type": "null"
+        },
+        "treeSort": {
+          "description": "How to order nodes prior to laying them out; by default, nodes are laid out in input order.",
+          "anyOf": [{"type":"string"},{"type":"null"}]
+        },
+        "unit": {"description":"The quantity each cell represents; defaults to 1.","type":"number"},
+        "value": {
+          "description": "The value can be specified as a channel based on the sample *data*, or as a function *f*(*x*, *y*) to be evaluated at each pixel if the *data* is not provided.",
+          "$ref": "#/$defs/channel"
+        },
+        "weight": {
+          "description": "An optional weight channel specifying the relative contribution of each point.",
+          "$ref": "#/$defs/channel"
+        },
+        "width": {
+          "description": "The width (number of columns) of the raster grid, in actual pixels.",
+          "$ref": "#/$defs/channel"
+        },
+        "x": {
+          "description": "The horizontal position (or length) channel, typically bound to the *x* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "x1": {
+          "description": "The required primary (starting, often left) horizontal position channel, representing the area’s baseline, typically bound to the *x* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "x2": {
+          "description": "The optional secondary (ending, often right) horizontal position channel, representing the area’s topline, typically bound to the *x* scale; if not specified, **x1** is used.",
+          "$ref": "#/$defs/channel"
+        },
+        "y": {
+          "description": "The vertical position channel, typically bound to the *y* scale; defaults to the zero-based index of the data [0, 1, 2, …].",
+          "$ref": "#/$defs/channel"
+        },
+        "y1": {
+          "description": "The required primary (starting, often bottom) vertical position channel, representing the area’s baseline, typically bound to the *y* scale.",
+          "$ref": "#/$defs/channel"
+        },
+        "y2": {
+          "description": "The optional secondary (ending, often top) vertical position channel, representing the area’s topline, typically bound to the *y* scale; if not specified, **y1** is used.",
+          "$ref": "#/$defs/channel"
+        },
+        "z": {
+          "description": "The **z** channel defines the series of each value in the stack.",
+          "$ref": "#/$defs/channel"
+        },
+        "mark": {
+          "description": "The name of the Plot mark, e.g. \"dot\" for Plot.dot.",
+          "enum": ["area","areaX","areaY","arrow","auto","axisX","axisY","axisFx","axisFy","gridX","gridY","gridFx","gridFy","barX","barY","bollingerX","bollingerY","boxX","boxY","cell","cellX","cellY","contour","crosshair","crosshairX","crosshairY","delaunayLink","delaunayMesh","hull","voronoi","voronoiMesh","density","differenceX","differenceY","dot","dotX","dotY","circle","hexagon","frame","geo","sphere","graticule","hexgrid","image","line","lineX","lineY","linearRegressionX","linearRegressionY","link","raster","rect","rectX","rectY","ruleX","ruleY","text","textX","textY","tickX","tickY","tip","tree","cluster","vector","vectorX","vectorY","spike","waffleX","waffleY"]
+        },
+        "data": {
+          "description": "The mark's data: an array of rows, the name of a dataset of the top-level data map, CSV or TSV text, a URL or GeoJSON.",
+          "$ref": "#/$defs/markData"
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties":{"mark":{"const":"area"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","offset","order","curve","tension","x1","x2","y1","y2","color"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"areaX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","offset","order","curve","tension","x1","x2","color","x","y","reduce","line","marker","markerStart","markerMid","markerEnd"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"areaY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","offset","order","curve","tension","y1","y2","color","x","y","reduce","line","marker","markerStart","markerMid","markerEnd"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"arrow"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","x1","y1","x2","y2","bend","headAngle","headLength","inset","insetStart","insetEnd","sweep"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"auto"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","x","y","color","size","fx","fy","autoMark"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"axisX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","x","y","text","frameAnchor","lineAnchor","rotate","label","labelArrow","tickSize","tickPadding","tickFormat","tickRotate","labelAnchor","labelOffset","textStroke","textStrokeOpacity","textStrokeWidth","marker","markerStart","markerMid","markerEnd","inset","insetTop","insetBottom"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"axisY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","x","y","text","frameAnchor","lineAnchor","rotate","label","labelArrow","tickSize","tickPadding","tickFormat","tickRotate","labelAnchor","labelOffset","textStroke","textStrokeOpacity","textStrokeWidth","marker","markerStart","markerMid","markerEnd","inset","insetRight","insetLeft"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"axisFx"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","x","y","text","frameAnchor","lineAnchor","rotate","label","labelArrow","tickSize","tickPadding","tickFormat","tickRotate","labelAnchor","labelOffset","textStroke","textStrokeOpacity","textStrokeWidth","marker","markerStart","markerMid","markerEnd","inset","insetTop","insetBottom"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"axisFy"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","x","y","text","frameAnchor","lineAnchor","rotate","label","labelArrow","tickSize","tickPadding","tickFormat","tickRotate","labelAnchor","labelOffset","textStroke","textStrokeOpacity","textStrokeWidth","marker","markerStart","markerMid","markerEnd","inset","insetRight","insetLeft"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"gridX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","marker","markerStart","markerMid","markerEnd","inset","insetTop","insetBottom","x","y","y1","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"gridY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","marker","markerStart","markerMid","markerEnd","inset","insetRight","insetLeft","x","x1","x2","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"gridFx"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","marker","markerStart","markerMid","markerEnd","inset","insetTop","insetBottom","x","y","y1","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"gridFy"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","ticks","tickSpacing","anchor","color","marker","markerStart","markerMid","markerEnd","inset","insetRight","insetLeft","x","x1","x2","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"barX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","x","x1","x2","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"barY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","y","y1","y2","x"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"bollingerX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","n","k","anchor","strict","color","offset","order","curve","tension","x1","x2","x","y","reduce","marker","markerStart","markerMid","markerEnd"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"bollingerY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","n","k","anchor","strict","color","offset","order","curve","tension","y1","y2","x","y","reduce","marker","markerStart","markerMid","markerEnd"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"boxX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","rotate","symbol","frameAnchor","inset","insetTop","insetRight","insetBottom","insetLeft","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","x1","x2","marker","markerStart","markerMid","markerEnd","y1","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"boxY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","rotate","symbol","frameAnchor","inset","insetTop","insetRight","insetBottom","insetLeft","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","y1","y2","marker","markerStart","markerMid","markerEnd","x1","x2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"cell"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"cellX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"cellY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"contour"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","x1","x2","y1","y2","width","height","pixelSize","blur","interpolate","colorSpace","smooth","value"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"crosshair"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","color","ruleStroke","ruleStrokeOpacity","ruleStrokeWidth","textFill","textStroke","textStrokeOpacity","textStrokeWidth"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"crosshairX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","color","ruleStroke","ruleStrokeOpacity","ruleStrokeWidth","textFill","textStroke","textStrokeOpacity","textStrokeWidth"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"crosshairY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","color","ruleStroke","ruleStrokeOpacity","ruleStrokeWidth","textFill","textStroke","textStrokeOpacity","textStrokeWidth"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"delaunayLink"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"delaunayMesh"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"hull"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"voronoi"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"voronoiMesh"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"density"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","x","y","weight","bandwidth"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"differenceX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","curve","tension","x1","x2","x","y1","y2","y","positiveFill","negativeFill","positiveFillOpacity","negativeFillOpacity"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"differenceY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","curve","tension","x1","x2","x","y1","y2","y","positiveFill","negativeFill","positiveFillOpacity","negativeFillOpacity"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"dot"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","x","y","r","rotate","symbol","frameAnchor"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"dotX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","x","r","rotate","symbol","frameAnchor","y"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"dotY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","y","r","rotate","symbol","frameAnchor","x"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"circle"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","x","y","r","rotate","frameAnchor"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"hexagon"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","x","y","r","rotate","frameAnchor"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"frame"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","anchor"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"geo"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","x","y","r"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"sphere"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","x","y","r"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"graticule"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","x","y","r"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"hexgrid"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"image"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","width","height","r","rotate","src","preserveAspectRatio","crossOrigin","frameAnchor","imageRendering"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"line"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"lineX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y","reduce"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"lineY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y","reduce"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"linearRegressionX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","ci","precision","reduce","y","x"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"linearRegressionY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {"enum":["mark","transform","data","ci","precision","reduce","x","y"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"link"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","curve","tension","x","y","x1","y1","x2","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"raster"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","x1","x2","y1","y2","width","height","pixelSize","blur","interpolate","imageRendering","colorSpace"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"rect"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","x","x1","x2","y","y1","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"rectX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","x","x1","x2","y","y1","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"rectY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","x","x1","x2","y","y1","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"ruleX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","inset","insetTop","insetBottom","x","y","y1","y2"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"ruleY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","inset","insetRight","insetLeft","x","x1","x2","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"text"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","x","y","text","frameAnchor","lineAnchor","rotate"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"textX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","x","text","frameAnchor","lineAnchor","rotate","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"textY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","y","text","frameAnchor","lineAnchor","rotate","x"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"tickX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","inset","insetTop","insetBottom","x","y"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"tickY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","marker","markerStart","markerMid","markerEnd","inset","insetRight","insetLeft","y","x"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"tip"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","x","x1","x2","y","y1","y2","frameAnchor","anchor","preferredAnchor","format","pathFilter","pointerSize","textPadding"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"tree"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","rotate","symbol","frameAnchor","marker","markerStart","markerMid","markerEnd","curve","tension","x1","y1","x2","y2","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","text","lineAnchor","treeLayout","treeSeparation","treeSort","dot","textStroke","textLayout"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"cluster"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","rotate","symbol","frameAnchor","marker","markerStart","markerMid","markerEnd","curve","tension","x1","y1","x2","y2","textAnchor","lineHeight","lineWidth","textOverflow","monospace","fontFamily","fontSize","fontStyle","fontVariant","fontWeight","text","lineAnchor","treeLayout","treeSeparation","treeSort","dot","textStroke","textLayout"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"vector"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","length","rotate","shape","anchor","frameAnchor"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"vectorX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","length","rotate","shape","anchor","frameAnchor"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"vectorY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","length","rotate","shape","anchor","frameAnchor"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"spike"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","x","y","r","length","rotate","shape","anchor","frameAnchor"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"waffleX"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","x","x1","x2","y","multiple","unit","gap","round"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties":{"mark":{"const":"waffleY"}},"required":["mark"]},
+          "then": {
+            "propertyNames": {
+              "anyOf": [
+                {"$ref":"#/$defs/markCommonKey"},
+                {"$ref":"#/$defs/transformInputKey"},
+                {
+                  "enum": ["mark","transform","data","inset","insetTop","insetRight","insetBottom","insetLeft","r","rx1","ry1","rx2","ry2","rx1y1","rx1y2","rx2y1","rx2y2","rx","ry","offset","order","y","y1","y2","x","multiple","unit","gap","round"]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "markCommonKey": {
+      "enum": ["filter","reverse","sort","fx","fy","facet","facetAnchor","margin","marginTop","marginRight","marginBottom","marginLeft","className","ariaDescription","ariaHidden","ariaLabel","pointerEvents","title","tip","pool","clip","dx","dy","fill","fillOpacity","stroke","strokeDasharray","strokeDashoffset","strokeLinecap","strokeLinejoin","strokeMiterlimit","strokeOpacity","strokeWidth","opacity","mixBlendMode","imageFilter","paintOrder","shapeRendering","href","target","channels"]
+    },
+    "transform": {
+      "description": "A transform: an object with one key, the transform's name, whose value is the transform's first argument.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {"bin":{"$ref":"#/$defs/outputs_bin"}},
+          "required": ["bin"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"binX":{"$ref":"#/$defs/outputs_bin"}},
+          "required": ["binX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"binY":{"$ref":"#/$defs/outputs_bin"}},
+          "required": ["binY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"group":{"$ref":"#/$defs/outputs_group"}},
+          "required": ["group"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"groupX":{"$ref":"#/$defs/outputs_group"}},
+          "required": ["groupX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"groupY":{"$ref":"#/$defs/outputs_group"}},
+          "required": ["groupY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"groupZ":{"$ref":"#/$defs/outputs_group"}},
+          "required": ["groupZ"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"hexbin":{"$ref":"#/$defs/outputs_hexbin"}},
+          "required": ["hexbin"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"map":{"$ref":"#/$defs/outputs_map"}},
+          "required": ["map"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"mapX":{"enum":["cumsum","rank","quantile"]}},
+          "required": ["mapX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"mapY":{"enum":["cumsum","rank","quantile"]}},
+          "required": ["mapY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "normalizeX": {
+              "anyOf": [
+                {"const":true},
+                {"enum":["deviation","first","last","max","mean","median","min","sum","extent"]},
+                {"type":"string","pattern":"^p\\d\\d$"},
+                {
+                  "type": "object",
+                  "properties": {
+                    "basis": {
+                      "anyOf": [
+                        {
+                          "enum": ["deviation","first","last","max","mean","median","min","sum","extent"]
+                        },
+                        {"type":"string","pattern":"^p\\d\\d$"}
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["normalizeX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "normalizeY": {
+              "anyOf": [
+                {"const":true},
+                {"enum":["deviation","first","last","max","mean","median","min","sum","extent"]},
+                {"type":"string","pattern":"^p\\d\\d$"},
+                {
+                  "type": "object",
+                  "properties": {
+                    "basis": {
+                      "anyOf": [
+                        {
+                          "enum": ["deviation","first","last","max","mean","median","min","sum","extent"]
+                        },
+                        {"type":"string","pattern":"^p\\d\\d$"}
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["normalizeY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "windowX": {
+              "anyOf": [
+                {"type":"integer","minimum":1},
+                {
+                  "type": "object",
+                  "properties": {
+                    "k": {"type":"integer","minimum":1},
+                    "reduce": {
+                      "anyOf": [
+                        {
+                          "enum": ["difference","ratio","first","last","deviation","sum","min","max","mean","median","variance","mode"]
+                        },
+                        {"type":"string","pattern":"^p\\d\\d$"}
+                      ]
+                    },
+                    "anchor": {"enum":["start","middle","end"]},
+                    "shift": {"enum":["leading","centered","trailing"]},
+                    "strict": {"type":"boolean"}
+                  },
+                  "required": ["k"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["windowX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "windowY": {
+              "anyOf": [
+                {"type":"integer","minimum":1},
+                {
+                  "type": "object",
+                  "properties": {
+                    "k": {"type":"integer","minimum":1},
+                    "reduce": {
+                      "anyOf": [
+                        {
+                          "enum": ["difference","ratio","first","last","deviation","sum","min","max","mean","median","variance","mode"]
+                        },
+                        {"type":"string","pattern":"^p\\d\\d$"}
+                      ]
+                    },
+                    "anchor": {"enum":["start","middle","end"]},
+                    "shift": {"enum":["leading","centered","trailing"]},
+                    "strict": {"type":"boolean"}
+                  },
+                  "required": ["k"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["windowY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stackX": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "anyOf": [
+                        {"enum":["center","normalize","wiggle","expand","silhouette"]},
+                        {"type":"null"}
+                      ]
+                    },
+                    "order": {"anyOf":[{"type":"string"},{"type":"array"},{"type":"null"}]},
+                    "reverse": {"type":"boolean"},
+                    "z": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["stackX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stackX1": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "anyOf": [
+                        {"enum":["center","normalize","wiggle","expand","silhouette"]},
+                        {"type":"null"}
+                      ]
+                    },
+                    "order": {"anyOf":[{"type":"string"},{"type":"array"},{"type":"null"}]},
+                    "reverse": {"type":"boolean"},
+                    "z": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["stackX1"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stackX2": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "anyOf": [
+                        {"enum":["center","normalize","wiggle","expand","silhouette"]},
+                        {"type":"null"}
+                      ]
+                    },
+                    "order": {"anyOf":[{"type":"string"},{"type":"array"},{"type":"null"}]},
+                    "reverse": {"type":"boolean"},
+                    "z": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["stackX2"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stackY": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "anyOf": [
+                        {"enum":["center","normalize","wiggle","expand","silhouette"]},
+                        {"type":"null"}
+                      ]
+                    },
+                    "order": {"anyOf":[{"type":"string"},{"type":"array"},{"type":"null"}]},
+                    "reverse": {"type":"boolean"},
+                    "z": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["stackY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stackY1": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "anyOf": [
+                        {"enum":["center","normalize","wiggle","expand","silhouette"]},
+                        {"type":"null"}
+                      ]
+                    },
+                    "order": {"anyOf":[{"type":"string"},{"type":"array"},{"type":"null"}]},
+                    "reverse": {"type":"boolean"},
+                    "z": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["stackY1"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stackY2": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "anyOf": [
+                        {"enum":["center","normalize","wiggle","expand","silhouette"]},
+                        {"type":"null"}
+                      ]
+                    },
+                    "order": {"anyOf":[{"type":"string"},{"type":"array"},{"type":"null"}]},
+                    "reverse": {"type":"boolean"},
+                    "z": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["stackY2"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "dodgeX": {
+              "anyOf": [
+                {"const":true},
+                {"enum":["left","right","middle"]},
+                {
+                  "type": "object",
+                  "properties": {
+                    "anchor": {"type":"string"},
+                    "padding": {"type":"number"},
+                    "r": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["dodgeX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "dodgeY": {
+              "anyOf": [
+                {"const":true},
+                {"enum":["top","bottom","middle"]},
+                {
+                  "type": "object",
+                  "properties": {
+                    "anchor": {"type":"string"},
+                    "padding": {"type":"number"},
+                    "r": {"$ref":"#/$defs/channel"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["dodgeY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "select": {
+              "anyOf": [
+                {"enum":["first","last"]},
+                {
+                  "type": "object",
+                  "additionalProperties": {"enum":["min","max"]},
+                  "minProperties": 1,
+                  "maxProperties": 1
+                }
+              ]
+            }
+          },
+          "required": ["select"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "selectFirst": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"z":{"$ref":"#/$defs/mark/properties/z"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["selectFirst"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "selectLast": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"z":{"$ref":"#/$defs/mark/properties/z"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["selectLast"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "selectMinX": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"z":{"$ref":"#/$defs/mark/properties/z"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["selectMinX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "selectMinY": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"z":{"$ref":"#/$defs/mark/properties/z"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["selectMinY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "selectMaxX": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"z":{"$ref":"#/$defs/mark/properties/z"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["selectMaxX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "selectMaxY": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"z":{"$ref":"#/$defs/mark/properties/z"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["selectMaxY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"shiftX":{"$ref":"#/$defs/interval"}},
+          "required": ["shiftX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"shiftY":{"$ref":"#/$defs/interval"}},
+          "required": ["shiftY"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {"filter":{"$ref":"#/$defs/channel"}},
+          "required": ["filter"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "sort": {
+              "anyOf": [
+                {"$ref":"#/$defs/channel"},
+                {
+                  "type": "object",
+                  "properties": {
+                    "channel": {"type":"string"},
+                    "value": {"$ref":"#/$defs/channel"},
+                    "order": {"enum":["ascending","descending"]}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["sort"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "reverse": {
+              "anyOf": [{"const":true},{"type":"object","properties":{},"additionalProperties":false}]
+            }
+          },
+          "required": ["reverse"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "shuffle": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"seed":{"$ref":"#/$defs/mark/properties/seed"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["shuffle"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "centroid": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"geometry":{"$ref":"#/$defs/mark/properties/geometry"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["centroid"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "geoCentroid": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {"geometry":{"$ref":"#/$defs/mark/properties/geometry"}},
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["geoCentroid"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "treeNode": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {"$ref":"#/$defs/mark/properties/path"},
+                    "delimiter": {"$ref":"#/$defs/mark/properties/delimiter"},
+                    "treeAnchor": {"$ref":"#/$defs/mark/properties/treeAnchor"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["treeNode"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "treeLink": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {"$ref":"#/$defs/mark/properties/path"},
+                    "delimiter": {"$ref":"#/$defs/mark/properties/delimiter"},
+                    "treeAnchor": {"$ref":"#/$defs/mark/properties/treeAnchor"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["treeLink"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "pointer": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "maxRadius": {"$ref":"#/$defs/mark/properties/maxRadius"},
+                    "px": {"$ref":"#/$defs/mark/properties/px"},
+                    "py": {"$ref":"#/$defs/mark/properties/py"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["pointer"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "pointerX": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "maxRadius": {"$ref":"#/$defs/mark/properties/maxRadius"},
+                    "px": {"$ref":"#/$defs/mark/properties/px"},
+                    "py": {"$ref":"#/$defs/mark/properties/py"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["pointerX"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "pointerY": {
+              "anyOf": [
+                {"const":true},
+                {
+                  "type": "object",
+                  "properties": {
+                    "maxRadius": {"$ref":"#/$defs/mark/properties/maxRadius"},
+                    "px": {"$ref":"#/$defs/mark/properties/px"},
+                    "py": {"$ref":"#/$defs/mark/properties/py"}
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["pointerY"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "channel": {
+      "description": "A channel: a field name (string), a constant (number, boolean, null; a CSS color for fill and stroke), an array of values, or an object {value, label, scale, …}. Strings that look like JavaScript functions are rejected.",
+      "anyOf": [
+        {"type":["string","number","boolean","null"]},
+        {"type":"array"},
+        {
+          "type": "object",
+          "properties": {
+            "value": {"anyOf":[{"type":["string","number","boolean","null"]},{"type":"array"}]},
+            "label": {},
+            "scale": {},
+            "type": {},
+            "optional": {},
+            "interval": {"$ref":"#/$defs/interval"},
+            "thresholds": {},
+            "domain": {},
+            "cumulative": {},
+            "reduce": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"null"}]},
+            "zero": {},
+            "color": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "interval": {
+      "description": "An interval: a number, or a time interval name such as \"day\", \"week\", \"month\", \"3 months\", \"10 years\".",
+      "anyOf": [
+        {"type":"number","exclusiveMinimum":0},
+        {
+          "type": "string",
+          "pattern": "^(\\d+ )?(millisecond|second|minute|hour|day|week|month|quarter|half|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?$"
+        }
+      ]
+    },
+    "reducer": {
+      "anyOf": [
+        {
+          "enum": ["first","last","identity","count","distinct","sum","proportion","proportion-facet","deviation","min","min-index","max","max-index","mean","median","variance","mode","x","x1","x2","y","y1","y2","z"]
+        },
+        {"type":"string","pattern":"^p\\d\\d$"}
+      ]
+    },
+    "curve": {
+      "enum": ["basis","basis-closed","basis-open","bundle","bump-x","bump-y","cardinal","cardinal-closed","cardinal-open","catmull-rom","catmull-rom-closed","catmull-rom-open","linear","linear-closed","monotone-x","monotone-y","natural","step","step-after","step-before","auto"]
+    },
+    "marker": {
+      "anyOf": [
+        {
+          "enum": ["arrow","arrow-reverse","dot","circle","circle-fill","circle-stroke","tick","tick-x","tick-y","none"]
+        },
+        {"type":"boolean"},
+        {"type":"null"}
+      ]
+    },
+    "tip": {
+      "anyOf": [
+        {"type":"boolean"},
+        {"enum":["x","y","xy"]},
+        {
+          "type": "object",
+          "properties": {
+            "filter": {"$ref":"#/$defs/mark/properties/filter"},
+            "reverse": {"$ref":"#/$defs/mark/properties/reverse"},
+            "sort": {"$ref":"#/$defs/mark/properties/sort"},
+            "fx": {"$ref":"#/$defs/mark/properties/fx"},
+            "fy": {"$ref":"#/$defs/mark/properties/fy"},
+            "facet": {"$ref":"#/$defs/mark/properties/facet"},
+            "facetAnchor": {"$ref":"#/$defs/mark/properties/facetAnchor"},
+            "margin": {"$ref":"#/$defs/mark/properties/margin"},
+            "marginTop": {"$ref":"#/$defs/mark/properties/marginTop"},
+            "marginRight": {"$ref":"#/$defs/mark/properties/marginRight"},
+            "marginBottom": {"$ref":"#/$defs/mark/properties/marginBottom"},
+            "marginLeft": {"$ref":"#/$defs/mark/properties/marginLeft"},
+            "className": {"$ref":"#/$defs/mark/properties/className"},
+            "ariaDescription": {"$ref":"#/$defs/mark/properties/ariaDescription"},
+            "ariaHidden": {"$ref":"#/$defs/mark/properties/ariaHidden"},
+            "ariaLabel": {"$ref":"#/$defs/mark/properties/ariaLabel"},
+            "pointerEvents": {"$ref":"#/$defs/mark/properties/pointerEvents"},
+            "title": {"$ref":"#/$defs/mark/properties/title"},
+            "tip": {"$ref":"#/$defs/mark/properties/tip"},
+            "pool": {"$ref":"#/$defs/mark/properties/pool"},
+            "clip": {"$ref":"#/$defs/mark/properties/clip"},
+            "dx": {"$ref":"#/$defs/mark/properties/dx"},
+            "dy": {"$ref":"#/$defs/mark/properties/dy"},
+            "fill": {"$ref":"#/$defs/mark/properties/fill"},
+            "fillOpacity": {"$ref":"#/$defs/mark/properties/fillOpacity"},
+            "stroke": {"$ref":"#/$defs/mark/properties/stroke"},
+            "strokeDasharray": {"$ref":"#/$defs/mark/properties/strokeDasharray"},
+            "strokeDashoffset": {"$ref":"#/$defs/mark/properties/strokeDashoffset"},
+            "strokeLinecap": {"$ref":"#/$defs/mark/properties/strokeLinecap"},
+            "strokeLinejoin": {"$ref":"#/$defs/mark/properties/strokeLinejoin"},
+            "strokeMiterlimit": {"$ref":"#/$defs/mark/properties/strokeMiterlimit"},
+            "strokeOpacity": {"$ref":"#/$defs/mark/properties/strokeOpacity"},
+            "strokeWidth": {"$ref":"#/$defs/mark/properties/strokeWidth"},
+            "opacity": {"$ref":"#/$defs/mark/properties/opacity"},
+            "mixBlendMode": {"$ref":"#/$defs/mark/properties/mixBlendMode"},
+            "imageFilter": {"$ref":"#/$defs/mark/properties/imageFilter"},
+            "paintOrder": {"$ref":"#/$defs/mark/properties/paintOrder"},
+            "shapeRendering": {"$ref":"#/$defs/mark/properties/shapeRendering"},
+            "href": {"$ref":"#/$defs/mark/properties/href"},
+            "target": {"$ref":"#/$defs/mark/properties/target"},
+            "channels": {"$ref":"#/$defs/mark/properties/channels"},
+            "textAnchor": {"$ref":"#/$defs/mark/properties/textAnchor"},
+            "lineHeight": {"$ref":"#/$defs/mark/properties/lineHeight"},
+            "lineWidth": {"$ref":"#/$defs/mark/properties/lineWidth"},
+            "textOverflow": {"$ref":"#/$defs/mark/properties/textOverflow"},
+            "monospace": {"$ref":"#/$defs/mark/properties/monospace"},
+            "fontFamily": {"$ref":"#/$defs/mark/properties/fontFamily"},
+            "fontSize": {"$ref":"#/$defs/mark/properties/fontSize"},
+            "fontStyle": {"$ref":"#/$defs/mark/properties/fontStyle"},
+            "fontVariant": {"$ref":"#/$defs/mark/properties/fontVariant"},
+            "fontWeight": {"$ref":"#/$defs/mark/properties/fontWeight"},
+            "x": {"$ref":"#/$defs/mark/properties/x"},
+            "x1": {"$ref":"#/$defs/mark/properties/x1"},
+            "x2": {"$ref":"#/$defs/mark/properties/x2"},
+            "y": {"$ref":"#/$defs/mark/properties/y"},
+            "y1": {"$ref":"#/$defs/mark/properties/y1"},
+            "y2": {"$ref":"#/$defs/mark/properties/y2"},
+            "frameAnchor": {"$ref":"#/$defs/mark/properties/frameAnchor"},
+            "anchor": {"$ref":"#/$defs/mark/properties/anchor"},
+            "preferredAnchor": {"$ref":"#/$defs/mark/properties/preferredAnchor"},
+            "format": {"$ref":"#/$defs/mark/properties/format"},
+            "pathFilter": {"$ref":"#/$defs/mark/properties/pathFilter"},
+            "pointerSize": {"$ref":"#/$defs/mark/properties/pointerSize"},
+            "textPadding": {"$ref":"#/$defs/mark/properties/textPadding"},
+            "maxRadius": {"$ref":"#/$defs/mark/properties/maxRadius"},
+            "px": {"$ref":"#/$defs/mark/properties/px"},
+            "py": {"$ref":"#/$defs/mark/properties/py"},
+            "pointer": {"enum":["x","y","xy"]}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "markSort": {
+      "description": "Sorts the data (a field name, or {channel, order}), or sorts the domain of a scale by a channel ({\"x\": \"-y\", \"reduce\": …, \"limit\": …}).",
+      "anyOf": [
+        {"$ref":"#/$defs/channel"},
+        {
+          "type": "object",
+          "properties": {
+            "x": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "y": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "fx": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "fy": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "r": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "color": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "opacity": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "symbol": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "length": {"anyOf":[{"type":"string"},{"type":"null"},{"type":"object"}]},
+            "channel": {"type":"string"},
+            "value": {"$ref":"#/$defs/channel"},
+            "order": {"anyOf":[{"enum":["ascending","descending"]},{"type":"null"}]},
+            "reduce": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"boolean"},{"type":"null"}]},
+            "reverse": {"type":"boolean"},
+            "limit": {"anyOf":[{"type":"number"},{"type":"array"}]}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "scale": {
+      "type": "object",
+      "properties": {
+        "inset": {
+          "description": "Shorthand to set the same default for all four insets: **insetTop**, **insetRight**, **insetBottom**, and **insetLeft**.",
+          "type": "number"
+        },
+        "insetTop": {"description":"Insets the top edge by the specified number of pixels.","type":"number"},
+        "insetRight": {"description":"Insets the right edge by the specified number of pixels.","type":"number"},
+        "insetBottom": {"description":"Insets the bottom edge by the specified number of pixels.","type":"number"},
+        "insetLeft": {"description":"Insets the left edge by the specified number of pixels.","type":"number"},
+        "clamp": {
+          "description": "If true, values below the domain minimum are treated as the domain minimum, and values above the domain maximum are treated as the domain maximum.",
+          "type": "boolean"
+        },
+        "nice": {
+          "description": "If true, or a tick count or interval, extend the domain to nice round values.",
+          "anyOf": [{"type":"boolean"},{"type":"number"},{"$ref":"#/$defs/interval"}]
+        },
+        "zero": {"description":"Whether the **domain** must include zero.","type":"boolean"},
+        "round": {
+          "description": "If true, round the output value to the nearest integer (pixel); useful for crisp edges when rendering.",
+          "type": "boolean"
+        },
+        "align": {
+          "description": "How to distribute unused space in the **range** for *point* and *band* scales.",
+          "type": "number"
+        },
+        "padding": {
+          "description": "For *band* scales, how much of the **range** to reserve to separate adjacent bands; defaults to 0.1 (10%).",
+          "type": "number"
+        },
+        "axis": {
+          "description": "The side of the frame on which to place the implicit axis: *top* or *bottom* for *x* or *fx*, or *left* or *right* for *y* or *fy*.",
+          "anyOf": [{"type":"boolean"},{"type":"null"},{"enum":["top","right","bottom","left","both"]}]
+        },
+        "grid": {
+          "description": "Whether to show a grid aligned with the scale’s ticks.",
+          "anyOf": [{"type":"boolean"},{"type":"string"},{"$ref":"#/$defs/interval"},{"type":"array"}]
+        },
+        "legend": {
+          "description": "If true, produces a legend for the scale.",
+          "anyOf": [{"type":"boolean"},{"enum":["ramp","swatches"]},{"type":"null"}]
+        },
+        "label": {
+          "description": "A textual label to show on the axis or legend; if null, show no label.",
+          "anyOf": [{"type":"string"},{"type":"null"}]
+        },
+        "labelArrow": {
+          "description": "Whether to apply a directional arrow such as → or ↑ to the scale label.",
+          "anyOf": [{"type":"null"},{"enum":["auto","up","right","down","left","none",true,false]}]
+        },
+        "type": {
+          "description": "The scale type, affecting how the scale encodes abstract data, say by applying a mathematical transformation.",
+          "enum": ["linear","pow","sqrt","log","symlog","utc","time","point","band","ordinal","sequential","cyclical","diverging","diverging-log","diverging-pow","diverging-sqrt","diverging-symlog","categorical","threshold","quantile","quantize","identity"]
+        },
+        "domain": {"description":"The extent of the scale’s inputs (abstract values).","type":"array"},
+        "range": {"description":"The extent of the scale’s outputs (visual values).","type":"array"},
+        "unknown": {
+          "description": "The scale’s output (visual value) when the input is invalid; defaults to null."
+        },
+        "reverse": {
+          "description": "Whether to reverse the scale’s encoding; equivalent to reversing either the **domain** or **range**.",
+          "type": "boolean"
+        },
+        "interval": {
+          "description": "Enforces uniformity for data at regular intervals, such as integer values or daily samples.",
+          "$ref": "#/$defs/interval"
+        },
+        "percent": {
+          "description": "If true, shorthand for a **transform** suitable for percentages, mapping proportions in [0, 1] to [0, 100].",
+          "type": "boolean"
+        },
+        "scheme": {
+          "description": "If specified, shorthand for setting the **range** or **interpolate** option of a *color* scale.",
+          "type": "string"
+        },
+        "interpolate": {"description":"How to interpolate range values.","type":"string"},
+        "exponent": {
+          "description": "A power scale’s exponent (*e.g.*, 0.5 for sqrt); defaults to 1 for a linear scale.",
+          "type": "number"
+        },
+        "base": {"description":"A log scale’s base; defaults to 10.","type":"number"},
+        "constant": {
+          "description": "A symlog scale’s constant, expressing the magnitude of the linear region around the origin; defaults to 1.",
+          "type": "number"
+        },
+        "n": {
+          "description": "For a *quantile* scale, the number of quantiles (creates *n* - 1 thresholds); for a *quantize* scale, the approximate number of thresholds; defaults to 5.",
+          "type": "number"
+        },
+        "quantiles": {"description":"@deprecated See **n**.","type":"number"},
+        "pivot": {
+          "description": "For a diverging color scale, the input value (abstract value) that divides the domain into two parts; defaults to 0 for *diverging* scales, dividing the domain into negative and positive parts; defaults to 1 for *diverging-log* scales."
+        },
+        "symmetric": {
+          "description": "For a diverging color scale, if true (the default), extend the domain to ensure that the lower part of the domain (below the **pivot**) is commensurate with the upper part of the domain (above the **pivot**).",
+          "type": "boolean"
+        },
+        "paddingInner": {
+          "description": "For a *band* scale, how much of the range to reserve to separate adjacent bands.",
+          "type": "number"
+        },
+        "paddingOuter": {
+          "description": "For a *band* scale, how much of the range to reserve to inset first and last bands.",
+          "type": "number"
+        },
+        "ticks": {
+          "description": "The desired approximate number of axis ticks, or an explicit array of tick values, or an interval such as *day* or *month*.",
+          "anyOf": [{"type":"number"},{"$ref":"#/$defs/interval"},{"type":"array"}]
+        },
+        "tickSize": {
+          "description": "The length of axis tick marks in pixels; negative values extend in the opposite direction.",
+          "type": "number"
+        },
+        "tickSpacing": {
+          "description": "The desired approximate spacing between adjacent axis ticks, affecting the default **ticks**; defaults to 80 pixels for *x* and *fx*, and 35 pixels for *y* and *fy*.",
+          "type": "number"
+        },
+        "tickPadding": {
+          "description": "The distance between an axis tick mark and its associated text label (in pixels); often defaults to 3, but may be affected by **tickSize** and **tickRotate**.",
+          "type": "number"
+        },
+        "tickFormat": {
+          "description": "How to format inputs (abstract values) for axis tick labels; one of: - a [d3-format][1] string for numeric scales - a [d3-time-format][2] string for temporal scales - a function passed a tick *value* and *index*, returning a string [1]: https://d3js.org/d3-time [2]: https://d3js.org/d3-time-format",
+          "anyOf": [{"type":"string"},{"type":"null"}]
+        },
+        "tickRotate": {
+          "description": "The rotation angle of axis tick labels in degrees clocksize; defaults to 0.",
+          "type": "number"
+        },
+        "fontVariant": {
+          "description": "The font-variant attribute for axis ticks; defaults to *tabular-nums* for quantitative axes.",
+          "type": "string"
+        },
+        "ariaLabel": {
+          "description": "A short label representing the axis in the accessibility tree.",
+          "type": "string"
+        },
+        "ariaDescription": {
+          "description": "A textual description for the axis in the accessibility tree.",
+          "type": "string"
+        },
+        "labelAnchor": {
+          "description": "Where to place the axis **label** relative to the plot’s frame.",
+          "enum": ["top","right","bottom","left","center"]
+        },
+        "labelOffset": {
+          "description": "The axis **label** position offset (in pixels); default depends on margins and orientation.",
+          "type": "number"
+        },
+        "line": {
+          "description": "If true, draw a line along the axis; if false (default), do not.",
+          "type": "boolean"
+        },
+        "width": {"description":"The width of the legend in pixels.","type":"number"},
+        "columns": {"description":"The [CSS columns property][1], for a multi-column layout.","type":"string"},
+        "swatchSize": {"description":"The swatch width and height in pixels; defaults to 15.","type":"number"},
+        "swatchWidth": {"description":"The swatch width in pixels; defaults to **swatchSize**.","type":"number"},
+        "swatchHeight": {"description":"The swatch height in pixels; defaults to **swatchSize**.","type":"number"},
+        "height": {
+          "description": "The height of the legend in pixels; defaults to 44 plus **tickSize**.",
+          "type": "number"
+        },
+        "marginTop": {"description":"The top margin in pixels; defaults to 18.","type":"number"},
+        "marginRight": {"description":"The right margin in pixels; defaults to 0.","type":"number"},
+        "marginBottom": {
+          "description": "The bottom margin in pixels; defaults to 16 plus **tickSize**.",
+          "type": "number"
+        },
+        "marginLeft": {"description":"The left margin in pixels; defaults to 0.","type":"number"},
+        "opacity": {
+          "description": "The desired opacity of the color swatches or ramp; defaults to 1.",
+          "type": "number"
+        },
+        "color": {"description":"The constant color the ramp; defaults to black.","type":"string"},
+        "fill": {
+          "description": "The desired fill color of symbols; use *color* for a redundant encoding.",
+          "type": "string"
+        },
+        "fillOpacity": {"description":"The desired fill opacity of symbols; defaults to 1.","type":"number"},
+        "stroke": {
+          "description": "The desired stroke color of symbols; use *color* for a redundant encoding.",
+          "type": "string"
+        },
+        "strokeOpacity": {"description":"The desired stroke opacity of symbols; defaults to 1.","type":"number"},
+        "strokeWidth": {"description":"The desired stroke width of symbols; defaults to 1.5.","type":"number"},
+        "r": {"description":"The desired radius of symbols in pixels; defaults to 4.5.","type":"number"}
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "description": "An output of a bin, group or hexbin transform: a reducer name, or {reduce, scale, label}.",
+      "anyOf": [
+        {"$ref":"#/$defs/reducer"},
+        {
+          "type": "object",
+          "properties": {
+            "reduce": {"$ref":"#/$defs/reducer"},
+            "scale": {"type":["string","boolean","null"]},
+            "label": {"type":"string"}
+          },
+          "required": ["reduce"],
+          "additionalProperties": false
+        },
+        {"type":"null"}
+      ]
+    },
+    "outputs_bin": {
+      "type": "object",
+      "properties": {
+        "ariaLabel": {"$ref":"#/$defs/output"},
+        "fill": {"$ref":"#/$defs/output"},
+        "fillOpacity": {"$ref":"#/$defs/output"},
+        "fontSize": {"$ref":"#/$defs/output"},
+        "fx": {"$ref":"#/$defs/output"},
+        "fy": {"$ref":"#/$defs/output"},
+        "geometry": {"$ref":"#/$defs/output"},
+        "height": {"$ref":"#/$defs/output"},
+        "href": {"$ref":"#/$defs/output"},
+        "length": {"$ref":"#/$defs/output"},
+        "opacity": {"$ref":"#/$defs/output"},
+        "path": {"$ref":"#/$defs/output"},
+        "r": {"$ref":"#/$defs/output"},
+        "rotate": {"$ref":"#/$defs/output"},
+        "src": {"$ref":"#/$defs/output"},
+        "stroke": {"$ref":"#/$defs/output"},
+        "strokeOpacity": {"$ref":"#/$defs/output"},
+        "strokeWidth": {"$ref":"#/$defs/output"},
+        "symbol": {"$ref":"#/$defs/output"},
+        "text": {"$ref":"#/$defs/output"},
+        "title": {"$ref":"#/$defs/output"},
+        "weight": {"$ref":"#/$defs/output"},
+        "width": {"$ref":"#/$defs/output"},
+        "x": {"$ref":"#/$defs/output"},
+        "x1": {"$ref":"#/$defs/output"},
+        "x2": {"$ref":"#/$defs/output"},
+        "y": {"$ref":"#/$defs/output"},
+        "y1": {"$ref":"#/$defs/output"},
+        "y2": {"$ref":"#/$defs/output"},
+        "z": {"$ref":"#/$defs/channel"},
+        "data": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"null"}]},
+        "filter": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"null"}]},
+        "sort": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"null"}]},
+        "reverse": {"type":"boolean"},
+        "cumulative": {"$ref":"#/$defs/mark/properties/cumulative"},
+        "domain": {"$ref":"#/$defs/mark/properties/domain"},
+        "thresholds": {"$ref":"#/$defs/mark/properties/thresholds"},
+        "interval": {"$ref":"#/$defs/mark/properties/interval"}
+      },
+      "additionalProperties": false
+    },
+    "outputs_group": {
+      "type": "object",
+      "properties": {
+        "ariaLabel": {"$ref":"#/$defs/output"},
+        "fill": {"$ref":"#/$defs/output"},
+        "fillOpacity": {"$ref":"#/$defs/output"},
+        "fontSize": {"$ref":"#/$defs/output"},
+        "fx": {"$ref":"#/$defs/output"},
+        "fy": {"$ref":"#/$defs/output"},
+        "geometry": {"$ref":"#/$defs/output"},
+        "height": {"$ref":"#/$defs/output"},
+        "href": {"$ref":"#/$defs/output"},
+        "length": {"$ref":"#/$defs/output"},
+        "opacity": {"$ref":"#/$defs/output"},
+        "path": {"$ref":"#/$defs/output"},
+        "r": {"$ref":"#/$defs/output"},
+        "rotate": {"$ref":"#/$defs/output"},
+        "src": {"$ref":"#/$defs/output"},
+        "stroke": {"$ref":"#/$defs/output"},
+        "strokeOpacity": {"$ref":"#/$defs/output"},
+        "strokeWidth": {"$ref":"#/$defs/output"},
+        "symbol": {"$ref":"#/$defs/output"},
+        "text": {"$ref":"#/$defs/output"},
+        "title": {"$ref":"#/$defs/output"},
+        "weight": {"$ref":"#/$defs/output"},
+        "width": {"$ref":"#/$defs/output"},
+        "x": {"$ref":"#/$defs/output"},
+        "x1": {"$ref":"#/$defs/output"},
+        "x2": {"$ref":"#/$defs/output"},
+        "y": {"$ref":"#/$defs/output"},
+        "y1": {"$ref":"#/$defs/output"},
+        "y2": {"$ref":"#/$defs/output"},
+        "z": {"$ref":"#/$defs/channel"},
+        "data": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"null"}]},
+        "filter": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"null"}]},
+        "sort": {"anyOf":[{"$ref":"#/$defs/reducer"},{"type":"null"}]},
+        "reverse": {"type":"boolean"}
+      },
+      "additionalProperties": false
+    },
+    "outputs_hexbin": {
+      "type": "object",
+      "properties": {
+        "ariaLabel": {"$ref":"#/$defs/output"},
+        "fill": {"$ref":"#/$defs/output"},
+        "fillOpacity": {"$ref":"#/$defs/output"},
+        "fontSize": {"$ref":"#/$defs/output"},
+        "fx": {"$ref":"#/$defs/output"},
+        "fy": {"$ref":"#/$defs/output"},
+        "geometry": {"$ref":"#/$defs/output"},
+        "height": {"$ref":"#/$defs/output"},
+        "href": {"$ref":"#/$defs/output"},
+        "length": {"$ref":"#/$defs/output"},
+        "opacity": {"$ref":"#/$defs/output"},
+        "path": {"$ref":"#/$defs/output"},
+        "r": {"$ref":"#/$defs/output"},
+        "rotate": {"$ref":"#/$defs/output"},
+        "src": {"$ref":"#/$defs/output"},
+        "stroke": {"$ref":"#/$defs/output"},
+        "strokeOpacity": {"$ref":"#/$defs/output"},
+        "strokeWidth": {"$ref":"#/$defs/output"},
+        "symbol": {"$ref":"#/$defs/output"},
+        "text": {"$ref":"#/$defs/output"},
+        "title": {"$ref":"#/$defs/output"},
+        "weight": {"$ref":"#/$defs/output"},
+        "width": {"$ref":"#/$defs/output"},
+        "x": {"$ref":"#/$defs/output"},
+        "x1": {"$ref":"#/$defs/output"},
+        "x2": {"$ref":"#/$defs/output"},
+        "y": {"$ref":"#/$defs/output"},
+        "y1": {"$ref":"#/$defs/output"},
+        "y2": {"$ref":"#/$defs/output"},
+        "z": {"$ref":"#/$defs/output"}
+      },
+      "additionalProperties": false
+    },
+    "outputs_map": {
+      "type": "object",
+      "properties": {
+        "ariaLabel": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "fill": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "fillOpacity": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "fontSize": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "fx": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "fy": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "geometry": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "height": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "href": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "length": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "opacity": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "path": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "r": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "rotate": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "src": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "stroke": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "strokeOpacity": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "strokeWidth": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "symbol": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "text": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "title": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "weight": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "width": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "x": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "x1": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "x2": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "y": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "y1": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "y2": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]},
+        "z": {"anyOf":[{"enum":["cumsum","rank","quantile"]},{"type":"null"}]}
+      },
+      "additionalProperties": false
+    },
+    "transformInputKey": {
+      "description": "Options that a transform reads from the mark's options; only valid when the mark has that transform.",
+      "enum": ["cumulative","domain","thresholds","interval","binWidth","z","seed","geometry","path","delimiter","treeAnchor","maxRadius","px","py"]
+    },
+    "projection": {
+      "type": "object",
+      "properties": {
+        "inset": {
+          "description": "Shorthand to set the same default for all four insets: **insetTop**, **insetRight**, **insetBottom**, and **insetLeft**.",
+          "type": "number"
+        },
+        "insetTop": {"description":"Insets the top edge by the specified number of pixels.","type":"number"},
+        "insetRight": {"description":"Insets the right edge by the specified number of pixels.","type":"number"},
+        "insetBottom": {"description":"Insets the bottom edge by the specified number of pixels.","type":"number"},
+        "insetLeft": {"description":"Insets the left edge by the specified number of pixels.","type":"number"},
+        "type": {
+          "description": "The desired projection; one of: - a named built-in projection such as *albers-usa* - a function that returns a projection implementation - null, for no projection When specified as a name, the projection is scaled and translated to fit the **domain** to the plot’s frame (minus insets).",
+          "enum": ["albers-usa","albers","azimuthal-equal-area","azimuthal-equidistant","conic-conformal","conic-equal-area","conic-equidistant","equal-earth","equirectangular","gnomonic","identity","reflect-y","mercator","orthographic","stereographic","transverse-mercator"]
+        },
+        "domain": {
+          "description": "A GeoJSON object to fit to the plot’s frame (minus insets); defaults to a Sphere for spherical projections (outline of the whole globe).",
+          "$ref": "#/$defs/geojson"
+        },
+        "rotate": {
+          "description": "A rotation of the sphere before projection; defaults to [0, 0, 0].",
+          "type": "array"
+        },
+        "parallels": {"description":"The [standard parallels][1].","type":"array"},
+        "precision": {"description":"The projection’s [sampling threshold][1].","type":"number"},
+        "clip": {
+          "description": "The projection’s clipping method; one of: - *frame* or true (default) - clip to the plot’s frame (including margins but not insets) - a number - clip to a circle of the given radius in degrees centered around the origin - null or false - do not clip Some projections (such as [*armadillo*][1] and [*berghaus*][2]) require spherical clipping: in that case set the marks’ **clip** option to *sphere*.",
+          "anyOf": [{"type":"boolean"},{"type":"number"},{"type":"null"},{"enum":["frame"]}]
+        }
+      },
+      "additionalProperties": false
+    },
+    "facet": {
+      "type": "object",
+      "properties": {
+        "data": {"description":"data for top-level faceting","$ref":"#/$defs/markData"},
+        "x": {
+          "description": "x channel for top-level faceting; implies fx scale",
+          "$ref": "#/$defs/channel"
+        },
+        "y": {
+          "description": "y channel for top-level faceting; implies fy scale",
+          "$ref": "#/$defs/channel"
+        },
+        "margin": {
+          "description": "Shorthand to set the same default for all four facet margins: marginTop, marginRight, marginBottom, and marginLeft.",
+          "type": "number"
+        },
+        "marginTop": {
+          "description": "The top facet margin; the (minimum) distance in pixels between the top edges of the inner and outer plot area.",
+          "type": "number"
+        },
+        "marginRight": {
+          "description": "The right facet margin; the (minimum) distance in pixels between the right edges of the inner and outer plot area.",
+          "type": "number"
+        },
+        "marginBottom": {
+          "description": "The bottom facet margin; the (minimum) distance in pixels between the bottom edges of the inner and outer plot area.",
+          "type": "number"
+        },
+        "marginLeft": {
+          "description": "The left facet margin; the (minimum) distance in pixels between the left edges of the inner and outer plot area.",
+          "type": "number"
+        },
+        "grid": {
+          "description": "Default axis grid for fx and fy scales; typically set to true to enable.",
+          "anyOf": [{"type":"boolean"},{"type":"string"},{"$ref":"#/$defs/interval"},{"type":"array"}]
+        },
+        "label": {
+          "description": "Default axis label for fx and fy scales; typically set to null to disable.",
+          "anyOf": [{"type":"string"},{"type":"null"}]
+        }
+      },
+      "additionalProperties": false
+    },
+    "geojson": {
+      "description": "A GeoJSON object.",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["Feature","FeatureCollection","Point","MultiPoint","LineString","MultiLineString","Polygon","MultiPolygon","GeometryCollection","Sphere"]
+        }
+      }
+    },
+    "rows": {
+      "description": "Inline rows: objects, numbers, strings, booleans, null or arrays. A column made only of ISO 8601 date strings becomes dates.",
+      "type": "array"
+    },
+    "dataset": {
+      "anyOf": [
+        {"$ref":"#/$defs/rows"},
+        {
+          "type": "object",
+          "description": "CSV text with a header row; values are typed (numbers, booleans, empty → null, ISO dates).",
+          "properties": {"csv":{"type":"string"}},
+          "required": ["csv"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "TSV text with a header row; typed as CSV.",
+          "properties": {"tsv":{"type":"string"}},
+          "required": ["tsv"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "A remote file. Only loaded when the host allows remote data.",
+          "properties": {"url":{"type":"string"},"format":{"enum":["csv","tsv","json"]}},
+          "required": ["url"],
+          "additionalProperties": false
+        },
+        {"$ref":"#/$defs/geojson"}
+      ]
+    },
+    "markData": {
+      "anyOf": [
+        {"type":"string","description":"The name of a dataset of the top-level data map."},
+        {"$ref":"#/$defs/dataset"},
+        {"type":"null"}
+      ]
+    }
+  }
+}
