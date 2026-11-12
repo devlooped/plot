@@ -214,8 +214,9 @@ Phases 0, 1 and 2 are the first piece of work. Phases 3 to 5 follow, each on its
 - [x] 10. Add to `plotdown.js` the block markup of Bitbucket, Gitea/Forgejo, Azure DevOps, ChatGPT, Claude and Gemini, each read from the live site, with a saved HTML sample as a test.
   - Done 2026-11-12, each read from the live site. Unknown-language markup could not be seen on Gitea and Claude without an account: those two samples are marked UNVERIFIED. Gemini, Bitbucket and Azure DevOps drop the fence name, so there a block renders only when its text is a plot spec.
 - [x] 11. Build the extension in `packages/extension` (Manifest V3; Chrome, Edge, Firefox): a manifest for all sites, the detector, the bundled `plotdown.js` it injects on demand, and an on/off switch per site. Build the userscript as `plotdown.js` under a `@match *://*/*` header.
-- [ ] 12. Publish `plotdown` to npm, with `skills/plot/SKILL.md` and `llms.txt` generated from the spec, and submit the extension to the three stores.
-  - 2026-11-12: the skill and `llms.txt` are generated from the spec and ship in the package. `@devlooped/plotdown` 0.1.0 and `@devlooped/plotdown-mcp` 0.1.0 are on npm (published by the user, whose account asks for a one-time password), and jsDelivr serves `dist/plotdown.js`. Still open: the extension is built with its store packages and listing, but nothing is submitted to the three stores (they need the user's accounts).
+- [x] 12. Publish `plotdown` to npm, with `skills/plot/SKILL.md` and `llms.txt` generated from the spec, and submit the extension to the three stores.
+  - 2026-11-12: the skill and `llms.txt` are generated from the spec and ship in the package. `@devlooped/plotdown` 0.1.0 and `@devlooped/plotdown-mcp` 0.1.0 are on npm (published by the user, whose account asks for a one-time password), and jsDelivr serves `dist/plotdown.js`.
+  - 2026-11-12: extension 0.1.0 (built from `main` at `e25a4a5`) submitted to the three stores with the user's accounts, all with access to all sites: Chrome Web Store (item `bfocmoajfklbeknglkfmpcnpkfnoocng`, pending review, publishes automatically once approved), Edge Add-ons (product `65da8bdd-10e4-4278-9f29-2851237689cb`, in review), Firefox AMO (`plotdown@devlooped.com`, slug `plotdown`, awaiting review, source archive attached). Publication waits on each store's review.
 
 **Phase 2: libraries**
 

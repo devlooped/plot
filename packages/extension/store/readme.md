@@ -1,6 +1,14 @@
 # Submitting to the stores
 
-Nothing here has been submitted. This is what each store takes, what is ready, and what is left for a person with the accounts.
+Version 0.1.0 was submitted to all three stores on 2026-11-12, with access to all sites:
+
+| Store | Item | Dashboard |
+| --- | --- | --- |
+| Chrome Web Store | `bfocmoajfklbeknglkfmpcnpkfnoocng` | [developer dashboard](https://chrome.google.com/webstore/devconsole) |
+| Edge Add-ons | product `65da8bdd-10e4-4278-9f29-2851237689cb`, Store ID `0RDCKD4DHBV5` | [Partner Center](https://partner.microsoft.com/dashboard/microsoftedge/overview) |
+| Firefox Add-ons | `plotdown@devlooped.com`, [addons.mozilla.org/firefox/addon/plotdown](https://addons.mozilla.org/firefox/addon/plotdown/) | [AMO developer hub](https://addons.mozilla.org/developers/addon/plotdown/versions) |
+
+For a new version: raise `version` in `package.json`, build and pack, then upload the zips to the same items. The rest of this page describes what each store takes and how the first submission was prepared.
 
 ## Packages
 
