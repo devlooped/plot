@@ -62,7 +62,7 @@ describe("RemoteData", () => {
     const remote = new RemoteData({onSettled: done.resolve, fetch: async () => new Response("", {status: 404})});
     remote.get(REMOTE, true);
     await done.promise;
-    expect(remote.get(REMOTE, true)).toEqual({state: "error", message: '$.data.a.url: could not load "https://data.example/a.csv": HTTP 404'});
+    expect(remote.get(REMOTE, true)).toEqual({state: "error", message: 'could not load "https://data.example/a.csv": HTTP 404 at $.data.a.url'});
   });
 
   it("refuses an origin that is not in the list", async () => {
@@ -73,7 +73,7 @@ describe("RemoteData", () => {
     await done.promise;
     const result = remote.get(REMOTE, ["https://other.example"]);
     expect(result?.state).toBe("error");
-    expect((result as {message: string}).message).toMatch(/^\$\.data\.a\.url: .*not from an allowed origin/);
+    expect((result as {message: string}).message).toMatch(/not from an allowed origin.* at \$\.data\.a\.url$/);
     expect(fetch).not.toHaveBeenCalled();
   });
 
