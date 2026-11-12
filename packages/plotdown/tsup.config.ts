@@ -13,7 +13,9 @@ export default defineConfig({
     marked: "src/marked.ts",
     react: "src/react.ts",
     streamdown: "src/streamdown.ts",
-    browser: "src/browser/index.ts"
+    browser: "src/browser/index.ts",
+    static: "src/static/index.ts",
+    cli: "src/cli/bin.ts"
   },
   format: ["esm"],
   platform: "neutral",
