@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "types": [
+      "node",
+      "vscode-notebook-renderer"
+    ],
+    "noEmit": true,
+    "paths": {
+      "@devlooped/plotdown": [
+        "../plotdown/src/index.ts"
+      ],
+      "@devlooped/plotdown/browser": [
+        "../plotdown/src/browser/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "test",
+    "vitest.config.ts"
+  ]
+}

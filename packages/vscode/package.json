@@ -1,0 +1,121 @@
+{
+  "name": "plotdown",
+  "displayName": "plotdown: Observable Plot charts in Markdown",
+  "description": "Renders fenced plot blocks of strict JSON as Observable Plot charts in the Markdown preview and in notebooks.",
+  "version": "0.1.0",
+  "publisher": "devlooped",
+  "private": true,
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1f2328",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devlooped/plotdown.git",
+    "directory": "packages/vscode"
+  },
+  "homepage": "https://github.com/devlooped/plotdown/tree/main/packages/vscode",
+  "bugs": {
+    "url": "https://github.com/devlooped/plotdown/issues"
+  },
+  "categories": [
+    "Visualization",
+    "Notebooks",
+    "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "chart",
+    "plot",
+    "observable plot",
+    "notebook"
+  ],
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./dist/extension.js",
+  "browser": "./dist/web/extension.js",
+  "activationEvents": [],
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In a workspace that is not trusted, plot blocks never load remote data.",
+      "restrictedConfigurations": [
+        "plotdown.allowRemoteData"
+      ]
+    }
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewScripts": [
+      "./dist/preview.js"
+    ],
+    "markdown.previewStyles": [
+      "./media/preview.css"
+    ],
+    "notebookRenderer": [
+      {
+        "id": "devlooped.plotdown.markdown-it",
+        "displayName": "plotdown: plot blocks in Markdown",
+        "entrypoint": {
+          "extends": "vscode.markdown-it-renderer",
+          "path": "./dist/notebook-markdown.js"
+        }
+      },
+      {
+        "id": "devlooped.plotdown",
+        "displayName": "plotdown chart",
+        "entrypoint": "./dist/notebook-renderer.js",
+        "mimeTypes": [
+          "application/vnd.plotdown+json"
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "plotdown",
+      "properties": {
+        "plotdown.allowRemoteData": {
+          "type": [
+            "boolean",
+            "array"
+          ],
+          "items": {
+            "type": "string",
+            "pattern": "^https?://"
+          },
+          "default": false,
+          "scope": "resource",
+          "markdownDescription": "Whether plot blocks in the Markdown preview may load data from a URL (`{\"url\": …}`): `false` (the default), `true`, or a list of allowed origins such as `[\"https://cdn.jsdelivr.net\"]`. Only in a trusted workspace. Relative URLs resolve against the Markdown file and need `true`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:vscode": "node scripts/e2e.mjs",
+    "package": "node scripts/package.mjs",
+    "icon": "node scripts/icon.mjs"
+  },
+  "devDependencies": {
+    "@devlooped/plotdown": "workspace:*",
+    "@types/jsdom": "30.0.0",
+    "@types/markdown-it": "14.2.0",
+    "@types/node": "26.6.6",
+    "@types/vscode": "1.90.0",
+    "@types/vscode-notebook-renderer": "1.72.4",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.1.0",
+    "esbuild": "0.28.2",
+    "jsdom": "31.0.0",
+    "markdown-it": "15.0.3",
+    "ovsx": "1.4.0",
+    "playwright": "1.65.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}
