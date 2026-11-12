@@ -4,7 +4,8 @@ import path from "node:path";
 import {afterEach, beforeEach, describe, expect, it} from "vitest";
 import {main, type CommandIo} from "../src/cli/index.js";
 import {applyImages, imageLine, scanMarkdown} from "../src/cli/markdown.js";
-import {slugOf} from "../src/cli/render.js";
+import {contentHash, slugOf} from "../src/cli/render.js";
+import {imageLink, parseImageLink} from "../src/link/index.js";
 
 const dot = '{"title": "Dots", "marks": [{"mark": "dot", "data": [{"x": 1, "y": 2}, {"x": 2, "y": 3}], "x": "x", "y": "y"}]}';
 const bars = '{"marks": [{"mark": "barY", "data": [1, 2, 3]}]}';
@@ -190,5 +191,129 @@ describe("plotdown render", () => {
   it("names the SVG files after the path of their Markdown file", () => {
     expect(slugOf("/repo/readme.md", "/repo")).toBe("readme");
     expect(slugOf("/repo/Docs/Getting Started.md", "/repo")).toBe("docs-getting-started");
+  });
+});
+
+describe("plotdown link", () => {
+  let dir: string;
+  let out: string[];
+  let err: string[];
+  let io: CommandIo;
+  const run = (...args: string[]) => main(["link", ...args], io);
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "plotdown-link-"));
+    out = [];
+    err = [];
+    io = {cwd: dir, log: (l) => out.push(l), error: (l) => err.push(l), env: {}};
+  });
+
+  afterEach(() => fs.rmSync(dir, {recursive: true, force: true}));
+
+  it("prints the link of a JSON file, the same whatever its line endings", () => {
+    fs.writeFileSync(path.join(dir, "chart.json"), `${dot}\n`);
+    fs.writeFileSync(path.join(dir, "crlf.json"), `${dot.replace(/, /g, ",\r\n")}\r\n`);
+    expect(run("chart.json")).toBe(0);
+    expect(out).toEqual([imageLink(dot)]);
+    expect(parseImageLink(out[0]!).block).toBe(dot);
+    expect(run("crlf.json")).toBe(0);
+    expect(out[1]).toBe(imageLink(dot.replace(/, /g, ",\n")));
+  });
+
+  it("reads a block from stdin, and writes a PNG link or a Markdown image", () => {
+    io.stdin = () => dot;
+    expect(run("--png", "--scale", "2", "--theme", "dark", "--base-url", "http://localhost:8787")).toBe(0);
+    expect(out[0]).toBe(imageLink(dot, {format: "png", scale: 2, theme: "dark", baseUrl: "http://localhost:8787"}));
+    expect(run("-m", "-")).toBe(0);
+    expect(out[1]).toBe(`![Dots](${imageLink(dot)})`);
+  });
+
+  it("prints a link for each block of a Markdown file, in order", () => {
+    fs.writeFileSync(path.join(dir, "doc.md"), ["# Doc", "```plot", dot, "```", "", "> ~~~oplot", "> " + bars, "> ~~~"].join("\r\n"));
+    expect(run("doc.md")).toBe(0);
+    expect(out).toEqual([imageLink(dot), imageLink(bars)]);
+  });
+
+  it("reports an invalid block and a block too long for a link, with their line, and links the others", () => {
+    const big = JSON.stringify({marks: [{mark: "dot", data: Array.from({length: 2000}, (_, i) => [i, (i * 7919) % 1000]), x: "0", y: "1"}]});
+    fs.writeFileSync(path.join(dir, "doc.md"), ["```plot", '{"marks": [{"mark": "barZ"}]}', "```", "```plot", big, "```", "```plot", bars, "```"].join("\n"));
+    expect(run("doc.md")).toBe(1);
+    expect(out).toEqual([imageLink(bars)]);
+    expect(err[0]).toBe('doc.md:2: error: $.marks[0].mark: unknown mark "barZ"; did you mean "barX"?');
+    expect(err[1]).toMatch(/^doc\.md:5: error: the image link would be \d+ characters long, over the limit of 8000/);
+    expect(run("--max-length", "100000", "doc.md")).toBe(1);
+    expect(out).toHaveLength(3);
+  });
+
+  it("refuses options the service does not take, and a file with no block", () => {
+    fs.writeFileSync(path.join(dir, "chart.json"), dot);
+    fs.writeFileSync(path.join(dir, "empty.md"), "# Nothing\n");
+    expect(run("--scale", "2", "chart.json")).toBe(1);
+    expect(err.at(-1)).toContain("scale applies to PNG images only");
+    expect(run("--png", "--scale", "5", "chart.json")).toBe(1);
+    expect(run("--base-url", "ftp://x", "chart.json")).toBe(1);
+    expect(run("empty.md")).toBe(1);
+    expect(err.at(-1)).toBe("plotdown: empty.md has no plot block");
+    expect(run("--png", "--theme", "auto", "chart.json")).toBe(0); // the command line's default theme: light for a PNG
+    expect(out.at(-1)).toBe(imageLink(dot, {format: "png"}));
+  });
+});
+
+describe("plotdown render --link", () => {
+  let dir: string;
+  let out: string[];
+  let err: string[];
+  let io: CommandIo;
+  const run = (...args: string[]) => main(["render", ...args], io);
+  const read = (file: string) => fs.readFileSync(path.join(dir, file), "utf8");
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "plotdown-render-link-"));
+    out = [];
+    err = [];
+    io = {cwd: dir, log: (l) => out.push(l), error: (l) => err.push(l), env: {}};
+  });
+
+  afterEach(() => fs.rmSync(dir, {recursive: true, force: true}));
+
+  it("puts image links after the blocks, writes no file, and changes nothing the second time", () => {
+    fs.writeFileSync(path.join(dir, "readme.md"), ["# Doc", "", "```plot", dot, "```", "Text."].join("\n"));
+    expect(run("--link", "--check", "readme.md")).toBe(1);
+    expect(run("--link", "readme.md")).toBe(0);
+    const text = read("readme.md");
+    const link = imageLink(dot);
+    expect(text.split("\n")).toEqual(["# Doc", "", "```plot", dot, "```", `![Dots](${link}) <!-- plot:${contentHash(link)} -->`, "", "Text."]);
+    expect(fs.existsSync(path.join(dir, "docs"))).toBe(false);
+    out = [];
+    expect(run("--link", "readme.md")).toBe(0);
+    expect(read("readme.md")).toBe(text);
+    expect(out).toEqual(["plotdown: 1 file, 1 block, up to date"]);
+    expect(run("--link", "--check", "readme.md")).toBe(0);
+  });
+
+  it("replaces committed SVG files by links, and removes the files", () => {
+    fs.writeFileSync(path.join(dir, "readme.md"), ["```plot", bars, "```"].join("\n"));
+    expect(run("readme.md")).toBe(0);
+    expect(fs.readdirSync(path.join(dir, "docs/plots"))).toHaveLength(1);
+    expect(run("--link", "--png", "--base-url", "https://charts.example.com", "readme.md")).toBe(0);
+    expect(read("readme.md")).toContain(`![Chart](${imageLink(bars, {format: "png", baseUrl: "https://charts.example.com"})}) <!-- plot:`);
+    expect(fs.readdirSync(path.join(dir, "docs/plots"))).toEqual([]);
+    expect(run("readme.md")).toBe(0); // and back to files
+    expect(read("readme.md")).toMatch(/\]\(docs\/plots\/readme-[0-9a-f]{6}\.svg\)/);
+  });
+
+  it("reports a block too long for a link and leaves the file as it is", () => {
+    const big = JSON.stringify({marks: [{mark: "dot", data: Array.from({length: 2000}, (_, i) => [i, (i * 7919) % 1000]), x: "0", y: "1"}]});
+    const text = ["```plot", big, "```"].join("\n");
+    fs.writeFileSync(path.join(dir, "a.md"), text);
+    expect(run("--link", "a.md")).toBe(1);
+    expect(read("a.md")).toBe(text);
+    expect(err[0]).toMatch(/^a\.md:2: error: the image link would be/);
+  });
+
+  it("takes --png and --base-url only with --link", () => {
+    fs.writeFileSync(path.join(dir, "a.md"), ["```plot", bars, "```"].join("\n"));
+    expect(run("--png", "a.md")).toBe(1);
+    expect(err.at(-1)).toContain("Usage: plotdown render");
   });
 });

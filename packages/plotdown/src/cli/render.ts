@@ -4,6 +4,7 @@ import {createHash} from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import {PlotdownError} from "../errors.js";
+import {imageLink, type ImageLinkOptions} from "../link/index.js";
 import {renderStatic, type StaticChart, type StaticTheme} from "../static/index.js";
 import {expandFiles, relativePath} from "./files.js";
 import {applyImages, imageLine, scanMarkdown, type PlotBlock} from "./markdown.js";
@@ -19,10 +20,10 @@ export interface Diagnostic {
   severity: "error" | "warning";
 }
 
-/** Where the image of a block goes: a file next to the docs (render), or later a URL (render --link). */
+/** Where the image of a block goes: a file next to the docs (render), or a link of the image service (render --link). */
 export interface ImageTarget {
-  /** The URL that the Markdown file shows for a chart, and the file to write for it, if any. */
-  place(chart: StaticChart, markdownFile: string): {url: string; hash: string; file?: {path: string; content: string}};
+  /** The URL that the Markdown file shows for a chart (drawn from the text of its block), and the file to write for it, if any. */
+  place(chart: StaticChart, markdownFile: string, block: string): {url: string; hash: string; file?: {path: string; content: string}};
   /** Files that belonged to a Markdown file and that its new text no longer references. */
   stale?(markdownFile: string, text: string): string[];
 }
@@ -78,7 +79,22 @@ export function fileTarget(outDir: string, cwd: string): ImageTarget {
   };
 }
 
-function diagnosticOf(file: string, block: PlotBlock, error: unknown): Diagnostic {
+/**
+ * Images as links of the image service, with the block in the URL: nothing is
+ * written. The SVG files that an earlier `plotdown render` wrote for the
+ * Markdown file (found by `files`) are no longer referenced, so they are removed.
+ */
+export function linkTarget(options: ImageLinkOptions, files?: ImageTarget): ImageTarget {
+  return {
+    place(_chart, _markdownFile, block) {
+      const url = imageLink(block, options);
+      return {url, hash: contentHash(url)};
+    },
+    stale: files?.stale
+  };
+}
+
+export function diagnosticOf(file: string, block: Pick<PlotBlock, "contentLine" | "contentColumns">, error: unknown): Diagnostic {
   if (error instanceof PlotdownError) {
     if (error.line === undefined) return {file, line: block.contentLine, path: error.path, message: error.message, severity: "error"};
     const column = error.column === undefined ? undefined : error.column + (block.contentColumns[error.line - 1] ?? 0);
@@ -96,7 +112,7 @@ export function planFile(file: string, text: string, options: RenderFileOptions)
   for (const block of scan.blocks) {
     try {
       const chart = renderStatic(block.content, {document: options.document, theme: options.theme});
-      const placed = options.target.place(chart, file);
+      const placed = options.target.place(chart, file, block.content);
       images.set(block, imageLine(chart.alt, placed.url, placed.hash));
       if (placed.file) writes.set(placed.file.path, placed.file.content);
     } catch (error) {
@@ -129,6 +145,8 @@ export interface RenderCommandOptions {
   error: (line: string) => void;
   /** Writes GitHub Actions annotations for diagnostics. */
   annotate: boolean;
+  /** Links of the image service in place of SVG files (render --link). */
+  link?: ImageLinkOptions;
 }
 
 /** A message on one line: JSON errors may quote the block, newlines included. */
@@ -136,12 +154,12 @@ function oneLine(message: string): string {
   return message.replace(/\s*\r?\n\s*/g, " ");
 }
 
-function formatDiagnostic(d: Diagnostic, cwd: string): string {
+export function formatDiagnostic(d: Diagnostic, cwd: string): string {
   const where = `${relativePath(cwd, d.file)}:${d.line}${d.column !== undefined ? `:${d.column}` : ""}`;
   return `${where}: ${d.severity}: ${d.path ? `${d.path}: ` : ""}${oneLine(d.message)}`;
 }
 
-function annotation(d: Diagnostic, cwd: string): string {
+export function annotation(d: Diagnostic, cwd: string): string {
   const escape = (s: string) => s.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
   const props = `file=${relativePath(cwd, d.file)},line=${d.line}${d.column !== undefined ? `,col=${d.column}` : ""}`;
   return `::${d.severity} ${props}::${escape(`${d.path ? `${d.path}: ` : ""}${oneLine(d.message)}`)}`;
@@ -157,7 +175,8 @@ export function runRender(options: RenderCommandOptions): number {
     error("plotdown: no Markdown file to render");
     return 1;
   }
-  const target = fileTarget(path.resolve(cwd, options.outDir), cwd);
+  const svgFiles = fileTarget(path.resolve(cwd, options.outDir), cwd);
+  const target = options.link ? linkTarget(options.link, svgFiles) : svgFiles;
   let pending = 0;
   let blocks = 0;
   for (const file of files) {
